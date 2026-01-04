@@ -150,30 +150,27 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   // Keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      switch (e.key) {
-        case "ArrowDown":
-          e.preventDefault();
-          setSelectedIndex((prev) =>
-            prev < filteredCommands.length - 1 ? prev + 1 : 0
-          );
-          break;
-        case "ArrowUp":
-          e.preventDefault();
-          setSelectedIndex((prev) =>
-            prev > 0 ? prev - 1 : filteredCommands.length - 1
-          );
-          break;
-        case "Enter":
-          e.preventDefault();
-          if (filteredCommands[selectedIndex]) {
-            filteredCommands[selectedIndex].action();
-            onClose();
-          }
-          break;
-        case "Escape":
-          e.preventDefault();
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedIndex((prev) =>
+          prev < filteredCommands.length - 1 ? prev + 1 : 0
+        );
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        e.stopPropagation();
+        setSelectedIndex((prev) =>
+          prev > 0 ? prev - 1 : filteredCommands.length - 1
+        );
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (filteredCommands[selectedIndex]) {
+          filteredCommands[selectedIndex].action();
           onClose();
-          break;
+        }
+      } else if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
       }
     },
     [filteredCommands, selectedIndex, onClose]
@@ -194,7 +191,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
 
   return (
     <div className={styles.overlay} onClick={onClose}>
-      <div className={styles.palette} onClick={(e) => e.stopPropagation()}>
+      <div
+        className={styles.palette}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={handleKeyDown}
+        tabIndex={-1}
+      >
         <div className={styles.inputWrapper}>
           <svg
             className={styles.searchIcon}

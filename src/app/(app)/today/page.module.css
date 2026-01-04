@@ -152,6 +152,20 @@
   color: var(--color-text-secondary);
 }
 
+/* Reward Card */
+.rewardCard {
+  padding: var(--space-4);
+  background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-secondary, #9c27b0) 100%);
+  border-radius: var(--radius-md);
+  color: var(--color-text-inverse, #fff);
+}
+
+.rewardText {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .statsGrid {

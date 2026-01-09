@@ -2,7 +2,7 @@
 
 Modern productivity and music production companion. Plan, focus, and create.
 
-Built with Next.js 16 + React 19, deployed to Cloudflare Workers.
+Built with Next.js 15 + React 19 (frontend), Rust Axum (backend), deployed to Cloudflare.
 
 ## Overview
 
@@ -15,31 +15,109 @@ Passion OS is a full-stack application featuring:
 - **Reference library**: Audio track analysis with waveform visualization, frequency spectrum analysis, BPM detection, and annotation support
 - **Knowledge base**: Personal notes organized by category
 
-### Architecture
+## Architecture
 
-- **Online-first**: Server-side D1 database is source of truth
-- **Server-side rendering**: Full SSR/SSG via Next.js App Router
-- **OAuth authentication**: Google + Microsoft Entra ID via Auth.js
-- **Cloudflare infrastructure**: Workers, D1 (SQL), R2 (blobs)
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              CLOUDFLARE EDGE                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  ┌─────────────────────┐     ┌─────────────────────────────────────────┐   │
+│  │  ignition.ecent.    │     │         ignition-cloud.ecent.          │   │
+│  │      online         │     │              online                     │   │
+│  │  ┌───────────────┐  │     │  ┌───────────────────────────────────┐ │   │
+│  │  │    Landing    │  │────▶│  │      Frontend Container           │ │   │
+│  │  │    Worker     │  │     │  │        (Next.js SSR)              │ │   │
+│  │  │   (instant)   │  │     │  │                                   │ │   │
+│  │  └───────────────┘  │     │  └───────────────────────────────────┘ │   │
+│  └─────────────────────┘     └─────────────────────────────────────────┘   │
+│           │                                      │                          │
+│           │ /auth/signin                         │ API calls                │
+│           ▼                                      ▼                          │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                      api.ecent.online                               │   │
+│  │  ┌───────────────────────────────────────────────────────────────┐ │   │
+│  │  │                  Backend Container                            │ │   │
+│  │  │                   (Rust Axum API)                             │ │   │
+│  │  │                                                               │ │   │
+│  │  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────────────┐  │ │   │
+│  │  │  │  OAuth  │  │ Session │  │  RBAC   │  │   Business      │  │ │   │
+│  │  │  │ Google  │  │ Cookies │  │  Guard  │  │   Logic APIs    │  │ │   │
+│  │  │  │ Azure   │  │         │  │         │  │                 │  │ │   │
+│  │  │  └─────────┘  └─────────┘  └─────────┘  └─────────────────┘  │ │   │
+│  │  └───────────────────────────────────────────────────────────────┘ │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                          │                                                  │
+│           ┌──────────────┼──────────────┐                                   │
+│           ▼              ▼              ▼                                   │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                         │
+│  │  PostgreSQL │  │     R2      │  │   Admin     │                         │
+│  │  (Neon.tech)│  │   Storage   │  │   Worker    │                         │
+│  │             │  │             │  │(admin.ecent)│                         │
+│  └─────────────┘  └─────────────┘  └─────────────┘                         │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Login Flow
+
+```
+User                Landing Worker           Backend Container         OAuth Provider
+ │                       │                          │                       │
+ │  GET /                │                          │                       │
+ │──────────────────────▶│                          │                       │
+ │  ◀─────────────────── │ (instant HTML)           │                       │
+ │                       │                          │                       │
+ │  Hover "Get Started"  │                          │                       │
+ │──────────────────────▶│ POST /_warm              │                       │
+ │                       │─────────────────────────▶│ wake container        │
+ │                       │                          │                       │
+ │  Click "Get Started"  │                          │                       │
+ │──────────────────────▶│ GET /auth/signin         │                       │
+ │                       │                          │                       │
+ │  ◀─────────────────── │ Loading page + poll      │                       │
+ │                       │                          │                       │
+ │  (JS polls /_health)  │                          │                       │
+ │──────────────────────▶│─────────────────────────▶│ container ready       │
+ │                       │                          │                       │
+ │  Redirect to OAuth    │                          │                       │
+ │──────────────────────────────────────────────────────────────────────────▶│
+ │                       │                          │                       │
+ │  ◀──────────────────────────────────────────────────────────────────────── │
+ │  Callback + session   │                          │                       │
+ │──────────────────────────────────────────────────▶│                       │
+ │                       │                          │ set cookie            │
+ │  ◀────────────────────────────────────────────── │ redirect to app       │
+ │                       │                          │                       │
+```
+
+### Deployment Domains
+
+| Domain | Service | Type |
+|--------|---------|------|
+| `ignition.ecent.online` | Landing Worker | Cloudflare Workers (instant) |
+| `ignition-cloud.ecent.online` | Frontend Container | Cloudflare Containers (SSR) |
+| `api.ecent.online` | Backend Container | Cloudflare Containers (API) |
+| `admin.ecent.online` | Admin Worker | Cloudflare Workers (OpenNext) |
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|------------|
-| Framework | Next.js 16 |
-| UI Library | React 19 |
-| Language | TypeScript 5.7 |
-| Auth | Auth.js (NextAuth v5) |
-| Database | Cloudflare D1 (SQLite) |
+| Frontend | Next.js 15, React 19, TypeScript 5.7 |
+| Backend | Rust (Axum + Tower) |
+| Database | PostgreSQL (Neon.tech) |
 | Blob Storage | Cloudflare R2 |
-| Deployment | Cloudflare Workers via OpenNext |
-| Testing | Vitest + Playwright |
+| Auth | OAuth2 (Google, Azure) via Rust backend |
+| Deployment | Cloudflare Containers + Workers |
+| Testing | Vitest, Playwright, Rust integration tests |
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js 22+ (see `.nvmrc`)
+- Rust 1.85+ (see `rust-toolchain.toml`)
 - Wrangler CLI (`npm install -g wrangler`)
 - Cloudflare account (for deployment)
 

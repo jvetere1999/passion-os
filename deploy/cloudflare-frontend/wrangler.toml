@@ -1,0 +1,49 @@
+# Ignition Frontend - Cloudflare Containers Configuration
+# Next.js app running as a Container
+#
+# Deploy: cd deploy/cloudflare-frontend && npx wrangler deploy
+
+name = "ignition-frontend"
+compatibility_date = "2025-01-02"
+compatibility_flags = ["nodejs_compat"]
+main = "src/index.ts"
+
+# Container configuration
+[[containers]]
+class_name = "FrontendContainer"
+image = "../../app/frontend/Dockerfile"
+max_instances = 3
+instance_type = "standard-1"  # 1 vCPU, 2GB RAM
+
+# Durable Object for container management
+[durable_objects]
+bindings = [
+  { name = "FRONTEND_CONTAINER", class_name = "FrontendContainer" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["FrontendContainer"]
+
+# Environment variables
+[vars]
+NODE_ENV = "production"
+NEXT_PUBLIC_API_URL = "https://api.ecent.online"
+
+# Custom domain routing
+[[routes]]
+pattern = "ignition.ecent.online/*"
+zone_name = "ecent.online"
+
+[[routes]]
+pattern = "www.ignition.ecent.online/*"
+zone_name = "ecent.online"
+
+# Observability
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+persist = true

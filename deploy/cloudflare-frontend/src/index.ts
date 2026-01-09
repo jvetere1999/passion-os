@@ -41,11 +41,34 @@ export default {
       });
     }
 
-    // Get container instance
-    const id = env.FRONTEND_CONTAINER.idFromName("frontend");
-    const container = getContainer(env.FRONTEND_CONTAINER, id);
+    // Debug: Return info about the request while we troubleshoot container
+    if (url.pathname === "/_debug") {
+      return new Response(JSON.stringify({
+        status: "worker running",
+        url: request.url,
+        hasContainerBinding: !!env.FRONTEND_CONTAINER,
+      }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
 
-    // Forward request to container
-    return container.fetch(request);
+    try {
+      // Get container instance
+      const id = env.FRONTEND_CONTAINER.idFromName("frontend");
+      const container = getContainer(env.FRONTEND_CONTAINER, id);
+
+      // Forward request to container
+      return container.fetch(request);
+    } catch (error) {
+      // Return error details for debugging
+      return new Response(JSON.stringify({
+        error: "Container fetch failed",
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
   },
 };

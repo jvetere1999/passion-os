@@ -25,6 +25,7 @@ export class FrontendContainer extends Container {
       NODE_ENV: env.NODE_ENV || "production",
       NEXT_PUBLIC_API_URL: env.NEXT_PUBLIC_API_URL || "https://api.ecent.online",
       PORT: "3000",
+      HOSTNAME: "0.0.0.0",
     };
   }
 }

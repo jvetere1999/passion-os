@@ -3,13 +3,15 @@
  *
  * Execution surfaces only - no planning, just action.
  * Shows Focus, active plan item, and quests.
+ *
+ * Architecture:
+ * - Frontend performs 0% data logic
+ * - All data flows through Rust backend at api.ecent.online
  */
 
 import { auth } from "@/lib/auth/server";
 import { redirect } from "next/navigation";
-import { MobileDoClient } from "@/components/mobile/screens/MobileDoClient";
-import { getDB } from "@/lib/db";
-import { hasFocusActive, getDailyPlanSummary } from "@/lib/db/repositories/dailyPlans";
+import { MobileDoWrapper } from "@/components/mobile/screens/MobileDoWrapper";
 
 export default async function MobileDoPage() {
   const session = await auth();
@@ -18,21 +20,5 @@ export default async function MobileDoPage() {
     redirect("/m/auth/signin");
   }
 
-  const db = await getDB();
-  const userId = session.user.id;
-
-  // Fetch execution-relevant data
-  const [focusActive, planSummary] = await Promise.all([
-    hasFocusActive(db, userId),
-    getDailyPlanSummary(db, userId),
-  ]);
-
-  return (
-    <MobileDoClient
-      focusActive={focusActive}
-      hasIncompletePlanItem={planSummary.hasIncompletePlanItems}
-      nextPlanItem={planSummary.nextIncompleteItem}
-    />
-  );
+  return <MobileDoWrapper userId={session.user.id} />;
 }
-

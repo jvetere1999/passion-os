@@ -1,12 +1,7 @@
 import type { NextConfig } from "next";
-import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
-// Initialize Cloudflare bindings for local development
-// This makes D1, R2, and other bindings available during `npm run dev`
-// TODO: Remove after API routes are migrated to Rust backend
-if (process.env.NODE_ENV === "development") {
-  initOpenNextCloudflareForDev();
-}
+// NOTE: OpenNext/Cloudflare bindings removed - frontend now runs in container
+// All API logic goes through Rust backend at api.ecent.online
 
 const nextConfig: NextConfig = {
   // Standard Next.js output (no Cloudflare Workers)

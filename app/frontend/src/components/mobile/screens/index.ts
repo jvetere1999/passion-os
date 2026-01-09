@@ -4,6 +4,9 @@
 
 export { MobileHome } from "./MobileHome";
 export { MobileTodayClient } from "./MobileTodayClient";
+export { MobileTodayWrapper } from "./MobileTodayWrapper";
+export { MobileDoClient } from "./MobileDoClient";
+export { MobileDoWrapper } from "./MobileDoWrapper";
 export { MobileSignIn } from "./MobileSignIn";
 export { MobileFocus } from "./MobileFocus";
 export { MobileQuests } from "./MobileQuests";

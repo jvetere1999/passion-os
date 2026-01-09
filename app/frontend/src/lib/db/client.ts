@@ -1,23 +1,41 @@
 /**
  * Database client utilities for D1
  * Provides type-safe access to Cloudflare D1 bindings
+ * 
+ * NOTE: D1 access is deprecated - all data should go through the Rust backend API.
+ * These functions are kept for backward compatibility during migration.
  */
 
 import type { D1Database } from "@cloudflare/workers-types";
 
 /**
+ * Check if D1 database is available
+ * Returns false in container environments or during build
+ */
+export function isDBAvailable(): boolean {
+  if (typeof globalThis === 'undefined') return false;
+  const env = (globalThis as unknown as { env?: { DB?: D1Database } }).env;
+  return !!env?.DB;
+}
+
+/**
  * Get D1 database from Cloudflare environment
  * In Next.js with OpenNext, this is accessed via getRequestContext()
+ * 
+ * NOTE: Returns null in container/build environments instead of throwing.
+ * Callers should check for null and use API fallback.
  */
-export function getDB(): D1Database {
+export function getDB(): D1Database | null {
   // In Cloudflare Workers environment, DB is available via env
   // This will be properly wired up via OpenNext
   const env = (globalThis as unknown as { env?: { DB?: D1Database } }).env;
 
   if (!env?.DB) {
-    throw new Error(
-      "D1 Database not available. Ensure you are running in Cloudflare Workers environment."
+    // Don't throw in container/build environment - return null for graceful degradation
+    console.warn(
+      "[db] D1 Database not available. Running in container mode - use API instead."
     );
+    return null;
   }
 
   return env.DB;

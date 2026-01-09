@@ -29,6 +29,12 @@ routes = [
 NODE_ENV = "production"
 NEXT_PUBLIC_API_URL = "https://api.ecent.online"
 
+# Migration to remove old container Durable Object
+# This is required because we're converting from Container to Worker
+[[migrations]]
+tag = "v2"
+deleted_classes = ["FrontendContainer"]
+
 # KV namespace for caching (optional - create via dashboard if needed)
 # [[kv_namespaces]]
 # binding = "NEXT_CACHE"

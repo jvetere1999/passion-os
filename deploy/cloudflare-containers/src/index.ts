@@ -89,6 +89,17 @@ export class ApiContainer extends Container {
 
   override onStart(): void {
     console.log("Ignition API container started");
+    const env = this.env as Env;
+    
+    // Debug: Check if secrets are available
+    const hasDbUrl = !!env.DATABASE_URL;
+    const hasSessionSecret = !!env.SESSION_SECRET;
+    console.log(`[onStart] DATABASE_URL present: ${hasDbUrl}`);
+    console.log(`[onStart] SESSION_SECRET present: ${hasSessionSecret}`);
+    
+    if (!hasDbUrl) {
+      console.error("[onStart] CRITICAL: DATABASE_URL secret is missing!");
+    }
   }
 
   override onStop(): void {

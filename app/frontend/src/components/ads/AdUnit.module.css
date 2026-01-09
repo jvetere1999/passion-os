@@ -1,0 +1,13 @@
+.adUnit {
+  min-height: 90px;
+  margin: 1rem 0;
+  overflow: hidden;
+}
+
+/* Prevent layout shift by reserving space */
+.adUnit:empty::before {
+  content: "";
+  display: block;
+  min-height: 90px;
+}
+

@@ -1,0 +1,384 @@
+.game {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Setup Screen */
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.setupTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+  text-align: center;
+}
+
+.setupDescription {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin: 0;
+}
+
+.settingsGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.settingsLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.modeButtons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.modeBtn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--color-bg-secondary);
+  border: 2px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-align: left;
+}
+
+.modeBtn:hover {
+  border-color: var(--color-accent-primary);
+}
+
+.modeBtn.active {
+  border-color: var(--color-accent-primary);
+  background: var(--color-accent-primary);
+}
+
+.modeBtn.active .modeLabel,
+.modeBtn.active .modeDesc {
+  color: var(--color-text-inverse);
+}
+
+.modeLabel {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.modeDesc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-accent-primary);
+}
+
+.startButton {
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-accent-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: var(--space-4);
+}
+
+.startButton:hover {
+  background: var(--color-accent-primary-hover);
+  transform: translateY(-2px);
+}
+
+/* Gameplay */
+.gamePlay {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.gameHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stats {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.statValue {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent-primary);
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.resetBtn {
+  padding: var(--space-2) var(--space-4);
+  background: transparent;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.resetBtn:hover {
+  border-color: var(--color-accent-primary);
+  color: var(--color-accent-primary);
+}
+
+/* Question Area */
+.questionArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+}
+
+.reference {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.playButton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-6) var(--space-8);
+  background: var(--color-accent-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-xl);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.playButton:hover:not(:disabled) {
+  background: var(--color-accent-primary-hover);
+  transform: scale(1.05);
+}
+
+.playButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.playButton.playing {
+  animation: pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.playingIndicator {
+  font-size: var(--font-size-base);
+}
+
+.feedback {
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.feedback.correct {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.feedback.incorrect {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* Note Grid - Piano-like layout */
+.noteGrid {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.noteBtn {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 60px;
+}
+
+.noteBtn.white {
+  background: var(--color-bg-primary);
+  border: 2px solid var(--color-border-primary);
+  color: var(--color-text-primary);
+}
+
+.noteBtn.black {
+  background: var(--color-bg-tertiary);
+  border: 2px solid var(--color-border-secondary);
+  color: var(--color-text-primary);
+}
+
+.noteBtn:hover:not(:disabled) {
+  border-color: var(--color-accent-primary);
+  transform: translateY(-2px);
+}
+
+.noteBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.noteBtn.correctAnswer {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+/* Octave Grid */
+.octaveGrid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+}
+
+.octaveLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin-right: var(--space-2);
+}
+
+.octaveBtn {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-secondary);
+  border: 2px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.octaveBtn:hover:not(:disabled) {
+  border-color: var(--color-accent-primary);
+  transform: scale(1.05);
+}
+
+.octaveBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.octaveBtn.correctAnswer {
+  border-color: var(--color-success);
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+/* Keyboard visual */
+.keyboard {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.keyboardLabel {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .stats {
+    gap: var(--space-4);
+  }
+
+  .statValue {
+    font-size: var(--font-size-xl);
+  }
+
+  .questionArea {
+    padding: var(--space-5);
+  }
+
+  .noteGrid {
+    gap: var(--space-1);
+  }
+
+  .noteBtn {
+    padding: var(--space-3);
+    min-width: 48px;
+    font-size: var(--font-size-base);
+  }
+}
+

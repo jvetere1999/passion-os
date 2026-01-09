@@ -1,0 +1,112 @@
+# Ignition - Production Deployment
+#
+# Two-container deployment: Backend + Postgres
+#
+# Usage:
+#   docker compose -f docker-compose.yml up -d
+#
+# Prerequisites:
+#   - Copy .env.example to .env and configure all required variables
+#   - Run migrations before first deployment
+#   - Configure TLS termination at load balancer
+
+services:
+  # ============================================================================
+  # PostgreSQL Database
+  # ============================================================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: ignition-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ignition-internal
+    restart: always
+    # Security: No port binding in production
+    # Database only accessible from internal network
+
+  # ============================================================================
+  # Backend API (Rust)
+  # ============================================================================
+  api:
+    image: ignition-api:${IMAGE_TAG:-latest}
+    container_name: ignition-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      # Database
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+
+      # Server
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      SERVER_ENVIRONMENT: production
+
+      # Auth (EXPLICIT: bypass disabled)
+      AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN}
+      AUTH_DEV_BYPASS: "false"
+
+      # OAuth (from secrets)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID}
+
+      # CORS
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+
+      # Storage (R2)
+      STORAGE_ENDPOINT: ${STORAGE_ENDPOINT}
+      STORAGE_BUCKET: ${STORAGE_BUCKET}
+      STORAGE_ACCESS_KEY_ID: ${STORAGE_ACCESS_KEY_ID}
+      STORAGE_SECRET_ACCESS_KEY: ${STORAGE_SECRET_ACCESS_KEY}
+      STORAGE_REGION: ${STORAGE_REGION:-auto}
+
+      # Session
+      SESSION_SECRET: ${SESSION_SECRET}
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 3
+    networks:
+      - ignition-internal
+      - ignition-external
+    restart: always
+    # Security: Run as non-root (defined in Dockerfile)
+    # Logs: Use docker logging driver configured at daemon level
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  # Internal network (backend <-> database)
+  ignition-internal:
+    driver: bridge
+    internal: true  # No external access
+
+  # External network (load balancer <-> backend)
+  ignition-external:
+    driver: bridge
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres_data:
+    name: ignition-postgres-data
+

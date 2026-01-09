@@ -1,0 +1,26 @@
+# Passion OS robots.txt
+# Allow all crawlers access to all content
+# See: https://developers.google.com/search/docs/crawling-indexing/robots/intro
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://passion-os.ecent.online/sitemap.xml
+
+# Block API routes from indexing (they are not content)
+Disallow: /api/
+
+# Block auth pages from indexing
+Disallow: /auth/error
+Disallow: /pending-approval
+Disallow: /age-verification
+
+# Block admin pages
+Disallow: /admin
+
+# Block mobile-only routes (they duplicate desktop content)
+Disallow: /m/
+
+# Block static assets directory from crawling (save crawl budget)
+Disallow: /_next/static/

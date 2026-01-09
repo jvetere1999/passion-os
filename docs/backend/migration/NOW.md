@@ -3,7 +3,7 @@
 # Resolved NOW - Via Repo Inspection
 
 **Date:** January 6, 2026  
-**Updated:** January 6, 2026  
+**Updated:** January 8, 2026 (Parity Audit)  
 **Branch:** `refactor/stack-split`  
 **Purpose:** Document items resolved immediately through repo inspection
 
@@ -29,6 +29,8 @@
 | ACTION-016 | Flags | Audit complete - flags are deprecated stubs |
 | ACTION-028 | Lint | Timing decided → DEC-003 = C |
 | ACTION-030 | Auth | Admin strategy → DEC-004 = B |
+| FGAP-008 | Metrics | Metric drift between docs resolved (WAVE_PLAN_POST20G authoritative) |
+| RISK-018 | Docs | Documentation drift mitigated by parity audit updates |
 
 ---
 
@@ -45,11 +47,71 @@
 | 11a   | Auth substrate migration       | ✅ **Complete** |
 | 11b   | Auth implementation            | ✅ **Complete** |
 | 11c   | Feature table migrations       | ✅ **Complete** |
+| 11d   | D1 deprecation planning        | ✅ **Complete** |
 | 14    | R2 Integration                 | ✅ **Complete** |
 | 15    | API Contracts                  | ✅ **Complete** |
 | 16    | Feature Porting Playbook       | ✅ **Complete** |
 | 17    | Frontend API Client            | ✅ **Complete** |
-| 18    | Feature routes implementation  | ⏳ Next         |
+| 17b   | Feature Ownership Map          | ✅ **Complete** |
+| 17c   | Backend Modularity Plan        | ✅ **Complete** |
+| 17d   | API Contracts Plan             | ✅ **Complete** |
+| 18a   | Reference Tracks Domain        | ✅ **Complete** |
+| 18b   | Frames Transport               | ✅ **Complete** |
+| 20F   | Checkpoint Audit               | ✅ **Complete** |
+| 20G   | Wave Plan Post-20G             | ✅ **Complete** |
+| 23    | Infrastructure (local)         | ✅ **Complete** |
+| 23b   | Cutover Planning               | ✅ **Complete** |
+| 18    | Feature routes implementation  | ✅ **Complete** |
+| 20    | Admin console split            | ⏳ Ready        |
+| --    | ACTION-038: D1 script removal  | 🔒 After parity |
+| --    | ACTION-040: Feature routes     | ✅ **Complete** |
+| --    | ACTION-041: Reference FE swap  | ⏳ Ready        |
+| --    | ACTION-053: Wire reference router | ⏳ Ready (NEW) |
+| --    | ACTION-054: Analysis route     | 🔒 Blocked (DECISION-006) |
+
+**Parity Audit Findings (January 8, 2026):**
+- Auth routes accept-tos/verify-age ARE implemented (checklist was stale)
+- Reference router has full 816-line implementation but is NOT wired in api.rs
+- Analysis route is stub-only, purpose unclear (needs decision)
+- 3 new gaps: FGAP-009, FGAP-010, and updated RISK-017-019
+
+**Wave 4 Platform Routes Complete (January 2026):**
+- `app/database/migrations/0014_platform_substrate.sql` - Platform tables
+- `app/backend/crates/api/src/db/platform_models.rs` - Type definitions
+- `app/backend/crates/api/src/db/platform_repos.rs` - Database operations
+- `app/backend/crates/api/src/routes/calendar.rs` - Calendar CRUD
+- `app/backend/crates/api/src/routes/daily_plan.rs` - Daily planning
+- `app/backend/crates/api/src/routes/feedback.rs` - User feedback
+- `app/backend/crates/api/src/routes/infobase.rs` - Knowledge base
+- `app/backend/crates/api/src/routes/ideas.rs` - Idea capture
+- `app/backend/crates/api/src/routes/onboarding.rs` - Onboarding flow
+- `app/backend/crates/api/src/routes/user.rs` - User settings/account
+- `app/frontend/src/lib/api/calendar.ts` - Frontend client
+- `app/frontend/src/lib/api/daily-plan.ts` - Frontend client
+- `app/frontend/src/lib/api/feedback.ts` - Frontend client
+- `app/frontend/src/lib/api/infobase.ts` - Frontend client
+- `app/frontend/src/lib/api/ideas.ts` - Frontend client
+- `app/frontend/src/lib/api/onboarding.ts` - Frontend client
+- `app/frontend/src/lib/api/user.ts` - Frontend client
+- `tests/calendar.spec.ts` - E2E tests
+- `tests/daily-plan.spec.ts` - E2E tests
+- `tests/feedback.spec.ts` - E2E tests
+- `tests/user-settings.spec.ts` - E2E tests
+- `tests/onboarding.spec.ts` - Updated E2E tests
+- `docs/backend/migration/validation_wave4_platform_routes_post20G.md` - Validation
+
+**Infrastructure Phase 23 Complete (Local):**
+- `infra/docker-compose.yml` - Local dev compose
+- `deploy/README.md` - Deployment documentation
+- `deploy/rollback.md` - Rollback procedures
+- `deploy/production/docker-compose.yml` - Production compose
+- `deploy/scripts/*.sh` - Deploy, rollback, health-check scripts
+- `docs/backend/migration/local_dev_auth_bypass.md` - Dev bypass guardrails
+- `docs/backend/migration/image_tag_and_migration_strategy.md` - Versioning strategy
+
+**D1 Deprecation Planning Deliverables:**
+- `docs/backend/migration/d1_deprecation_report.md` - Full D1 inventory and plan
+- Updated `feature_parity_checklist.md` with deprecation status section
 
 **Feature Table Migrations Deliverables:**
 - `app/database/migrations/0002_gamification_substrate.sql` - XP, wallet, achievements
@@ -69,7 +131,7 @@
 
 **Feature Porting Deliverables:**
 - `docs/backend/migration/feature_porting_playbook.md` - Porting process
-- `docs/backend/migration/feature_parity_checklist.md` - Status tracking (6/56 done)
+- `docs/backend/migration/feature_parity_checklist.md` - Status tracking (73/87 routes done)
 
 **API Contracts Deliverables:**
 - `shared/api-types/` - Shared TypeScript types package
@@ -97,6 +159,7 @@
 - [gaps_checkpoint_after_auth.md](./gaps_checkpoint_after_auth.md)
 - [gaps_checkpoint_after_r2.md](./gaps_checkpoint_after_r2.md)
 - [gaps_checkpoint_after_api_swaps.md](./gaps_checkpoint_after_api_swaps.md)
+- [gaps_checkpoint_after_d1_removal.md](./gaps_checkpoint_after_d1_removal.md)
 
 **Database Deliverables:**
 - `app/database/migrations/0001_auth_substrate.sql` - Auth/RBAC/audit tables

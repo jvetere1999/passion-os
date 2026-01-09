@@ -18,6 +18,9 @@ coverage/
 playwright-report/
 test-results/
 
+# Performance baselines (generated)
+.perf/
+
 # IDE
 .idea/
 .vscode/

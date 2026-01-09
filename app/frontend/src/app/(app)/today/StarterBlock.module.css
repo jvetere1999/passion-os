@@ -1,0 +1,107 @@
+/**
+ * StarterBlock Styles
+ * Visually dominant CTA section for Today page
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-xl);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Primary CTA - Visually dominant */
+.primaryButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-5) var(--space-6);
+  background-color: var(--color-accent-primary);
+  color: var(--color-text-inverse);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.primaryButton:hover {
+  background-color: var(--color-accent-primary-hover);
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+.primaryButton:active {
+  background-color: var(--color-accent-primary-active);
+  transform: translateY(0);
+}
+
+.buttonIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.buttonLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Secondary link - Subdued */
+.secondaryLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+.secondaryLink:hover {
+  color: var(--color-accent-primary);
+  text-decoration: underline;
+}
+
+/* Responsive: Desktop layout */
+@media (min-width: 768px) {
+  .primaryButton {
+    width: 50%;
+    align-self: flex-start;
+  }
+
+  .secondaryLink {
+    justify-content: flex-start;
+    padding-left: 0;
+  }
+}
+

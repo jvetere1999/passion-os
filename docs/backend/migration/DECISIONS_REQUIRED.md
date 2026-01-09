@@ -12,9 +12,11 @@
 
 | Decision | Category | Urgency | Blocking |
 |----------|----------|---------|----------|
-| DECISION-001 | Auth | High | Yes - auth design |
-| DECISION-002 | Security | High | Yes - auth design |
-| DECISION-003 | Code Quality | Low | No |
+| DECISION-001 | Auth | High | ✅ Resolved (A) |
+| DECISION-002 | Security | High | ✅ Resolved (A) |
+| DECISION-003 | Code Quality | Low | ✅ Resolved (C) |
+| DECISION-005 | Warnings | Medium | Yes - Phase 24 |
+| DECISION-006 | API Design | Low | Yes - FGAP-010 |
 
 ---
 
@@ -153,19 +155,131 @@ Rationale:
 
 ---
 
+## DECISION-005: New Warnings and Backend Baseline {#decision-005}
+
+### Context
+
+Pre-deprecation gate validation identified:
+
+1. **Frontend new warnings (+3):**
+   - `TrackVisualizer.tsx` has 3 unused variables
+   - `exercise.ts` has 1 unused import (`apiPut`)
+   - Current: 47 warnings in `app/frontend/src/`
+   - Baseline was: 44 warnings in `src/`
+
+2. **Backend has no baseline:**
+   - 206 Rust warnings from `cargo check`
+   - Mostly unused imports (~150) from route scaffolding
+   - Dead code (~30), unused variables (~20)
+
+### Options
+
+| Option | Frontend | Backend | Effort | Impact |
+|--------|----------|---------|--------|--------|
+| **A: Fix all before deprecation** | Fix 4 warnings | Fix 206 warnings | High | Cleanest baseline |
+| **B: Add to baseline, deprecate now** | Add 4 to baseline | Accept 206 as baseline | Low | Quick unblock |
+| **C: Fix frontend only, defer backend** | Fix 4 warnings | Accept 206, fix later | Medium | Compromise |
+| **D: Fix unused imports only** | Fix 4 warnings | Fix ~150 imports | Medium-High | Reduces 70%+ of warnings |
+
+### Recommendation
+
+**Option C: Fix frontend only, defer backend**
+
+Rationale:
+- Frontend delta is small (4 warnings) - quick fix
+- Backend warnings are from scaffolding (not bugs)
+- DEC-003=C already chose post-migration lint fix
+- Backend baseline can be established and fixed incrementally
+
+### Decision Needed
+
+- [ ] Approved: Fix all before deprecation (Option A)
+- [ ] Approved: Add to baseline, deprecate now (Option B)
+- [ ] Approved: Fix frontend only, defer backend (Option C)
+- [ ] Approved: Fix unused imports only (Option D)
+
+**Decision By:** Engineering Lead  
+**Deadline:** Before Phase 24 (Legacy Deprecation)  
+**Blocks:** ACTION-051, ACTION-052
+
+---
+
+## DECISION-006: Analysis Route Architecture {#decision-006}
+
+### Context (Discovered During Parity Audit)
+
+Current state:
+- `/api/analysis` exists as a stub route in `api.rs:107-109`
+- Returns empty JSON, no real implementation
+- No dedicated `analysis.rs` module exists
+- Reference tracks already have `/api/reference/tracks/:id/analysis` endpoint
+
+### Questions
+
+1. Is `/api/analysis` meant to be a standalone feature?
+2. Is it a duplicate of reference track analysis?
+3. Should it be removed?
+
+### Evidence
+
+```rust
+// api.rs:107-109
+fn analysis_routes() -> Router<Arc<AppState>> {
+    Router::new().route("/", get(stub_get))
+}
+```
+
+Reference tracks analysis already exists in `reference.rs` at:
+- `GET /api/reference/tracks/:id/analysis` - Get analysis
+- `POST /api/reference/tracks/:id/analysis` - Generate analysis
+
+### Options
+
+| Option | Description | Effort | Impact |
+|--------|-------------|--------|--------|
+| **A: Remove standalone** | Delete `/api/analysis` route, use reference tracks analysis | Low | Simplifies API |
+| **B: Implement standalone** | Create `analysis.rs` for cross-feature analysis | High | New feature work |
+| **C: Alias to reference** | Route `/api/analysis` to reference tracks analysis | Low | Backwards compat |
+
+### Recommendation
+
+**Option A: Remove standalone**
+
+Rationale:
+- No existing frontend uses `/api/analysis` directly
+- Reference tracks analysis is fully implemented
+- Reduces API surface complexity
+- Stub is dead code
+
+### Decision Needed
+
+- [ ] Approved: Remove standalone (Option A)
+- [ ] Approved: Implement standalone (Option B)
+- [ ] Approved: Alias to reference (Option C)
+- [ ] Other: _______________
+
+**Decision By:** Engineering Lead  
+**Deadline:** Before frontend swap  
+**Blocks:** FGAP-010
+
+---
+
 ## Decision Log
 
 | Decision | Date | Outcome | Decided By |
 |----------|------|---------|------------|
-| DECISION-001 | Pending | - | - |
-| DECISION-002 | Pending | - | - |
-| DECISION-003 | Pending | - | - |
+| DECISION-001 | January 6, 2026 | A (Force re-auth) | Owner |
+| DECISION-002 | January 6, 2026 | A (Origin verification) | Owner |
+| DECISION-003 | January 6, 2026 | C (Post-migration) | Owner |
+| DECISION-005 | Pending | - | - |
 
 ---
 
 ## References
 
 - [LATER.md](./LATER.md) - Items blocked by these decisions
+- [DECISIONS.md](./DECISIONS.md) - Chosen decisions record
+- [PRE_DEPRECATED_GATE.md](./PRE_DEPRECATED_GATE.md) - Pre-deprecation validation
 - [auth_inventory.md](./auth_inventory.md) - Current auth implementation
 - [validation_01.md](./validation_01.md) - Lint warning details
 

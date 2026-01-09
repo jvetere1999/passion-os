@@ -1,0 +1,260 @@
+/**
+ * Region Controls Styles
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #1f2937;
+  border-radius: 8px;
+  border: 1px solid #374151;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3f4f6;
+  margin: 0;
+}
+
+.addButton {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  background: #8b5cf6;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.addButton:hover {
+  background: #7c3aed;
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* List */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.empty {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+  padding: 16px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #111827;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.item:hover {
+  background: #1f2937;
+}
+
+.itemSelected {
+  background: #374151;
+  outline: 2px solid #8b5cf6;
+  outline-offset: -2px;
+}
+
+.itemActive {
+  background: rgba(139, 92, 246, 0.15);
+}
+
+.itemColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemName {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #f3f4f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemTime {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+  font-family: monospace;
+}
+
+.itemDuration {
+  margin-left: 6px;
+  color: #6b7280;
+}
+
+.itemType {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #374151;
+  color: #9ca3af;
+}
+
+.type_intro { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
+.type_verse { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+.type_chorus { background: rgba(244, 114, 182, 0.2); color: #f472b6; }
+.type_bridge { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+.type_breakdown { background: rgba(167, 139, 250, 0.2); color: #a78bfa; }
+.type_buildup { background: rgba(251, 146, 60, 0.2); color: #fb923c; }
+.type_drop { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+.type_outro { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+.type_custom { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+
+.loopBadge {
+  font-size: 12px;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #374151;
+}
+
+.formRow {
+  display: flex;
+  gap: 12px;
+}
+
+.formRow label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.checkboxLabel {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 8px !important;
+}
+
+.checkboxLabel input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+.formRow input,
+.formRow select,
+.formRow textarea {
+  padding: 8px;
+  font-size: 13px;
+  color: #f3f4f6;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.formRow input:focus,
+.formRow select:focus,
+.formRow textarea:focus {
+  border-color: #8b5cf6;
+}
+
+.formRow textarea {
+  resize: vertical;
+  min-height: 50px;
+}
+
+/* Actions */
+.formActions,
+.selectedActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.formActions button,
+.selectedActions button {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #111827;
+  color: #9ca3af;
+}
+
+.formActions button:hover,
+.selectedActions button:hover {
+  background: #1f2937;
+  color: #f3f4f6;
+}
+
+.saveButton {
+  background: #8b5cf6 !important;
+  border-color: #8b5cf6 !important;
+  color: white !important;
+}
+
+.saveButton:hover {
+  background: #7c3aed !important;
+}
+
+.deleteButton {
+  background: #7f1d1d !important;
+  border-color: #991b1b !important;
+  color: #fca5a5 !important;
+}
+
+.deleteButton:hover {
+  background: #991b1b !important;
+  color: white !important;
+}
+
+.loopActiveButton {
+  background: rgba(139, 92, 246, 0.3) !important;
+  border-color: #8b5cf6 !important;
+  color: #a78bfa !important;
+}
+

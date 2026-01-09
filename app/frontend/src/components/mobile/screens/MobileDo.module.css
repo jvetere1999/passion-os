@@ -1,0 +1,121 @@
+.container {
+  padding: var(--space-4);
+  padding-bottom: calc(var(--space-4) + 80px);
+}
+
+.header {
+  margin-bottom: var(--space-6);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.primaryCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border-radius: var(--radius-xl);
+  text-decoration: none;
+  min-height: 88px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.primaryCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.primaryCard:active {
+  transform: scale(0.98);
+}
+
+.secondaryCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--color-text);
+  min-height: 72px;
+  transition: all var(--transition-fast);
+}
+
+.secondaryCard:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-focus);
+}
+
+.secondaryCard:active {
+  transform: scale(0.98);
+}
+
+.cardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.primaryCard .cardIcon {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+}
+
+.secondaryCard .cardIcon {
+  color: var(--color-text-secondary);
+}
+
+.cardContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.cardTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--space-1) 0;
+}
+
+.cardDescription {
+  font-size: var(--font-size-sm);
+  margin: 0;
+  opacity: 0.8;
+}
+
+.primaryCard .cardDescription {
+  color: var(--color-primary-foreground);
+}
+
+.secondaryCard .cardDescription {
+  color: var(--color-text-secondary);
+}
+
+.cardArrow {
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+

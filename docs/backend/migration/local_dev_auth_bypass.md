@@ -148,10 +148,63 @@ async fn test_bypass_disabled_by_default() {
 Before enabling bypass in any environment:
 
 - [ ] `NODE_ENV` is correctly set to `development`
+- [ ] `SERVER_ENVIRONMENT` is correctly set to `development`
 - [ ] Host check is implemented and tested
 - [ ] Hard-fail tests pass
 - [ ] No bypass code paths leak to production builds
 - [ ] Bypass flag is NOT in any production/staging .env files
+- [ ] Container deployment uses `AUTH_DEV_BYPASS=false` explicitly
+
+---
+
+## Docker Compose Integration
+
+### Local Development (infra/docker-compose.yml)
+
+```yaml
+services:
+  api:
+    environment:
+      AUTH_DEV_BYPASS: ${AUTH_DEV_BYPASS:-false}  # Default disabled
+      SERVER_ENVIRONMENT: development
+```
+
+### Enabling Bypass
+
+```bash
+# In .env file (for local dev only)
+AUTH_DEV_BYPASS=true
+SERVER_ENVIRONMENT=development
+```
+
+### Production Override
+
+Production compose files MUST explicitly set:
+
+```yaml
+services:
+  api:
+    environment:
+      AUTH_DEV_BYPASS: "false"  # Explicit, not variable
+      SERVER_ENVIRONMENT: production
+```
+
+---
+
+## Audit Trail
+
+When bypass is activated, log:
+
+```
+[SECURITY] Dev auth bypass activated for request
+  host: localhost:3000
+  path: /api/focus
+  method: GET
+  bypass_user: dev@localhost
+  timestamp: 2026-01-07T12:00:00Z
+```
+
+This log entry MUST be generated even in development to help identify bypass usage patterns.
 
 ---
 

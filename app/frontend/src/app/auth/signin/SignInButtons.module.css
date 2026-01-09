@@ -1,0 +1,74 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-md);
+  border: none;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+}
+
+/* Google Button - White with colored icon */
+.googleButton {
+  background-color: #ffffff;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.googleButton:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: #c6c6c6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.googleButton:active:not(:disabled) {
+  background-color: #f1f3f4;
+}
+
+/* Microsoft Button - White with colored icon */
+.microsoftButton {
+  background-color: #ffffff;
+  color: #3c4043;
+  border: 1px solid #dadce0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.microsoftButton:hover:not(:disabled) {
+  background-color: #f8f9fa;
+  border-color: #c6c6c6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.microsoftButton:active:not(:disabled) {
+  background-color: #f1f3f4;
+}
+
+/* Dark theme support */
+:global([data-theme="dark"]) .googleButton,
+:global([data-theme="dark"]) .microsoftButton {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+:global([data-theme="dark"]) .googleButton:hover:not(:disabled),
+:global([data-theme="dark"]) .microsoftButton:hover:not(:disabled) {
+  background-color: var(--color-bg-tertiary);
+  border-color: var(--color-border-focus);
+}
+

@@ -1,0 +1,63 @@
+/* Mobile Header Styles */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: var(--m-bg-primary);
+  padding-top: var(--safe-area-top);
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.header.scrolled {
+  background-color: var(--m-bg-secondary);
+  box-shadow: 0 1px 0 var(--m-border-primary);
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--m-header-height);
+  padding: 0 var(--m-space-4);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--m-space-2);
+  font-size: var(--m-font-lg);
+  font-weight: 600;
+  color: var(--m-text-primary);
+}
+
+.logo svg {
+  color: var(--m-accent-primary);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--m-radius-full);
+  overflow: hidden;
+  background-color: var(--m-bg-tertiary);
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar span {
+  font-size: var(--m-font-sm);
+  font-weight: 600;
+  color: var(--m-text-secondary);
+  text-transform: uppercase;
+}
+

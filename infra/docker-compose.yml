@@ -1,0 +1,217 @@
+# Ignition - Local Development Infrastructure
+#
+# This compose file provides the complete local development environment.
+# For production deployment, see deploy/README.md
+#
+# Usage:
+#   Development (all services): docker compose up -d
+#   Backend only:              docker compose up -d postgres minio api
+#   Database only:             docker compose up -d postgres
+#
+# Profiles:
+#   default: postgres, minio (dependencies only)
+#   full:    postgres, minio, api (backend included)
+#   dev:     postgres, minio, api, frontend, admin (everything)
+
+services:
+  # ============================================================================
+  # PostgreSQL Database (Required)
+  # ============================================================================
+  postgres:
+    image: postgres:17-alpine
+    container_name: ignition-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-ignition}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ignition_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-ignition}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Mount migrations for easy application
+      - ../app/database/migrations:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ignition}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ignition-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # MinIO (S3-compatible storage, simulates R2)
+  # ============================================================================
+  minio:
+    image: minio/minio:latest
+    container_name: ignition-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"   # S3 API
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"   # Console
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - ignition-network
+    restart: unless-stopped
+
+  # ============================================================================
+  # MinIO Bucket Initialization
+  # ============================================================================
+  minio-init:
+    image: minio/mc:latest
+    container_name: ignition-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 ${MINIO_ROOT_USER:-minioadmin} ${MINIO_ROOT_PASSWORD:-minioadmin};
+      mc mb local/ignition --ignore-existing;
+      mc anonymous set download local/ignition/public;
+      echo 'Bucket initialized';
+      exit 0;
+      "
+    networks:
+      - ignition-network
+
+  # ============================================================================
+  # Backend API (Rust)
+  # ============================================================================
+  api:
+    build:
+      context: ../app/backend
+      dockerfile: Dockerfile
+    image: ignition-api:${IMAGE_TAG:-latest}
+    container_name: ignition-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      # Database
+      DATABASE_URL: postgres://${POSTGRES_USER:-ignition}:${POSTGRES_PASSWORD:-ignition_dev}@postgres:5432/${POSTGRES_DB:-ignition}
+
+      # Server
+      SERVER_HOST: 0.0.0.0
+      SERVER_PORT: 8080
+      SERVER_ENVIRONMENT: ${SERVER_ENVIRONMENT:-development}
+
+      # Auth
+      AUTH_COOKIE_DOMAIN: ${AUTH_COOKIE_DOMAIN:-localhost}
+      AUTH_DEV_BYPASS: ${AUTH_DEV_BYPASS:-false}
+
+      # OAuth (from secrets in production)
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      AZURE_CLIENT_ID: ${AZURE_CLIENT_ID:-}
+      AZURE_CLIENT_SECRET: ${AZURE_CLIENT_SECRET:-}
+      AZURE_TENANT_ID: ${AZURE_TENANT_ID:-}
+
+      # CORS
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:3001}
+
+      # Storage (MinIO for local, R2 for prod)
+      STORAGE_ENDPOINT: http://minio:9000
+      STORAGE_BUCKET: ignition
+      STORAGE_ACCESS_KEY_ID: ${MINIO_ROOT_USER:-minioadmin}
+      STORAGE_SECRET_ACCESS_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
+
+      # Session
+      SESSION_SECRET: ${SESSION_SECRET:-local-dev-secret-change-in-prod}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    networks:
+      - ignition-network
+    restart: unless-stopped
+    profiles:
+      - full
+      - dev
+
+  # ============================================================================
+  # Frontend (Next.js) - Development only
+  # ============================================================================
+  frontend:
+    build:
+      context: ../app/frontend
+      dockerfile: Dockerfile.dev
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+    image: ignition-frontend:${IMAGE_TAG:-latest}
+    container_name: ignition-frontend
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    volumes:
+      # Hot reload in development
+      - ../app/frontend/src:/app/src:ro
+      - ../app/frontend/public:/app/public:ro
+    networks:
+      - ignition-network
+    profiles:
+      - dev
+
+  # ============================================================================
+  # Admin Console (Next.js) - Development only
+  # ============================================================================
+  admin:
+    build:
+      context: ../app/admin
+      dockerfile: Dockerfile.dev
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+    image: ignition-admin:${IMAGE_TAG:-latest}
+    container_name: ignition-admin
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: development
+      NEXT_PUBLIC_API_URL: http://localhost:8080
+    ports:
+      - "${ADMIN_PORT:-3001}:3000"
+    volumes:
+      # Hot reload in development
+      - ../app/admin/src:/app/src:ro
+      - ../app/admin/public:/app/public:ro
+    networks:
+      - ignition-network
+    profiles:
+      - dev
+
+# ============================================================================
+# Networks
+# ============================================================================
+networks:
+  ignition-network:
+    driver: bridge
+    name: ignition-network
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  postgres_data:
+    name: ignition-postgres-data
+  minio_data:
+    name: ignition-minio-data
+

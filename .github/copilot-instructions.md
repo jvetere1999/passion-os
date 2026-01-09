@@ -1,6 +1,6 @@
 ASSUME WE ARE ALWAYS ON BRANCH refactor/stack-split
 LIMIT VALIDATION CALLS TO THE FINAL CALL ALL FILE EDITS SHOULD HAPPEN BEFORE TERMINAL COMMANDS FOR EFFIECNY
-IN ADDITON EVERY PHASE IS FOLLOWED BY A GAP ANALYSIS AND VALIDATION STEP LIMIT THOSE INSIDE OF NON GAP AND VALIDATION PROMPTS
+IN ADDITION EVERY PHASE IS FOLLOWED BY A GAP ANALYSIS AND VALIDATION STEP LIMIT THOSE INSIDE OF NON GAP AND VALIDATION PROMPTS
 []:
 # Copilot Instructions - Ignition (Stack Split / Backend-First) v3
 
@@ -176,4 +176,60 @@ All tracking files live under: `docs/backend/migration/`
   - bypass is rejected when `ENV=production` (or equivalent)
   - bypass is rejected when host is not localhost
 - No "temporary" exceptions without explicit owner approval in exceptions.md.
+
+---
+
+## Architecture Quick Reference
+
+### Stack
+- **Backend:** Rust (Axum + Tower) at `app/backend/crates/api/`
+- **Frontend:** Next.js at `app/frontend/`
+- **Admin:** Separate Next.js app at `app/admin/`
+- **Database:** PostgreSQL, migrations at `app/database/migrations/`
+- **Storage:** R2 via backend only
+
+### SQLx Pattern (CRITICAL - no compile-time macros)
+Always use runtime query binding, NOT compile-time macros:
+```rust
+// ✅ CORRECT - runtime binding
+sqlx::query_as::<_, MyType>("SELECT * FROM table WHERE id = $1")
+    .bind(id)
+    .fetch_one(pool)
+    .await
+
+// ❌ WRONG - compile-time macro (no DATABASE_URL at build)
+sqlx::query_as!(MyType, "SELECT * FROM table WHERE id = $1", id)
+```
+
+### Frontend API Client Pattern
+All API clients in `app/frontend/src/lib/api/` follow this structure:
+```typescript
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online';
+
+async function apiGet<T>(path: string): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: 'GET',
+    credentials: 'include',  // Required for cookie auth
+    headers: { 'Content-Type': 'application/json' },
+  });
+  if (!response.ok) throw new Error(`API error: ${response.status}`);
+  return response.json() as Promise<T>;
+}
+```
+
+### Backend Route Pattern
+Routes in `app/backend/crates/api/src/routes/`:
+- Models in `db/<feature>_models.rs`
+- Repos in `db/<feature>_repos.rs`
+- Handlers in `routes/<feature>.rs`
+- Wire in `routes/api.rs` via `.nest("/feature", feature::router())`
+
+### Test Pattern (Playwright)
+E2E tests in `tests/*.spec.ts`:
+```typescript
+test("API returns valid response", async ({ request }) => {
+  const response = await request.get("/api/endpoint");
+  expect([200, 401]).toContain(response.status()); // 401 = not authed
+});
+```
 

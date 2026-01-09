@@ -1,0 +1,63 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0a0a"/>
+      <stop offset="50%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#0d0d0d"/>
+    </linearGradient>
+    <linearGradient id="flameGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#8B0000"/>
+      <stop offset="50%" stop-color="#DC143C"/>
+      <stop offset="100%" stop-color="#FF6B6B"/>
+    </linearGradient>
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#DC143C"/>
+      <stop offset="100%" stop-color="#FF6B6B"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
+
+  <!-- Decorative glow circles -->
+  <circle cx="600" cy="315" r="300" fill="#DC143C" opacity="0.03"/>
+  <circle cx="600" cy="315" r="200" fill="#DC143C" opacity="0.05"/>
+
+  <!-- Three flame prongs - large centered -->
+  <g transform="translate(480, 80)" filter="url(#glow)">
+    <path d="M40 200 Q60 140 80 100 Q100 40 70 0 Q120 30 100 100 Q85 150 100 200 Z" fill="url(#flameGradient)"/>
+    <path d="M100 200 Q130 120 150 70 Q175 10 150 -20 Q200 20 175 80 Q150 150 175 200 Z" fill="url(#flameGradient)"/>
+    <path d="M175 200 Q200 140 220 90 Q245 30 215 -10 Q270 40 250 110 Q225 165 250 200 Z" fill="url(#flameGradient)"/>
+  </g>
+
+  <!-- Main title -->
+  <text x="600" y="360" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-size="84" font-weight="700" fill="url(#textGradient)" letter-spacing="-2">
+    IGNITION
+  </text>
+
+  <!-- Tagline -->
+  <text x="600" y="420" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="32" font-weight="400" fill="#ffffff" opacity="0.9">
+    Start Without Friction
+  </text>
+
+  <!-- Subtitle -->
+  <text x="600" y="480" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#888888">
+    A starter engine for focus, movement, and learning
+  </text>
+
+  <!-- Bottom accent bar -->
+  <rect x="0" y="610" width="1200" height="20" fill="url(#flameGradient)" opacity="0.8"/>
+
+  <!-- Domain -->
+  <text x="600" y="560" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="#555555">
+    ignition.ecent.online
+  </text>
+</svg>
+

@@ -1,0 +1,167 @@
+/* Visualizer Component Styles */
+
+.visualizer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-primary);
+}
+
+.svg {
+  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-md);
+}
+
+.gridLine {
+  stroke: var(--color-border-primary);
+  stroke-width: 1;
+  stroke-dasharray: 2 4;
+}
+
+.envelopePath {
+  fill: none;
+  stroke: var(--color-accent-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.filterPath {
+  fill: rgba(var(--color-accent-primary-rgb), 0.2);
+  stroke: var(--color-accent-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.cutoffLine {
+  stroke: var(--color-accent-secondary, #8b5cf6);
+  stroke-width: 1;
+  stroke-dasharray: 4 2;
+}
+
+.label {
+  fill: var(--color-text-muted);
+  font-size: 10px;
+  font-family: var(--font-family-mono, monospace);
+}
+
+/* Controls */
+.controls {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .controls {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.control {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+}
+
+.control label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+}
+
+.control input[type="range"] {
+  width: 100%;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-tertiary);
+  accent-color: var(--color-accent-primary);
+  cursor: pointer;
+}
+
+.control span {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono, monospace);
+}
+
+/* Filter info */
+.filterInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+}
+
+.filterType {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  color: var(--color-accent-primary);
+}
+
+.filterParams {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-family: var(--font-family-mono, monospace);
+}
+
+/* LFO specific */
+.lfoShape {
+  fill: none;
+  stroke: var(--color-accent-primary);
+  stroke-width: 2;
+}
+
+.lfoInfo {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Wavetable specific */
+.wavetablePath {
+  fill: none;
+  stroke: var(--color-accent-primary);
+  stroke-width: 1.5;
+}
+
+.wavetableFrame {
+  fill: rgba(var(--color-accent-primary-rgb), 0.1);
+  stroke: var(--color-accent-primary);
+  stroke-width: 2;
+}
+
+.positionIndicator {
+  stroke: var(--color-accent-secondary, #22d3ee);
+  stroke-width: 2;
+}
+
+/* Unison specific */
+.unisonVoice {
+  fill: none;
+  stroke: var(--color-accent-primary);
+  stroke-width: 1.5;
+  opacity: 0.6;
+}
+
+.unisonVoice.center {
+  stroke-width: 2;
+  opacity: 1;
+}
+
+.unisonInfo {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}
+

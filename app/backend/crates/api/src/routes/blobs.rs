@@ -29,13 +29,13 @@ pub fn router() -> Router<Arc<AppState>> {
         // Signed URL for direct uploads (frontend uploads directly to R2)
         .route("/upload-url", post(get_upload_url))
         // Get blob by ID
-        .route("/:id", get(get_blob))
+        .route("/{id}", get(get_blob))
         // Get blob info (HEAD-like)
-        .route("/:id/info", get(get_blob_info))
+        .route("/{id}/info", get(get_blob_info))
         // Delete blob
-        .route("/:id", delete(delete_blob))
+        .route("/{id}", delete(delete_blob))
         // Get signed download URL
-        .route("/:id/download-url", get(get_download_url))
+        .route("/{id}/download-url", get(get_download_url))
         // List user's blobs
         .route("/", get(list_blobs))
         // Get storage usage
@@ -212,7 +212,7 @@ async fn get_download_url(
         .ok_or_else(|| AppError::Config("Storage not configured".to_string()))?;
 
     let result = storage
-        .generate_signed_download_url(&auth.user_id, &id)
+        .generate_signed_download_url_for_blob(&auth.user_id, &id)
         .await?;
 
     match result {

@@ -1,7 +1,26 @@
 //! Route modules
 
 pub mod admin;
+pub mod admin_templates;
 pub mod api;
 pub mod auth;
 pub mod blobs;
+pub mod books;
+pub mod calendar;
+pub mod daily_plan;
+pub mod exercise;
+pub mod feedback;
+pub mod focus;
+pub mod frames;
+pub mod gamification;
+pub mod goals;
+pub mod habits;
 pub mod health;
+pub mod ideas;
+pub mod infobase;
+pub mod learn;
+pub mod market;
+pub mod onboarding;
+pub mod quests;
+pub mod reference;
+pub mod user;

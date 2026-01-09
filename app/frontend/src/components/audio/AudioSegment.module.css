@@ -1,0 +1,417 @@
+/**
+ * AudioSegment Styles
+ *
+ * Apple-like frosted glass aesthetic with cinema-mode focus.
+ * Responsive design for desktop and mobile.
+ */
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  background: var(--color-bg-primary, #0a0a0a);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.container.fullscreen {
+  border-radius: 0;
+  min-height: 100vh;
+}
+
+/* Shake wrapper - receives bass-reactive transforms */
+.shakeWrapper {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  transition: transform 0.05s ease-out;
+}
+
+/* Visual container - visualizers render here */
+.visualContainer {
+  position: absolute;
+  inset: 0;
+  background: #000;
+}
+
+/* Metadata overlay - frosted glass effect */
+.metadataOverlay {
+  position: absolute;
+  top: var(--space-4, 16px);
+  left: var(--space-4, 16px);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding: var(--space-3, 12px);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 10;
+  max-width: 300px;
+}
+
+.artwork {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md, 8px);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.trackInfo {
+  overflow: hidden;
+}
+
+.trackTitle {
+  font-size: var(--font-size-base, 14px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackArtist {
+  font-size: var(--font-size-sm, 12px);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mode indicator */
+.modeIndicator {
+  position: absolute;
+  top: var(--space-4, 16px);
+  right: var(--space-4, 16px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-1, 4px);
+  z-index: 10;
+}
+
+.modeName {
+  font-size: var(--font-size-xs, 11px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-sm, 4px);
+}
+
+.presetName {
+  font-size: var(--font-size-xs, 11px);
+  color: var(--color-text-muted, rgba(255, 255, 255, 0.5));
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-sm, 4px);
+}
+
+/* Controls bar - frosted glass */
+.controlsBar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  padding: var(--space-4, 16px);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 20;
+}
+
+.controlButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: var(--radius-full, 50%);
+  color: var(--color-text-primary, #fff);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+  flex-shrink: 0;
+}
+
+.controlButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.controlButton:active {
+  transform: scale(0.95);
+}
+
+.controlButton.active {
+  background: var(--color-accent-primary, #ff5722);
+  color: var(--color-text-inverse, #000);
+}
+
+.icon {
+  width: 18px;
+  height: 18px;
+}
+
+.timeDisplay {
+  font-size: var(--font-size-sm, 12px);
+  font-family: ui-monospace, monospace;
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  min-width: 90px;
+  flex-shrink: 0;
+}
+
+/* Sliders */
+.seekSlider,
+.volumeSlider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.seekSlider {
+  flex: 1;
+  min-width: 100px;
+}
+
+.volumeSlider {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.seekSlider::-webkit-slider-thumb,
+.volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--color-text-primary, #fff);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.seekSlider::-webkit-slider-thumb:hover,
+.volumeSlider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.seekSlider::-moz-range-thumb,
+.volumeSlider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--color-text-primary, #fff);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* Mode selector */
+.modeSelector {
+  display: flex;
+  gap: var(--space-1, 4px);
+  padding: var(--space-1, 4px);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-md, 8px);
+}
+
+.modeButton {
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  font-size: var(--font-size-xs, 11px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm, 4px);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.modeButton:hover {
+  color: var(--color-text-primary, #fff);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modeButton.active {
+  color: var(--color-text-inverse, #000);
+  background: var(--color-accent-primary, #ff5722);
+}
+
+/* Help overlay */
+.helpOverlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+.helpContent {
+  padding: var(--space-6, 24px);
+  background: rgba(30, 30, 30, 0.95);
+  border-radius: var(--radius-lg, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 400px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.helpContent h3 {
+  margin: 0 0 var(--space-4, 16px);
+  font-size: var(--font-size-lg, 18px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #fff);
+}
+
+.shortcutList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.shortcut {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3, 12px);
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-secondary, rgba(255, 255, 255, 0.7));
+}
+
+.shortcut kbd {
+  display: inline-block;
+  min-width: 24px;
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  font-family: ui-monospace, monospace;
+  font-size: var(--font-size-xs, 11px);
+  color: var(--color-text-primary, #fff);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-sm, 4px);
+  text-align: center;
+}
+
+.reducedMotionNote {
+  margin-top: var(--space-4, 16px);
+  padding: var(--space-3, 12px);
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-warning, #ffc107);
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: var(--radius-md, 8px);
+}
+
+.closeHelp {
+  display: block;
+  width: 100%;
+  margin-top: var(--space-4, 16px);
+  padding: var(--space-3, 12px);
+  font-size: var(--font-size-base, 14px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-inverse, #000);
+  background: var(--color-accent-primary, #ff5722);
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.closeHelp:hover {
+  background: var(--color-accent-primary-hover, #e64a19);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .metadataOverlay {
+    top: var(--space-2, 8px);
+    left: var(--space-2, 8px);
+    padding: var(--space-2, 8px);
+    max-width: 200px;
+  }
+
+  .artwork {
+    width: 40px;
+    height: 40px;
+  }
+
+  .trackTitle {
+    font-size: var(--font-size-sm, 12px);
+  }
+
+  .trackArtist {
+    font-size: var(--font-size-xs, 11px);
+  }
+
+  .controlsBar {
+    gap: var(--space-2, 8px);
+    padding: var(--space-2, 8px);
+    flex-wrap: wrap;
+  }
+
+  .timeDisplay {
+    order: 10;
+    width: 100%;
+    text-align: center;
+    margin-top: var(--space-1, 4px);
+  }
+
+  .seekSlider {
+    order: 9;
+    width: 100%;
+    margin-top: var(--space-1, 4px);
+  }
+
+  .volumeSlider {
+    width: 60px;
+  }
+
+  .modeSelector {
+    order: 8;
+    width: 100%;
+    justify-content: center;
+    margin-top: var(--space-1, 4px);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    min-height: 250px;
+  }
+
+  .modeIndicator {
+    display: none;
+  }
+
+  .controlButton {
+    width: 32px;
+    height: 32px;
+  }
+
+  .icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+

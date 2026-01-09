@@ -1,0 +1,304 @@
+/**
+ * Mobile Today Styles
+ * Optimized for touch with 44x44 minimum targets
+ */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom, 0px));
+}
+
+/* Greeting */
+.greeting {
+  padding: var(--space-2) 0;
+}
+
+.greetingTitle {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.greetingDate {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: var(--space-1) 0 0;
+}
+
+/* Reduced Mode Banner */
+.reducedBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--color-accent-primary);
+}
+
+.reducedText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.reducedDismiss {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent-primary);
+  background: transparent;
+  border: 1px solid var(--color-accent-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Starter Section */
+.starterSection {
+  margin: var(--space-2) 0;
+}
+
+.starterCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--color-accent-primary) 0%, var(--color-accent-primary-hover) 100%);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-xl);
+  text-decoration: none;
+  min-height: 88px;
+  transition: transform var(--transition-fast);
+}
+
+.starterCard:hover {
+  transform: scale(1.02);
+  text-decoration: none;
+}
+
+.starterCard:active {
+  transform: scale(0.98);
+}
+
+.starterContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.starterLabel {
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.9;
+}
+
+.starterTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.starterArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+}
+
+/* Sections */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Quick Picks */
+.quickPicks {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.quickPickCard {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  min-height: 56px;
+  transition: background-color var(--transition-fast);
+}
+
+.quickPickCard:hover {
+  background-color: var(--color-bg-tertiary);
+  text-decoration: none;
+}
+
+.quickPickLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* Plan Section */
+.planHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border: none;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  min-height: 56px;
+}
+
+.planHeaderContent {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.planProgress {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent-primary);
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-md);
+}
+
+.chevronUp {
+  transform: rotate(180deg);
+  transition: transform var(--transition-fast);
+}
+
+.chevronDown {
+  transition: transform var(--transition-fast);
+}
+
+.planContent {
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-2);
+}
+
+.planNext {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3);
+}
+
+.planComplete {
+  font-size: var(--font-size-sm);
+  color: var(--color-success);
+  margin: 0 0 var(--space-3);
+}
+
+.planLink {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-accent-primary);
+  text-decoration: none;
+  padding: var(--space-2) 0;
+  min-height: 44px;
+}
+
+.planLink:hover {
+  text-decoration: underline;
+}
+
+/* Action Grid */
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.actionCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  min-height: 88px;
+  transition: all var(--transition-fast);
+}
+
+.actionCard:hover {
+  background-color: var(--color-bg-tertiary);
+  text-decoration: none;
+}
+
+.actionCard:active {
+  transform: scale(0.98);
+}
+
+.actionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  color: var(--color-accent-primary);
+}
+
+.actionLabel {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+/* Minimal Actions (Reduced Mode) */
+.minimalActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.minimalAction {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  text-decoration: none;
+  min-height: 56px;
+  transition: background-color var(--transition-fast);
+}
+
+.minimalAction:hover {
+  background-color: var(--color-bg-tertiary);
+  text-decoration: none;
+}
+

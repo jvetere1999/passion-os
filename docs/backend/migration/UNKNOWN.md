@@ -72,19 +72,41 @@
 
 ---
 
-### UNKNOWN-011: E2E Test Coverage
+### UNKNOWN-009: Backend Warnings Baseline
 
 | Field | Value |
 |-------|-------|
-| **UNKNOWN** | What is the current E2E test coverage? Which critical paths are untested? |
-| **Impact** | May miss regressions during migration |
-| **Needed** | Run coverage analysis on `tests/*.spec.ts` |
-| **Can defer** | Yes - can add tests incrementally |
-| **Status** | Open - deferred to later phase |
+| **UNKNOWN** | What is the acceptable baseline for Rust backend warnings? |
+| **Impact** | Cannot enforce no-regression policy for backend |
+| **Needed** | Owner decision on 206 current warnings |
+| **Can defer** | No - blocks Phase 24 (Legacy Deprecation) |
+| **Status** | **Pending** → Add to DECISIONS_REQUIRED.md |
+
+**Context:** Backend has 206 warnings (mostly unused imports from route scaffolding). Need owner decision:
+- A: Accept 206 as baseline, fix later
+- B: Fix all before deprecation
+- C: Fix unused imports only (~150), accept rest as baseline
+
+---
+
 
 ---
 
 ## Resolved Unknowns
+
+### UNKNOWN-011: E2E Test Coverage ✓
+
+| Field | Value |
+|-------|-------|
+| **Resolution** | Coverage map and prioritized test backlog created |
+| **Evidence** | [E2E_COVERAGE_MAP_POST20G.md](./E2E_COVERAGE_MAP_POST20G.md), [TEST_BACKLOG_POST20G.md](./TEST_BACKLOG_POST20G.md) |
+| **Details** | 20 test files, ~95 test cases, 18/71 parity IDs covered (25%), 6/12 critical journeys covered (50%). 51 tests backlogged with priorities P0-P4. |
+| **Resolved Date** | January 7, 2026 |
+| **Follow-up** | Execute P0 security tests before production; P2+ tests blocked on backend feature extraction |
+
+See: [E2E_COVERAGE_MAP_POST20G.md](./E2E_COVERAGE_MAP_POST20G.md) for full coverage map
+
+---
 
 ### UNKNOWN-001: Session Token Format and Migration Path ✓
 

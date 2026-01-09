@@ -1,0 +1,336 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.header {
+  margin-bottom: 0.5rem;
+}
+
+.headerTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  margin: 0.25rem 0 0;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  color: var(--color-text-muted);
+}
+
+/* Wallet Display */
+.walletDisplay {
+  display: flex;
+  gap: 1rem;
+}
+
+.walletItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+}
+
+.coinIcon {
+  color: #ffd700;
+  font-size: 1.25rem;
+}
+
+.xpIcon {
+  color: var(--accent-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.walletValue {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--color-border-default);
+  padding-bottom: 0.5rem;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tab:hover {
+  background: var(--color-bg-secondary);
+}
+
+.tab.active {
+  color: var(--accent-primary);
+  background: var(--accent-primary)15;
+}
+
+/* Quest List */
+.questList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.emptyState {
+  padding: 3rem;
+  text-align: center;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  color: var(--color-text-muted);
+}
+
+.refreshButton {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #fff;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.refreshButton:hover {
+  opacity: 0.9;
+}
+
+/* Quest Card */
+.questCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  border-left: 4px solid var(--accent-primary);
+  transition: all 0.2s ease;
+}
+
+.questCard:hover {
+  transform: translateX(4px);
+}
+
+.questCard.completed {
+  border-left-color: var(--accent-success, #4caf50);
+  opacity: 0.65;
+  background-color: var(--color-bg-tertiary);
+}
+
+.questCard.completed .questTitle {
+  text-decoration: line-through;
+  color: var(--color-text-secondary);
+}
+
+.questCard.completed .questTitle::before {
+  content: "- ";
+  color: var(--accent-success, #4caf50);
+}
+
+.questInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.questTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 0.25rem;
+}
+
+.questDescription {
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 0.75rem;
+}
+
+.questProgress {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 6px;
+  background: var(--color-bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 150px;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent-primary);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.progressText {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+/* Rewards */
+.questRewards {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.reward {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+.rewardIcon {
+  color: #ffd700;
+}
+
+.reward:last-of-type .rewardIcon {
+  color: var(--accent-primary);
+  font-size: 0.625rem;
+  font-weight: 700;
+}
+
+.progressButton {
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.progressButton:hover {
+  opacity: 0.9;
+}
+
+/* Add Quest Button */
+.addQuestButton {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.addQuestButton:hover {
+  opacity: 0.9;
+}
+
+/* Add Form */
+.addForm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--color-border-default);
+}
+
+.formInput,
+.formSelect {
+  padding: 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--color-text-primary);
+  background: var(--color-bg-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: 6px;
+}
+
+.formRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.formGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.formLabel {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.submitButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.submitButton:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 640px) {
+  .questCard {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .questRewards {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .formRow {
+    flex-direction: column;
+  }
+}
+

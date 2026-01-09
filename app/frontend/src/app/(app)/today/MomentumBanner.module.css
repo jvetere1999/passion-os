@@ -1,0 +1,46 @@
+/**
+ * MomentumBanner Styles
+ * Minimal, non-intrusive inline banner
+ */
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface-secondary);
+  border-left: 3px solid var(--color-text-secondary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-3);
+}
+
+.message {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.dismissButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-1);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.dismissButton:hover {
+  color: var(--color-text-secondary);
+}
+
+.dismissButton:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+

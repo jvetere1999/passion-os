@@ -1,5 +1,5 @@
 # Build stage
-FROM rust:1.83-slim-bookworm AS builder
+FROM rust:1.88-slim-bookworm AS builder
 
 WORKDIR /app
 
@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y \
 COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
 
-# Build release binary
+# Build release binary with reduced parallelism to avoid OOM
+ENV CARGO_BUILD_JOBS=2
 RUN cargo build --release --package ignition-api
 
 # Runtime stage

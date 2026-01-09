@@ -1,0 +1,10 @@
+<svg viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Split bar flame icon -->
+  <g fill="currentColor">
+    <path d="M4 22 L4 10 Q4 5 7 2 L7 22 Z"/>
+    <path d="M8.5 22 L8.5 4 Q10 1 11.5 4 L11.5 22 Z"/>
+    <path d="M13 22 L13 2 Q16 5 16 10 L16 22 Z"/>
+  </g>
+  <!-- Text: IGNITION -->
+  <text x="24" y="17" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="currentColor">IGNITION</text>
+</svg>

@@ -1,0 +1,172 @@
+/**
+ * Focus Indicator Styles
+ */
+
+.indicator {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary, #1a1a1c);
+  border-top: 1px solid var(--border-color, #333);
+  z-index: 998;
+  transition: transform 0.2s ease, bottom 0.2s ease;
+}
+
+.indicator.minimized {
+  left: auto;
+  right: 16px;
+  width: auto;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid var(--border-color, #333);
+  border-bottom: none;
+  cursor: pointer;
+}
+
+.indicator.minimized:hover {
+  background: var(--bg-tertiary, #222);
+}
+
+.minimizedContent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+.progressBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--bg-tertiary, #333);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--mode-color, var(--accent-primary, #ff764d));
+  transition: width 0.3s linear;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  gap: 16px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modeLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mode-color, var(--accent-primary));
+  padding: 4px 8px;
+  background: var(--mode-color, var(--accent-primary))15;
+  border-radius: 4px;
+}
+
+.timer {
+  font-size: 1.25rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary, #fff);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.viewButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--text-primary, #fff);
+  background: var(--bg-tertiary, #333);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.viewButton:hover {
+  background: var(--surface-hover, #444);
+}
+
+.abandonButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #666);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.abandonButton:hover {
+  background: var(--accent-error, #ff5252)20;
+  color: var(--accent-error, #ff5252);
+}
+
+.minimizeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #666);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.minimizeButton:hover {
+  background: var(--bg-tertiary, #333);
+  color: var(--text-primary, #fff);
+}
+
+.pausedBadge {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent-warning, #ffc107);
+  padding: 2px 6px;
+  background: var(--accent-warning, #ffc107)20;
+  border-radius: 4px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .content {
+    padding: 8px 12px;
+  }
+
+  .timer {
+    font-size: 1rem;
+  }
+
+  .modeLabel {
+    font-size: 0.625rem;
+  }
+}
+

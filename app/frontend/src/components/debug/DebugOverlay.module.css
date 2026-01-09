@@ -1,0 +1,110 @@
+.overlay {
+  position: fixed;
+  bottom: var(--space-4);
+  right: var(--space-4);
+  z-index: 9999;
+  font-family: var(--font-mono, monospace);
+  font-size: var(--font-size-xs);
+}
+
+.toggle {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+  transition: all var(--transition-fast);
+}
+
+.toggle:hover {
+  background: var(--color-bg-secondary);
+  color: var(--color-text);
+}
+
+.panel {
+  position: absolute;
+  bottom: calc(100% + var(--space-2));
+  right: 0;
+  width: 320px;
+  max-height: 70vh;
+  overflow-y: auto;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  padding: var(--space-4);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin: 0 0 var(--space-3) 0;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.section {
+  margin-bottom: var(--space-4);
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-2) 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-1) 0;
+}
+
+.label {
+  color: var(--color-text-secondary);
+}
+
+.value {
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+}
+
+.value.true {
+  color: var(--color-success, #22c55e);
+}
+
+.value.false {
+  color: var(--color-text-tertiary);
+}
+
+.subSection {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-1) 0;
+  border-top: 1px dashed var(--color-border);
+  margin-top: var(--space-1);
+}
+
+/* Hide in production for safety */
+@media print {
+  .overlay {
+    display: none;
+  }
+}
+

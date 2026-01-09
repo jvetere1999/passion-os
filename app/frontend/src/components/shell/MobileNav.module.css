@@ -1,0 +1,89 @@
+/**
+ * MobileNav Styles
+ * Bottom tab bar for mobile devices
+ * Hidden on desktop (>= 768px)
+ */
+
+.mobileNav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--mobile-nav-height, 64px);
+  background-color: var(--color-bg-elevated);
+  border-top: 1px solid var(--color-border-primary);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+  z-index: var(--z-fixed);
+}
+
+/* Show on mobile only */
+@media (max-width: 767px) {
+  .mobileNav {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+  }
+}
+
+.navItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  flex: 1;
+  height: 100%;
+  padding: var(--space-2);
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+
+  /* Minimum touch target 44x44 */
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.navItem:hover {
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.navItem.active {
+  color: var(--color-accent-primary);
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.navLabel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+}
+
+/* Active indicator */
+.navItem.active .navIcon {
+  position: relative;
+}
+
+.navItem.active .navIcon::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent-primary);
+}
+

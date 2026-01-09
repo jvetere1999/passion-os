@@ -1,0 +1,575 @@
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--color-bg-secondary);
+  border-top: 1px solid var(--color-border-primary);
+  height: 90px;
+}
+
+@media (min-width: 1024px) {
+  .bottomBar {
+    left: var(--sidebar-width);
+  }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  height: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Focus Section */
+.focusSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
+.focusDialButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform var(--transition-fast);
+}
+
+.focusDialButton:hover {
+  transform: scale(1.05);
+}
+
+.circularTimer {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circularSvg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.progressCircle {
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.focusModeIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent-primary);
+  z-index: 1;
+}
+
+.focusInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.focusMode {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.pausedBadge {
+  font-size: var(--font-size-xs);
+  color: var(--color-warning);
+}
+
+.dismissBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.dismissBtn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+/* Separator */
+.separator {
+  width: 1px;
+  height: 48px;
+  background: var(--color-border-primary);
+  flex-shrink: 0;
+}
+
+/* Player Section */
+.playerSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.waveformWrapper {
+  width: 100%;
+  height: 32px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.waveformTrack {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-tertiary);
+}
+
+.waveformProgress {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--color-accent-primary);
+  opacity: 0.2;
+  transition: width 0.1s linear;
+}
+
+.waveformBars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.waveformBar {
+  width: 2px;
+  background: var(--color-text-muted);
+  border-radius: 1px;
+  opacity: 0.4;
+  transition: opacity var(--transition-fast);
+}
+
+.waveformBar.played {
+  background: var(--color-accent-primary);
+  opacity: 1;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.trackInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  max-width: 160px;
+  flex-shrink: 0;
+}
+
+.trackTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackArtist {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.playbackControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.controlBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.controlBtn:hover {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.controlBtn.active {
+  color: var(--color-accent-primary);
+  background: var(--color-accent-primary);
+  background: rgba(255, 183, 3, 0.15);
+}
+
+.playBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-accent-primary);
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.playBtn:hover {
+  background: var(--color-accent-primary-hover);
+  transform: scale(1.05);
+}
+
+.playBtn:active {
+  transform: scale(0.95);
+}
+
+.timeDisplay {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.timeSep {
+  opacity: 0.5;
+}
+
+.secondaryControls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-left: auto;
+}
+
+.volumeControl {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+}
+
+.volumeSlider {
+  width: 70px;
+  height: 4px;
+  appearance: none;
+  background: var(--color-border-primary);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.volumeSlider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--color-accent-primary);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.volumeSlider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--color-accent-primary);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.closeBtn:hover {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+
+/* Popup Overlay */
+.popupOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  backdrop-filter: blur(4px);
+}
+
+/* Focus Popup */
+.focusPopup {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  width: 320px;
+  max-width: 90vw;
+}
+
+.focusPopupHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+}
+
+.focusPopupHeader h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.focusPopupContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.bigCircularTimer {
+  position: relative;
+  width: 180px;
+  height: 180px;
+}
+
+.bigCircularTimer svg {
+  width: 100%;
+  height: 100%;
+}
+
+.bigTimerText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.pausedText {
+  font-size: var(--font-size-sm);
+  color: var(--color-warning);
+  margin: 0;
+}
+
+.openFocusLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-accent-primary);
+  color: var(--color-text-inverse);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: background var(--transition-fast);
+}
+
+.openFocusLink:hover {
+  background: var(--color-accent-primary-hover);
+}
+
+/* Visualizer Popup */
+.visualizerPopup {
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-xl);
+  width: 800px;
+  max-width: 95vw;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+}
+
+.visualizerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: rgba(20, 20, 20, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.visualizerTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.visualizerCanvas {
+  width: 100%;
+  height: 500px;
+  display: block;
+  background: #000;
+}
+
+/* Analysis Popup */
+.analysisPopup {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-xl);
+  width: 400px;
+  max-width: 95vw;
+  overflow: hidden;
+}
+
+.analysisHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.analysisTitle {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.analysisArtist {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: var(--space-1) 0 0;
+}
+
+.analysisContent {
+  padding: var(--space-4);
+}
+
+.analysisLoading,
+.analysisEmpty {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--space-6) 0;
+  margin: 0;
+}
+
+.analysisGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-4);
+}
+
+.analysisStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background: var(--color-bg-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.statLabel {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statValue {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent-primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .content {
+    gap: var(--space-2);
+    padding: var(--space-2);
+  }
+
+  .trackInfo {
+    max-width: 100px;
+  }
+
+  .volumeControl {
+    display: none;
+  }
+
+  .timeDisplay {
+    display: none;
+  }
+
+  .waveformWrapper {
+    height: 24px;
+  }
+
+  .visualizerCanvas {
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .focusInfo {
+    display: none;
+  }
+
+  .secondaryControls {
+    gap: 0;
+  }
+
+  .controlBtn {
+    width: 24px;
+    height: 24px;
+  }
+}

@@ -1,0 +1,69 @@
+# Ignition API - Cloudflare Containers Configuration
+# Backend Rust API running as a Container behind Workers
+#
+# Deploy: cd deploy/cloudflare-containers && npx wrangler deploy
+
+name = "ignition-api"
+compatibility_date = "2025-01-02"
+compatibility_flags = ["nodejs_compat"]
+main = "src/index.ts"
+
+# Container configuration
+[[containers]]
+class_name = "ApiContainer"
+image = "../../app/backend/Dockerfile"
+max_instances = 5
+instance_type = "standard-1"  # 1 vCPU, 2GB RAM
+
+# Durable Object for container management
+[durable_objects]
+bindings = [
+  { name = "API_CONTAINER", class_name = "ApiContainer" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["ApiContainer"]
+
+# R2 Bucket binding for storage
+[[r2_buckets]]
+binding = "BLOBS"
+bucket_name = "ignition-blobs"
+
+# Environment variables
+[vars]
+NODE_ENV = "production"
+API_URL = "https://api.ecent.online"
+
+# Custom domain routing
+[[routes]]
+pattern = "api.ecent.online/*"
+zone_name = "ecent.online"
+
+[[routes]]
+pattern = "ignition.ecent.dev/*"
+zone_name = "ecent.dev"
+
+# Observability
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+persist = true
+
+# ============================================
+# SECRETS - Set via: wrangler secret put <NAME>
+# ============================================
+# Required:
+#   wrangler secret put SESSION_SECRET
+#   wrangler secret put GOOGLE_CLIENT_ID
+#   wrangler secret put GOOGLE_CLIENT_SECRET
+#   wrangler secret put AZURE_CLIENT_ID
+#   wrangler secret put AZURE_CLIENT_SECRET
+#   wrangler secret put AZURE_TENANT_ID
+#   wrangler secret put DATABASE_URL
+#   wrangler secret put STORAGE_ENDPOINT
+#   wrangler secret put STORAGE_ACCESS_KEY_ID
+#   wrangler secret put STORAGE_SECRET_ACCESS_KEY

@@ -1,0 +1,58 @@
+/* Mobile Tab Bar Styles */
+
+.tabBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background-color: var(--m-bg-secondary);
+  border-top: 1px solid var(--m-border-primary);
+  padding-bottom: var(--safe-area-bottom);
+}
+
+.tabs {
+  display: flex;
+  height: var(--m-tab-bar-height);
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  color: var(--m-text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+  min-height: var(--m-touch-target);
+}
+
+.tab:active {
+  opacity: 0.7;
+}
+
+.tab.active {
+  color: var(--m-accent-primary);
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+
+.icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.label {
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+

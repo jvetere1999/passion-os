@@ -1,0 +1,6 @@
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Split bar flame mono - 3 vertical bars forming a flame shape -->
+  <path d="M6 22 L6 10 Q6 5 9 2 L9 22 Z" fill="currentColor"/>
+  <path d="M10.5 22 L10.5 4 Q12 1 13.5 4 L13.5 22 Z" fill="currentColor"/>
+  <path d="M15 22 L15 2 Q18 5 18 10 L18 22 Z" fill="currentColor"/>
+</svg>

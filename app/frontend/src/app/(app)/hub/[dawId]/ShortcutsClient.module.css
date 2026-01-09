@@ -1,0 +1,538 @@
+/**
+ * Shortcuts Client Styles
+ * Enhanced styling for keyboard shortcuts browser
+ */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* Header */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--color-accent-primary);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.dawIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-lg);
+  color: white;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.version {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: var(--space-1) 0 0;
+}
+
+.subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Controls Bar */
+.controlsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.osToggle,
+.viewToggle {
+  display: flex;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-md);
+  padding: 3px;
+  gap: 2px;
+}
+
+.osButton,
+.viewButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viewButton {
+  padding: var(--space-2);
+}
+
+.osButton:hover,
+.viewButton:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-tertiary);
+}
+
+.osButton.active,
+.viewButton.active {
+  color: #fff;
+  background: var(--color-accent-primary);
+}
+
+/* Filters Bar */
+.filtersBar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.searchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: var(--space-3) var(--space-4) var(--space-3) var(--space-10);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+  background-color: var(--color-bg-primary);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-muted);
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.filterSelect {
+  padding: var(--space-2) var(--space-8) var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 24 24'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.filterSelect:focus {
+  outline: none;
+  border-color: var(--color-border-focus);
+}
+
+.clearButton {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.clearButton:hover {
+  color: var(--color-text-primary);
+  border-color: var(--color-text-muted);
+}
+
+/* Categories */
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.category {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--color-border-primary);
+}
+
+.categoryHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-4);
+  background-color: var(--color-bg-tertiary);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.categoryHeader:hover {
+  background-color: var(--color-bg-quaternary, var(--color-bg-secondary));
+}
+
+.categoryTitle {
+  flex: 1;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+  text-align: left;
+}
+
+.categoryCount {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-secondary);
+  padding: 2px var(--space-2);
+  border-radius: 10px;
+  margin-right: var(--space-3);
+}
+
+.chevron {
+  color: var(--color-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.chevron.expanded {
+  transform: rotate(180deg);
+}
+
+/* Shortcut List */
+.shortcutList {
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcutList.gridView {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1px;
+  background-color: var(--color-border-secondary);
+}
+
+.shortcutList.gridView .shortcutItem {
+  background-color: var(--color-bg-secondary);
+  border-bottom: none;
+}
+
+.shortcutItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-secondary);
+  transition: background var(--transition-fast);
+}
+
+.shortcutItem:last-child {
+  border-bottom: none;
+}
+
+.shortcutItem:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.shortcutInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  flex: 1;
+}
+
+.shortcutAction {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  line-height: 1.4;
+}
+
+.shortcutDescription {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+}
+
+.shortcutContext {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.shortcutTags {
+  display: flex;
+  gap: 4px;
+  margin-top: var(--space-1);
+  flex-wrap: wrap;
+}
+
+.tag {
+  font-size: 0.625rem;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-text-muted);
+  background-color: var(--color-bg-tertiary);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+/* Keys */
+.shortcutKeys {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid;
+  position: relative;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.15) inset,
+    0 -2px 0 0 rgba(0, 0, 0, 0.15) inset,
+    0 2px 3px rgba(0, 0, 0, 0.2),
+    0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.1s ease;
+  cursor: default;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.key:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.15) inset,
+    0 -2px 0 0 rgba(0, 0, 0, 0.15) inset,
+    0 3px 4px rgba(0, 0, 0, 0.25),
+    0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+.key:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 0 rgba(255, 255, 255, 0.1) inset,
+    0 -1px 0 0 rgba(0, 0, 0, 0.1) inset,
+    0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Modifier keys (Cmd/Ctrl) - Dark charcoal */
+.keyModifier {
+  background: linear-gradient(180deg, #5a5a5a 0%, #3a3a3a 50%, #2a2a2a 100%);
+  border-color: #1a1a1a;
+  color: #f0f0f0;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Shift key - Indigo/purple */
+.keyShift {
+  background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 50%, #5b21b6 100%);
+  border-color: #4c1d95;
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Alt/Option key - Amber/orange */
+.keyAlt {
+  background: linear-gradient(180deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+  border-color: #92400e;
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Letter keys - Light with subtle gradient */
+.keyLetter {
+  background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 50%, #e8e8e8 100%);
+  border-color: #c0c0c0;
+  color: #1a1a1a;
+  text-shadow: none;
+}
+
+/* Dark mode letter keys */
+:global([data-theme="dark"]) .keyLetter,
+:global(.dark) .keyLetter {
+  background: linear-gradient(180deg, #4a4a4a 0%, #3a3a3a 50%, #2a2a2a 100%);
+  border-color: #1a1a1a;
+  color: #e0e0e0;
+}
+
+/* Special keys (Enter, Tab, etc) - Slate gray */
+.keySpecial {
+  background: linear-gradient(180deg, #6b7280 0%, #4b5563 50%, #374151 100%);
+  border-color: #1f2937;
+  color: #f3f4f6;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Function keys (F1-F12) - Teal */
+.keyFunction {
+  background: linear-gradient(180deg, #14b8a6 0%, #0d9488 50%, #0f766e 100%);
+  border-color: #115e59;
+  color: #fff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+  min-width: 36px;
+}
+
+/* Arrow keys - smaller and subtle */
+.keyArrow {
+  background: linear-gradient(180deg, #e5e7eb 0%, #d1d5db 50%, #9ca3af 100%);
+  border-color: #6b7280;
+  color: #374151;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 14px;
+}
+
+:global([data-theme="dark"]) .keyArrow,
+:global(.dark) .keyArrow {
+  background: linear-gradient(180deg, #4b5563 0%, #374151 50%, #1f2937 100%);
+  border-color: #111827;
+  color: #d1d5db;
+}
+
+/* Key separator (+ sign between keys) */
+.keySeparator {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  font-weight: 400;
+  margin: 0 2px;
+  opacity: 0.6;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.emptyState svg {
+  opacity: 0.5;
+}
+
+.emptyState p {
+  margin: 0;
+  font-size: var(--font-size-base);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .controlsBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .osToggle,
+  .viewToggle {
+    justify-content: center;
+  }
+
+  .filterGroup {
+    flex-direction: column;
+  }
+
+  .filterSelect {
+    width: 100%;
+  }
+
+  .shortcutItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .shortcutKeys {
+    align-self: flex-end;
+  }
+
+  .shortcutList.gridView {
+    grid-template-columns: 1fr;
+  }
+}
+

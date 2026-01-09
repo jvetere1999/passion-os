@@ -1,0 +1,1033 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.backLink {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.backLink:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-tertiary);
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.titleGroup h1 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.nameInput {
+  padding: var(--space-1) var(--space-2);
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+}
+
+.nameInput:hover,
+.nameInput:focus {
+  background-color: var(--color-bg-primary);
+  border-color: var(--color-border-primary);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.headerActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.headerBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.headerBtn:hover {
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-tertiary);
+}
+
+/* Transport */
+.transport {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-4);
+  background-color: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+.transportLeft {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.transportBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.transportBtn:hover {
+  background-color: var(--color-bg-primary);
+  border-color: var(--color-border-focus);
+}
+
+.transportBtn.active {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: white;
+}
+
+.transportCenter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.bpmControl,
+.barsControl {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.bpmControl label,
+.barsControl label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+.bpmControl input,
+.barsControl input {
+  width: 60px;
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-mono);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.timeSignature {
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-family-mono);
+  color: var(--color-text-secondary);
+}
+
+.transportRight {
+  display: flex;
+  align-items: center;
+}
+
+.position {
+  font-size: var(--font-size-lg);
+  font-family: var(--font-family-mono);
+  color: var(--color-text-primary);
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Main Content */
+.main {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Lane List */
+.laneList {
+  width: 200px;
+  background-color: var(--color-bg-secondary);
+  border-right: 1px solid var(--color-border-primary);
+  overflow-y: auto;
+}
+
+.laneListHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.addLaneBtns {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.addLaneBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.addLaneBtn:hover {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: white;
+}
+
+.laneItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.laneItem:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.laneItem.selected {
+  background-color: var(--color-bg-primary);
+}
+
+.laneColor {
+  width: 4px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+}
+
+.laneName {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.laneControls {
+  display: flex;
+  gap: var(--space-1);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.laneItem:hover .laneControls,
+.laneItem.selected .laneControls {
+  opacity: 1;
+}
+
+.laneControlBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: 1px solid var(--color-border-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.laneControlBtn:hover {
+  border-color: var(--color-border-primary);
+  color: var(--color-text-secondary);
+}
+
+.laneControlBtn.active {
+  background-color: var(--color-warning);
+  border-color: var(--color-warning);
+  color: white;
+}
+
+.laneControlBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Editor */
+.editor {
+  flex: 1;
+  overflow: auto;
+  background-color: var(--color-bg-primary);
+}
+
+.emptyState {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-muted);
+}
+
+/* Piano Roll */
+.pianoRoll {
+  display: flex;
+  flex-direction: column;
+  min-width: 100%;
+}
+
+.gridHeader {
+  display: flex;
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.pianoKeysHeader {
+  width: 80px;
+  flex-shrink: 0;
+}
+
+.beatMarker {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  border-left: 1px solid var(--color-border-secondary);
+}
+
+.beatMarker.barStart {
+  border-left-color: var(--color-border-primary);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+/* Beat marker for step-based grid */
+.beatMarkerStep {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  border-left: 1px solid var(--color-border-secondary);
+  flex-shrink: 0;
+}
+
+.beatMarkerStep.barStart {
+  border-left: 2px solid var(--color-border-primary);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.beatMarkerStep.beatStart {
+  border-left-color: var(--color-border-primary);
+}
+
+.beatMarkerStep.playing {
+  background-color: var(--color-accent-primary);
+  color: white;
+}
+
+.beatMarkerStep .beatNum {
+  font-size: 9px;
+  color: var(--color-text-muted);
+}
+
+.gridContent {
+  overflow: auto;
+}
+
+/* Drum Grid */
+.drumGridWrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.drumTimelineHeader {
+  display: flex;
+  background-color: var(--color-bg-secondary);
+  border-bottom: 2px solid var(--color-border-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.drumLabelHeader {
+  width: 80px;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-border-primary);
+}
+
+.drumTimelineCells {
+  display: flex;
+}
+
+.drumTimelineCell {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  border-left: 1px solid var(--color-border-secondary);
+}
+
+.drumTimelineCell.barStart {
+  border-left: 2px solid var(--color-accent-primary);
+  color: var(--color-accent-primary);
+}
+
+.drumTimelineCell.beatStart {
+  border-left-color: var(--color-border-primary);
+}
+
+.drumGrid {
+  display: flex;
+  flex-direction: column;
+}
+
+.drumRow {
+  display: flex;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.drumLabel {
+  width: 80px;
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-bg-secondary);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-border-primary);
+}
+
+.drumCells {
+  display: flex;
+}
+
+.drumCell {
+  width: 24px;
+  height: 24px;
+  border-left: 1px solid var(--color-border-secondary);
+  background-color: var(--color-bg-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.drumCell:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.drumCell.active {
+  background-color: var(--color-accent-primary);
+}
+
+.drumCell.barStart {
+  border-left: 2px solid var(--color-border-primary);
+}
+
+.drumCell.beatStart {
+  border-left-color: var(--color-border-primary);
+}
+
+/* Piano Grid */
+.pianoGridWrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.pianoTimelineHeader {
+  display: flex;
+  background-color: var(--color-bg-secondary);
+  border-bottom: 2px solid var(--color-border-primary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.pianoKeyHeader {
+  width: 80px;
+  height: 24px;
+  background-color: var(--color-bg-secondary);
+  border-right: 1px solid var(--color-border-primary);
+  flex-shrink: 0;
+}
+
+.pianoTimelineCells {
+  display: flex;
+}
+
+.pianoTimelineCell {
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  border-left: 1px solid var(--color-border-secondary);
+}
+
+.pianoTimelineCell.barStart {
+  border-left: 2px solid var(--color-accent-primary);
+  color: var(--color-accent-primary);
+}
+
+.pianoTimelineCell.beatStart {
+  border-left-color: var(--color-border-primary);
+}
+
+.pianoGrid {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: calc(100vh - 200px);
+  scroll-behavior: smooth;
+}
+
+.pianoRow {
+  display: flex;
+  border-bottom: 1px solid var(--color-border-secondary);
+  flex-shrink: 0;
+}
+
+.pianoRow.blackKey {
+  background-color: var(--color-bg-tertiary);
+}
+
+.pianoRow.octaveStart {
+  border-bottom: 2px solid var(--color-border-primary);
+}
+
+.pianoKey {
+  width: 80px;
+  height: 20px;
+  padding: 0 var(--space-2);
+  background-color: var(--color-bg-secondary);
+  font-size: var(--font-size-xs);
+  font-family: var(--font-family-mono);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-border-primary);
+  position: sticky;
+  left: 0;
+  z-index: 5;
+}
+
+.pianoKey.blackKeyLabel {
+  background-color: #2a2a2a;
+  color: #ccc;
+}
+
+.pianoRow.blackKey .pianoKey {
+  background-color: #2a2a2a;
+  color: #ccc;
+}
+
+.pianoCells {
+  display: flex;
+}
+
+.pianoCell {
+  width: 24px;
+  height: 20px;
+  border-left: 1px solid var(--color-border-secondary);
+  background-color: transparent;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  position: relative;
+  user-select: none;
+}
+
+.pianoCell:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.pianoCell.active {
+  background-color: var(--color-accent-primary);
+  border-radius: var(--radius-sm);
+}
+
+.pianoCell.noteContinue {
+  background-color: var(--color-accent-secondary, rgba(99, 102, 241, 0.3));
+}
+
+.pianoCell.dragSelection {
+  background-color: rgba(99, 102, 241, 0.5);
+}
+
+.pianoCell.barStart {
+  border-left: 2px solid var(--color-border-primary);
+}
+
+.pianoCell.beatStart {
+  border-left-color: var(--color-border-primary);
+}
+
+/* Note block for sustained notes */
+.noteBlock {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  height: calc(100% - 4px);
+  background: linear-gradient(180deg,
+    var(--color-accent-primary) 0%,
+    color-mix(in srgb, var(--color-accent-primary) 80%, black) 100%
+  );
+  border-radius: 3px;
+  min-width: 100%;
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .laneList {
+    width: 150px;
+  }
+
+  .transport {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .transportCenter {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .laneList {
+    display: none;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+}
+
+/* Zoom and Snap Controls */
+.zoomControl,
+.snapControl,
+.gridControl {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.zoomControl label,
+.snapControl label,
+.gridControl label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+}
+
+.zoomControl input[type="range"] {
+  width: 80px;
+  height: 4px;
+  accent-color: var(--color-accent-primary);
+}
+
+.snapControl select {
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+/* Grid subdivision buttons (Ableton style) */
+.gridButtons {
+  display: flex;
+  gap: 1px;
+  background-color: var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.gridBtn {
+  padding: var(--space-1) var(--space-2);
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-secondary);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 32px;
+}
+
+.gridBtn:hover {
+  background-color: var(--color-bg-tertiary);
+  color: var(--color-text-primary);
+}
+
+.gridBtn.active {
+  background-color: var(--color-accent-primary);
+  color: white;
+}
+
+/* Lane Name Input */
+.laneNameInput {
+  flex: 1;
+  padding: 2px var(--space-1);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  min-width: 0;
+}
+
+.laneNameInput:hover,
+.laneNameInput:focus {
+  background-color: var(--color-bg-primary);
+  border-color: var(--color-border-primary);
+  outline: none;
+}
+
+/* Solo button active state */
+.laneControlBtn.activeSolo {
+  background-color: var(--color-success);
+  border-color: var(--color-success);
+  color: white;
+}
+
+/* Beat marker playing state */
+.beatMarker.playing {
+  background-color: var(--color-accent-primary);
+  color: white;
+}
+
+/* Empty state improvements */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-muted);
+  gap: var(--space-3);
+}
+
+.emptyState svg {
+  opacity: 0.5;
+}
+
+.emptyState p {
+  margin: 0;
+}
+
+.emptyHint {
+  font-size: var(--font-size-sm);
+  opacity: 0.7;
+}
+
+/* Chord Grid */
+.chordGrid {
+  display: flex;
+  flex-direction: column;
+}
+
+.chordTypeSelector {
+  display: flex;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-primary);
+  flex-wrap: wrap;
+}
+
+.chordTypeBtn {
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-transform: capitalize;
+}
+
+.chordTypeBtn:hover {
+  border-color: var(--color-border-focus);
+  color: var(--color-text-primary);
+}
+
+.chordTypeBtn.active {
+  background-color: var(--color-accent-primary);
+  border-color: var(--color-accent-primary);
+  color: white;
+}
+
+.chordRows {
+  display: flex;
+  flex-direction: column;
+}
+
+.chordRow {
+  display: flex;
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+.chordLabel {
+  width: 80px;
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--color-bg-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  border-right: 1px solid var(--color-border-primary);
+}
+
+.chordCells {
+  display: flex;
+}
+
+.chordCell {
+  height: 28px;
+  border-left: 1px solid var(--color-border-secondary);
+  background-color: var(--color-bg-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.chordCell:hover {
+  background-color: var(--color-bg-tertiary);
+}
+
+.chordCell.active {
+  background-color: #2196F3;
+  border-radius: var(--radius-sm);
+}
+
+.chordCell.barStart {
+  border-left: 2px solid var(--color-border-primary);
+}
+
+.chordCell.beatStart {
+  border-left-color: var(--color-border-primary);
+}
+
+/* Dialog Styles */
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.dialog {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 480px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.dialog h2 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-4);
+}
+
+.dialogEmpty {
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-6) 0;
+}
+
+.dialogClose {
+  display: block;
+  width: 100%;
+  padding: var(--space-3);
+  margin-top: var(--space-4);
+  background-color: var(--color-bg-tertiary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.dialogClose:hover {
+  background-color: var(--color-bg-primary);
+}
+
+.arrangementList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.arrangementItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background-color: var(--color-bg-primary);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-primary);
+}
+
+.arrangementInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.arrangementName {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.arrangementDate {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.arrangementActions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.arrangementActions button {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.arrangementActions button:first-child {
+  background-color: var(--color-accent-primary);
+  border: none;
+  color: white;
+}
+
+.arrangementActions button:first-child:hover {
+  opacity: 0.9;
+}
+
+.arrangementActions .deleteBtn {
+  background: transparent;
+  border: 1px solid var(--color-border-primary);
+  color: var(--color-text-muted);
+}
+
+.arrangementActions .deleteBtn:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+

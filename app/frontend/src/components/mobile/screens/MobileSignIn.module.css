@@ -1,0 +1,97 @@
+/* Mobile Sign In Screen Styles */
+
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--m-space-6);
+  padding-left: calc(var(--m-space-6) + var(--safe-area-left));
+  padding-right: calc(var(--m-space-6) + var(--safe-area-right));
+  padding-bottom: calc(var(--m-space-6) + var(--safe-area-bottom));
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--m-space-8);
+  width: 100%;
+  max-width: 320px;
+}
+
+/* Logo */
+.logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--m-space-3);
+  text-align: center;
+}
+
+.logo svg {
+  color: var(--m-accent-primary);
+}
+
+.logo h1 {
+  font-size: var(--m-font-2xl);
+  font-weight: 700;
+  color: var(--m-text-primary);
+  margin: 0;
+}
+
+.logo p {
+  font-size: var(--m-font-base);
+  color: var(--m-text-secondary);
+  margin: 0;
+}
+
+/* Buttons */
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--m-space-3);
+  width: 100%;
+}
+
+.signInBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--m-space-3);
+  width: 100%;
+  padding: var(--m-space-4);
+  font-size: var(--m-font-base);
+  font-weight: 500;
+  border: none;
+  border-radius: var(--m-radius-md);
+  min-height: var(--m-touch-target);
+  transition: opacity 0.15s;
+}
+
+.signInBtn:active {
+  opacity: 0.85;
+}
+
+.signInBtn.google {
+  background-color: white;
+  color: #1f1f1f;
+}
+
+.signInBtn.microsoft {
+  background-color: #2f2f2f;
+  color: white;
+}
+
+/* Terms */
+.terms {
+  font-size: var(--m-font-xs);
+  color: var(--m-text-muted);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 280px;
+}
+

@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2026-01-07T00:00:00Z",
+  "description": "Performance baseline for reference tracks golden suite. Measurements are in milliseconds.",
+  "measurements": {
+    "TTLA-001": {
+      "description": "Time to load annotations list",
+      "p50": 100,
+      "p95": 250,
+      "unit": "ms"
+    },
+    "TTLR-001": {
+      "description": "Time to load regions list",
+      "p50": 100,
+      "p95": 250,
+      "unit": "ms"
+    },
+    "TTLT-001": {
+      "description": "Time to load tracks list",
+      "p50": 150,
+      "p95": 300,
+      "unit": "ms"
+    },
+    "TTSU-001": {
+      "description": "Time to generate signed stream URL",
+      "p50": 50,
+      "p95": 150,
+      "unit": "ms"
+    },
+    "TTFV-001": {
+      "description": "Time to first visual (visualizer render)",
+      "p50": 200,
+      "p95": 500,
+      "unit": "ms"
+    },
+    "TTFA-001": {
+      "description": "Time to first audio (sound plays)",
+      "p50": 100,
+      "p95": 300,
+      "unit": "ms"
+    },
+    "TTAW-001": {
+      "description": "Time to analyze waveform",
+      "p50": 500,
+      "p95": 1200,
+      "unit": "ms"
+    }
+  },
+  "notes": [
+    "These are initial baseline values and should be updated after real measurements",
+    "P50 = median, P95 = 95th percentile",
+    "Regressions detected by comparing current run against these values",
+    "No hardcoded thresholds - only relative comparisons"
+  ]
+}

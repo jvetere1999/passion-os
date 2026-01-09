@@ -1,0 +1,32 @@
+.container {
+  position: relative;
+  width: 100%;
+  background: var(--bg-tertiary, #1a1a1c);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  cursor: pointer;
+}
+
+.loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
+  color: var(--text-muted, #888);
+}
+
+.timeDisplay {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  font-size: 11px;
+  color: var(--text-secondary, #aaa);
+  font-variant-numeric: tabular-nums;
+}
+

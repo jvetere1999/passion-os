@@ -17,44 +17,43 @@ pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         // Stub endpoints that will be filled in during feature migration
         .route("/", get(api_info))
-        // Focus module
-        .nest("/focus", focus_routes())
-        // Quests module
-        .nest("/quests", quests_routes())
-        // Habits module
-        .nest("/habits", habits_routes())
-        // Goals module
-        .nest("/goals", goals_routes())
-        // Calendar module
-        .nest("/calendar", calendar_routes())
-        // Daily plan module
-        .nest("/daily-plan", daily_plan_routes())
-        // Exercise module
-        .nest("/exercise", exercise_routes())
-        // Market module
-        .nest("/market", market_routes())
+        // Focus module (Wave 2 - real implementation)
+        .nest("/focus", super::focus::router())
+        // Quests module (Wave 2 - real implementation)
+        .nest("/quests", super::quests::router())
+        // Habits module (Wave 2 - real implementation)
+        .nest("/habits", super::habits::router())
+        // Goals module (Wave 2 - real implementation)
+        .nest("/goals", super::goals::router())
+        // Calendar module (Wave 4 - real implementation)
+        .nest("/calendar", super::calendar::router())
+        // Daily plan module (Wave 4 - real implementation)
+        .nest("/daily-plan", super::daily_plan::router())
+        // Exercise module (Wave 3 - real implementation)
+        .nest("/exercise", super::exercise::router())
+        // Market module (Wave 3 - real implementation)
+        .nest("/market", super::market::router())
         // Reference tracks module
         .nest("/reference", reference_routes())
-        // Learn module
-        .nest("/learn", learn_routes())
-        // User module
-        .nest("/user", user_routes())
-        // Onboarding module
-        .nest("/onboarding", onboarding_routes())
-        // Infobase module
-        .nest("/infobase", infobase_routes())
-        // Ideas module
-        .nest("/ideas", ideas_routes())
-        // Feedback module
-        .nest("/feedback", feedback_routes())
+        // Learn module (Wave 3 - real implementation)
+        .nest("/learn", super::learn::router())
+        // User module (Wave 4 - real implementation)
+        .nest("/user", super::user::router())
+        // Onboarding module (Wave 4 - real implementation)
+        .nest("/onboarding", super::onboarding::router())
+        // Infobase module (Wave 4 - real implementation)
+        .nest("/infobase", super::infobase::router())
+        // Ideas module (Wave 4 - real implementation)
+        .nest("/ideas", super::ideas::router())
+        // Feedback module (Wave 4 - real implementation)
+        .nest("/feedback", super::feedback::router())
         // Analysis module
         .nest("/analysis", analysis_routes())
-        // Books module
-        .nest("/books", books_routes())
-        // Programs module
-        .nest("/programs", programs_routes())
-        // Gamification module
-        .nest("/gamification", gamification_routes())
+        // Books module (Wave 3 - real implementation)
+        .nest("/books", super::books::router())
+        // Programs are handled under /exercise/programs
+        // Gamification module (real implementation)
+        .nest("/gamification", super::gamification::router())
         // Blob storage module (real implementation)
         .nest("/blobs", super::blobs::router())
     // Apply middleware (CSRF and auth will be added at top level)
@@ -88,116 +87,29 @@ async fn api_info() -> Json<ApiInfo> {
             "feedback".to_string(),
             "analysis".to_string(),
             "books".to_string(),
-            "programs".to_string(),
             "gamification".to_string(),
             "blobs".to_string(),
         ],
     })
 }
 
-// Stub route builders for each module
-// These will be expanded during feature migration
-
-fn focus_routes() -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/", get(stub_list).post(stub_create))
-        .route("/active", get(stub_get))
-        .route("/pause", post(stub_action))
-        .route("/:id/complete", post(stub_action))
-        .route("/:id/abandon", post(stub_action))
-}
-
-fn quests_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list))
-}
-
-fn habits_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list).post(stub_create))
-}
-
-fn goals_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list).post(stub_create))
-}
-
-fn calendar_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list).post(stub_create))
-}
-
-fn daily_plan_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list))
-}
-
-fn exercise_routes() -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/", get(stub_list))
-        .route("/seed", post(stub_action))
-}
-
-fn market_routes() -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/", get(stub_list))
-        .route("/items", get(stub_list))
-        .route("/purchase", post(stub_action))
-        .route("/redeem", post(stub_action))
-}
+// Stub route builders for modules not yet migrated
+// Note: focus, quests, habits, goals, exercise, market, learn, books, gamification, blobs are using real implementations
+// Wave 4 migrated: calendar, daily-plan, user, onboarding, infobase, ideas, feedback
 
 fn reference_routes() -> Router<Arc<AppState>> {
+    // Reference is already implemented in super::reference, but has custom routing
+    // TODO: Wire up super::reference::router() when frontend swap is ready
     Router::new()
         .route("/tracks", get(stub_list))
         .route("/upload", post(stub_create))
-}
-
-fn learn_routes() -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/", get(stub_list))
-        .route("/progress", get(stub_get).post(stub_action))
-        .route("/review", get(stub_list))
-}
-
-fn user_routes() -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/export", get(stub_get))
-        .route("/delete", post(stub_action))
-}
-
-fn onboarding_routes() -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/", get(stub_get))
-        .route("/start", post(stub_action))
-        .route("/step", post(stub_action))
-        .route("/skip", post(stub_action))
-        .route("/reset", post(stub_action))
-}
-
-fn infobase_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list))
-}
-
-fn ideas_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list).post(stub_create))
-}
-
-fn feedback_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", post(stub_create))
 }
 
 fn analysis_routes() -> Router<Arc<AppState>> {
     Router::new().route("/", get(stub_get))
 }
 
-fn books_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list).post(stub_create))
-}
-
-fn programs_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/", get(stub_list))
-}
-
-fn gamification_routes() -> Router<Arc<AppState>> {
-    Router::new().route("/teaser", get(stub_get))
-}
-
-// Stub handlers
+// Stub handlers for not-yet-migrated routes
 #[allow(dead_code)]
 async fn stub_list() -> Json<serde_json::Value> {
     Json(serde_json::json!({
@@ -214,12 +126,6 @@ async fn stub_get() -> Json<serde_json::Value> {
 }
 
 async fn stub_create() -> Json<serde_json::Value> {
-    Json(serde_json::json!({
-        "message": "Stub endpoint - feature migration pending"
-    }))
-}
-
-async fn stub_action() -> Json<serde_json::Value> {
     Json(serde_json::json!({
         "message": "Stub endpoint - feature migration pending"
     }))

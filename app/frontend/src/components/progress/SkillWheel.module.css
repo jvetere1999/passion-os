@@ -1,0 +1,224 @@
+/**
+ * Persona 5 Style Skill Wheel Styles
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.wheel {
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.3));
+}
+
+.wheel.animating .skillPolygon {
+  animation: expandIn 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: center;
+}
+
+.wheel.animating .skillDot {
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: calc(var(--index, 0) * 0.1s + 0.8s);
+  opacity: 0;
+  transform: scale(0);
+}
+
+@keyframes expandIn {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.gridLine {
+  transition: opacity 0.3s ease;
+}
+
+.skillPolygon {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.skillPoint {
+  transition: transform 0.2s ease;
+}
+
+.skillDot {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.skillDot:hover {
+  filter: brightness(1.2);
+  stroke-width: 3;
+}
+
+.skillLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.2s ease;
+  pointer-events: none;
+}
+
+.skillLabel.selected {
+  font-size: 0.875rem;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+.skillLevel {
+  font-size: 0.625rem;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.centerLabel {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.centerValue {
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+/* Skill Details Panel */
+.skillDetails {
+  width: 100%;
+  max-width: 320px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--skill-color, var(--accent-primary));
+  border-radius: 12px;
+  padding: 1.25rem;
+  animation: slideUp 0.3s ease-out;
+  box-shadow: 0 0 20px var(--skill-color, var(--accent-primary))40;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.detailsHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.skillName {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--skill-color, var(--accent-primary));
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.skillRank {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.25rem 0.5rem;
+  background: var(--skill-color, var(--accent-primary))20;
+  border-radius: 4px;
+}
+
+.levelBar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.levelProgress {
+  height: 8px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.levelFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--skill-color, var(--accent-primary)), var(--skill-color, var(--accent-primary))cc);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 10px var(--skill-color, var(--accent-primary))80;
+}
+
+.levelText {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.levelStars {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+  font-size: 1rem;
+}
+
+.star {
+  color: var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.star.filled {
+  color: var(--skill-color, var(--accent-primary));
+  text-shadow: 0 0 8px var(--skill-color, var(--accent-primary));
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .container {
+    gap: 1rem;
+  }
+
+  .skillLabel {
+    font-size: 0.625rem;
+  }
+
+  .skillLevel {
+    font-size: 0.5rem;
+  }
+
+  .skillDetails {
+    padding: 1rem;
+  }
+
+  .skillName {
+    font-size: 1rem;
+  }
+}
+

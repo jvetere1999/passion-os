@@ -1,0 +1,251 @@
+/**
+ * Annotation Controls Styles
+ */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #1f2937;
+  border-radius: 8px;
+  border: 1px solid #374151;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f3f4f6;
+  margin: 0;
+}
+
+.addButton {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+  background: #3b82f6;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.addButton:hover {
+  background: #2563eb;
+}
+
+.addButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* List */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.empty {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+  padding: 16px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  background: #111827;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.item:hover {
+  background: #1f2937;
+}
+
+.itemSelected {
+  background: #374151;
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
+}
+
+.itemColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.itemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.itemTitle {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #f3f4f6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemTime {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+  font-family: monospace;
+}
+
+.itemCategory {
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #374151;
+  color: #9ca3af;
+  text-transform: capitalize;
+}
+
+.category_technique { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+.category_mix { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+.category_mastering { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+.category_arrangement { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+.category_production { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #374151;
+}
+
+.formRow {
+  display: flex;
+  gap: 12px;
+}
+
+.formRow label {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+
+.formRow input,
+.formRow select,
+.formRow textarea {
+  padding: 8px;
+  font-size: 13px;
+  color: #f3f4f6;
+  background: #111827;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.formRow input:focus,
+.formRow select:focus,
+.formRow textarea:focus {
+  border-color: #3b82f6;
+}
+
+.formRow textarea {
+  resize: vertical;
+  min-height: 60px;
+}
+
+/* Color picker */
+.colorPicker {
+  display: flex;
+  gap: 6px;
+  padding-top: 4px;
+}
+
+.colorOption {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.colorOption:hover {
+  transform: scale(1.1);
+}
+
+.colorSelected {
+  border-color: white;
+}
+
+/* Actions */
+.formActions,
+.selectedActions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.formActions button,
+.selectedActions button {
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: #111827;
+  color: #9ca3af;
+}
+
+.formActions button:hover,
+.selectedActions button:hover {
+  background: #1f2937;
+  color: #f3f4f6;
+}
+
+.saveButton {
+  background: #3b82f6 !important;
+  border-color: #3b82f6 !important;
+  color: white !important;
+}
+
+.saveButton:hover {
+  background: #2563eb !important;
+}
+
+.deleteButton {
+  background: #7f1d1d !important;
+  border-color: #991b1b !important;
+  color: #fca5a5 !important;
+}
+
+.deleteButton:hover {
+  background: #991b1b !important;
+  color: white !important;
+}
+

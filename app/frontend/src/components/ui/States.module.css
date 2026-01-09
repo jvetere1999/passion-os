@@ -1,0 +1,95 @@
+/**
+ * Shared styles for state components
+ * LoadingState, EmptyState, ErrorState, SuccessState
+ */
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-8) var(--space-4);
+  gap: var(--space-3);
+}
+
+/* Loading State */
+.loading {
+  color: var(--color-text-secondary);
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+  color: var(--color-accent-primary);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.message {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* Empty State */
+.empty {
+  color: var(--color-text-secondary);
+}
+
+.icon {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-2);
+}
+
+.title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 32ch;
+}
+
+.action {
+  margin-top: var(--space-2);
+}
+
+/* Error State */
+.error {
+  background-color: var(--color-error-bg);
+  border-radius: var(--radius-lg);
+}
+
+.errorIcon {
+  color: var(--color-error);
+}
+
+.error .title {
+  color: var(--color-error);
+}
+
+/* Success State */
+.success {
+  background-color: var(--color-success-bg);
+  border-radius: var(--radius-lg);
+}
+
+.successIcon {
+  color: var(--color-success);
+}
+
+.success .title {
+  color: var(--color-success);
+}
+

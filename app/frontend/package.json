@@ -9,7 +9,10 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:worker": "npx @opennextjs/cloudflare build",
     "start": "next start",
+    "preview": "npx wrangler dev",
+    "deploy": "npm run build:worker && npx wrangler deploy",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "check": "npm run typecheck && npm run lint",

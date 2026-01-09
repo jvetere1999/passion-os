@@ -1,13 +1,14 @@
 import type { NextConfig } from "next";
 
-// NOTE: OpenNext/Cloudflare bindings removed - frontend now runs in container
+// OpenNext for Cloudflare Workers
+// The frontend runs as a Worker, not a container
 // All API logic goes through Rust backend at api.ecent.online
 
 const nextConfig: NextConfig = {
-  // Standard Next.js output (no Cloudflare Workers)
-  output: "standalone",
+  // No output specified - OpenNext handles this
+  // output: "standalone" is NOT used for Workers
 
-  // Disable image optimization for now
+  // Disable image optimization - use Cloudflare Images instead
   images: {
     unoptimized: true,
   },

@@ -1,0 +1,43 @@
+# Ignition Frontend - Cloudflare Workers (OpenNext)
+# Unified frontend: serves landing pages + full Next.js app
+#
+# Build: cd app/frontend && npm run build
+# Deploy: npx wrangler deploy
+#
+# This replaces both:
+# - deploy/cloudflare-landing (static pages)
+# - deploy/cloudflare-frontend (container)
+
+name = "ignition-frontend"
+compatibility_date = "2025-01-02"
+compatibility_flags = ["nodejs_compat"]
+
+# OpenNext outputs the worker entry point
+main = ".open-next/worker.js"
+
+# Assets from the build
+assets = { directory = ".open-next/assets", binding = "ASSETS" }
+
+# Custom domain routing - handles ALL ignition.ecent.online traffic
+routes = [
+  { pattern = "ignition.ecent.online/*", zone_name = "ecent.online" },
+  { pattern = "www.ignition.ecent.online/*", zone_name = "ecent.online" }
+]
+
+# Environment variables
+[vars]
+NODE_ENV = "production"
+NEXT_PUBLIC_API_URL = "https://api.ecent.online"
+
+# KV namespace for caching (optional - create via dashboard if needed)
+# [[kv_namespaces]]
+# binding = "NEXT_CACHE"
+# id = "YOUR_KV_NAMESPACE_ID"
+
+# Observability
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true

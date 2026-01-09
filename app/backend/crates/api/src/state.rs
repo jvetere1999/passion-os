@@ -1,7 +1,9 @@
 //! Application state shared across handlers
 
 use std::sync::Arc;
+use std::time::Duration;
 
+use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 
 use crate::config::AppConfig;
@@ -21,8 +23,31 @@ pub struct AppState {
 impl AppState {
     /// Create new application state
     pub async fn new(config: &AppConfig) -> anyhow::Result<Self> {
-        // Create database pool
-        let db = PgPool::connect(&config.database.url).await?;
+        // Log the database URL (redacted for security)
+        let db_url = &config.database.url;
+        let redacted_url = if db_url.contains('@') {
+            let parts: Vec<&str> = db_url.splitn(2, '@').collect();
+            format!("***@{}", parts.get(1).unwrap_or(&"unknown"))
+        } else {
+            "***".to_string()
+        };
+        tracing::info!("Connecting to database: {}", redacted_url);
+
+        // Create database pool with explicit timeout settings
+        // Cloudflare containers may have network latency, so we use conservative timeouts
+        let db = PgPoolOptions::new()
+            .max_connections(config.database.pool_size)
+            .acquire_timeout(Duration::from_secs(30))
+            .idle_timeout(Duration::from_secs(600))
+            .connect(&config.database.url)
+            .await
+            .map_err(|e| {
+                tracing::error!("Failed to connect to database: {}", e);
+                tracing::error!("DATABASE_URL (redacted): {}", redacted_url);
+                e
+            })?;
+
+        tracing::info!("Database connection pool created");
 
         // Run pending migrations on every startup
         // sqlx tracks applied migrations in _sqlx_migrations table

@@ -158,10 +158,7 @@ fn default_public_url() -> String {
 }
 
 fn default_frontend_url() -> String {
-    std::env::var("FRONTEND_URL")
-        .ok()
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| "http://localhost:3000".to_string())
+    "http://localhost:3000".to_string()
 }
 
 impl AppConfig {
@@ -197,6 +194,7 @@ impl AppConfig {
             .set_default("server.port", 8080)?
             .set_default("server.environment", env.clone())?
             .set_default("server.public_url", "http://localhost:8080")?
+            .set_default("server.frontend_url", "http://localhost:3000")?
             // Set database.url BEFORE adding Environment source so it acts as fallback
             .set_default("database.url", database_url.clone())?
             .set_default("database.pool_size", 10)?
@@ -237,6 +235,12 @@ impl AppConfig {
             if !public_url.is_empty() {
                 tracing::info!("Loading SERVER_PUBLIC_URL from environment: {}", public_url);
                 app_config.server.public_url = public_url;
+            }
+        }
+        if let Ok(frontend_url) = std::env::var("SERVER_FRONTEND_URL") {
+            if !frontend_url.is_empty() {
+                tracing::info!("Loading SERVER_FRONTEND_URL from environment: {}", frontend_url);
+                app_config.server.frontend_url = frontend_url;
             }
         }
         if let Ok(cookie_domain) = std::env::var("AUTH_COOKIE_DOMAIN") {

@@ -74,8 +74,14 @@ fn build_router(state: Arc<AppState>) -> Router {
     let app: Router<Arc<AppState>> = Router::new()
         // Health check (no auth required)
         .merge(routes::health::router())
-        // Auth routes (public, handles OAuth)
-        .nest("/auth", routes::auth::router(oauth_state_store))
+        // Auth routes (needs session extraction for /session endpoint, but no CSRF)
+        .nest(
+            "/auth",
+            routes::auth::router(oauth_state_store).layer(axum::middleware::from_fn_with_state(
+                state.clone(),
+                middleware::auth::extract_session,
+            )),
+        )
         // API routes (requires auth + CSRF)
         .nest(
             "/api",

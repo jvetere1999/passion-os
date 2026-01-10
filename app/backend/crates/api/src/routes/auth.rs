@@ -152,6 +152,25 @@ async fn callback_google(
     State(state): State<Arc<AppState>>,
     Extension(oauth_store): Extension<OAuthStateStore>,
     Query(params): Query<OAuthCallback>,
+) -> Response {
+    match handle_google_callback(&state, oauth_store, params).await {
+        Ok(response) => response,
+        Err(e) => {
+            tracing::error!("Google OAuth callback error: {}", e);
+            let error_url = format!(
+                "{}/auth/error?error=OAuthCallback&provider=Google&details={}",
+                state.config.server.frontend_url,
+                urlencoding::encode(&e.to_string())
+            );
+            Redirect::temporary(&error_url).into_response()
+        }
+    }
+}
+
+async fn handle_google_callback(
+    state: &Arc<AppState>,
+    oauth_store: OAuthStateStore,
+    params: OAuthCallback,
 ) -> AppResult<Response> {
     // Validate state and get stored OAuth state
     let oauth_state = {
@@ -213,6 +232,25 @@ async fn callback_azure(
     State(state): State<Arc<AppState>>,
     Extension(oauth_store): Extension<OAuthStateStore>,
     Query(params): Query<OAuthCallback>,
+) -> Response {
+    match handle_azure_callback(&state, oauth_store, params).await {
+        Ok(response) => response,
+        Err(e) => {
+            tracing::error!("Azure OAuth callback error: {}", e);
+            let error_url = format!(
+                "{}/auth/error?error=OAuthCallback&provider=Azure&details={}",
+                state.config.server.frontend_url,
+                urlencoding::encode(&e.to_string())
+            );
+            Redirect::temporary(&error_url).into_response()
+        }
+    }
+}
+
+async fn handle_azure_callback(
+    state: &Arc<AppState>,
+    oauth_store: OAuthStateStore,
+    params: OAuthCallback,
 ) -> AppResult<Response> {
     // Validate state and get stored OAuth state
     let oauth_state = {

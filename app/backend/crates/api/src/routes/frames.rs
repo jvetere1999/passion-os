@@ -31,13 +31,13 @@ pub struct EventsQueryParams {
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         // Get frame manifest for an analysis
-        .route("/analysis/:analysis_id/manifest", get(get_manifest))
+        .route("/analysis/{analysis_id}/manifest", get(get_manifest))
         // Get frame data for a time range
-        .route("/analysis/:analysis_id/frames", get(get_frames))
+        .route("/analysis/{analysis_id}/frames", get(get_frames))
         // Get events for an analysis
-        .route("/analysis/:analysis_id/events", get(get_events))
+        .route("/analysis/{analysis_id}/events", get(get_events))
         // Get a specific chunk
-        .route("/analysis/:analysis_id/chunks/:chunk_index", get(get_chunk))
+        .route("/analysis/{analysis_id}/chunks/{chunk_index}", get(get_chunk))
 }
 
 // =============================================================================

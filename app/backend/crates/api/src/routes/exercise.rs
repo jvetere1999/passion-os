@@ -35,8 +35,8 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/sessions/{id}/complete", post(complete_session))
         // Programs
         .route("/programs", get(list_programs).post(create_program))
-        .route("/programs/:id", get(get_program))
-        .route("/programs/:id/activate", post(activate_program))
+        .route("/programs/{id}", get(get_program))
+        .route("/programs/{id}/activate", post(activate_program))
 }
 
 // ============================================================================

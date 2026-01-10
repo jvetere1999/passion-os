@@ -2,8 +2,8 @@
  * Database module barrel export
  */
 
-// Client utilities
-export { getDB, query, queryOne, execute, batch, type D1Result } from "./client";
+// Client utilities (DEPRECATED - D1 no longer used)
+export { type D1Result } from "./client"; // Type-only export for migration
 
 // Repository utilities
 export {

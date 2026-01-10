@@ -4,7 +4,6 @@
 //! Per DEC-001=A: Force re-auth at cutover, no session migration.
 //! Per DEC-002=A: CSRF via Origin/Referer verification.
 
-use std::collections::HashMap;
 use std::sync::Arc;
 
 use axum::{
@@ -15,18 +14,21 @@ use axum::{
     Extension, Json, Router,
 };
 use serde::{Deserialize, Serialize};
-use tokio::sync::RwLock;
 
+use crate::db::oauth_repos::OAuthStateRepo;
 use crate::error::{AppError, AppResult};
 use crate::middleware::auth::{create_logout_cookie, create_session_cookie, AuthContext};
-use crate::services::{AuthService, OAuthService, OAuthState};
+use crate::services::{AuthService, OAuthService};
 use crate::state::AppState;
 
-/// In-memory OAuth state storage (use Redis in production)
-type OAuthStateStore = Arc<RwLock<HashMap<String, OAuthState>>>;
+/// Query parameters for signin endpoints
+#[derive(Deserialize)]
+struct SigninQuery {
+    redirect_uri: Option<String>,
+}
 
-/// Create auth routes
-pub fn router(oauth_state_store: OAuthStateStore) -> Router<Arc<AppState>> {
+/// Create auth routes (no more in-memory state store needed)
+pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         // OAuth endpoints
         .route("/providers", get(list_providers))
@@ -40,12 +42,6 @@ pub fn router(oauth_state_store: OAuthStateStore) -> Router<Arc<AppState>> {
         // Verification endpoints
         .route("/verify-age", post(verify_age))
         .route("/accept-tos", post(accept_tos))
-        .layer(Extension(oauth_state_store))
-}
-
-/// Create OAuth state store
-pub fn create_oauth_state_store() -> OAuthStateStore {
-    Arc::new(RwLock::new(HashMap::new()))
 }
 
 /// OAuth provider info
@@ -83,16 +79,16 @@ async fn list_providers(State(state): State<Arc<AppState>>) -> Json<Vec<OAuthPro
 /// Start Google OAuth flow
 async fn signin_google(
     State(state): State<Arc<AppState>>,
-    Extension(oauth_store): Extension<OAuthStateStore>,
+    Query(query): Query<SigninQuery>,
 ) -> AppResult<Response> {
     let oauth_service = OAuthService::new(&state.config)?;
 
     let google = match oauth_service.google {
         Some(g) => g,
         None => {
-            // Redirect to error page instead of 500
             let error_url = format!(
-                "https://ignition.ecent.online/auth/error?error=OAuthNotConfigured&provider=Google&details={}",
+                "{}/auth/error?error=OAuthNotConfigured&provider=Google&details={}",
+                state.config.server.frontend_url,
                 urlencoding::encode("Google OAuth credentials are not configured on the server")
             );
             return Ok(Redirect::temporary(&error_url).into_response());
@@ -101,11 +97,16 @@ async fn signin_google(
 
     let (auth_url, oauth_state) = google.authorization_url();
 
-    // Store state for callback validation
-    {
-        let mut store = oauth_store.write().await;
-        store.insert(oauth_state.csrf_token.clone(), oauth_state);
-    }
+    // Store state in database for distributed access, with optional redirect_uri
+    OAuthStateRepo::insert(
+        &state.db,
+        &oauth_state.csrf_token,
+        &oauth_state.pkce_verifier,
+        query.redirect_uri.as_deref(),
+    )
+    .await?;
+
+    tracing::debug!(state = %oauth_state.csrf_token, redirect_uri = ?query.redirect_uri, "Stored OAuth state in database");
 
     Ok(Redirect::temporary(&auth_url).into_response())
 }
@@ -113,16 +114,16 @@ async fn signin_google(
 /// Start Azure/Microsoft OAuth flow
 async fn signin_azure(
     State(state): State<Arc<AppState>>,
-    Extension(oauth_store): Extension<OAuthStateStore>,
+    Query(query): Query<SigninQuery>,
 ) -> AppResult<Response> {
     let oauth_service = OAuthService::new(&state.config)?;
 
     let azure = match oauth_service.azure {
         Some(a) => a,
         None => {
-            // Redirect to error page instead of 500
             let error_url = format!(
-                "https://ignition.ecent.online/auth/error?error=OAuthNotConfigured&provider=Azure&details={}",
+                "{}/auth/error?error=OAuthNotConfigured&provider=Azure&details={}",
+                state.config.server.frontend_url,
                 urlencoding::encode("Azure/Microsoft OAuth credentials are not configured on the server")
             );
             return Ok(Redirect::temporary(&error_url).into_response());
@@ -131,11 +132,16 @@ async fn signin_azure(
 
     let (auth_url, oauth_state) = azure.authorization_url();
 
-    // Store state for callback validation
-    {
-        let mut store = oauth_store.write().await;
-        store.insert(oauth_state.csrf_token.clone(), oauth_state);
-    }
+    // Store state in database for distributed access, with optional redirect_uri
+    OAuthStateRepo::insert(
+        &state.db,
+        &oauth_state.csrf_token,
+        &oauth_state.pkce_verifier,
+        query.redirect_uri.as_deref(),
+    )
+    .await?;
+
+    tracing::debug!(state = %oauth_state.csrf_token, redirect_uri = ?query.redirect_uri, "Stored OAuth state in database");
 
     Ok(Redirect::temporary(&auth_url).into_response())
 }
@@ -150,10 +156,9 @@ struct OAuthCallback {
 /// Google OAuth callback
 async fn callback_google(
     State(state): State<Arc<AppState>>,
-    Extension(oauth_store): Extension<OAuthStateStore>,
     Query(params): Query<OAuthCallback>,
 ) -> Response {
-    match handle_google_callback(&state, oauth_store, params).await {
+    match handle_google_callback(&state, params).await {
         Ok(response) => response,
         Err(e) => {
             tracing::error!("Google OAuth callback error: {}", e);
@@ -169,16 +174,19 @@ async fn callback_google(
 
 async fn handle_google_callback(
     state: &Arc<AppState>,
-    oauth_store: OAuthStateStore,
     params: OAuthCallback,
 ) -> AppResult<Response> {
-    // Validate state and get stored OAuth state
-    let oauth_state = {
-        let mut store = oauth_store.write().await;
-        store
-            .remove(&params.state)
-            .ok_or(AppError::OAuthError("Invalid state parameter".to_string()))?
-    };
+    tracing::debug!(state_key = %params.state, "Looking up OAuth state from database");
+    
+    // Validate state and get stored OAuth state from database
+    let oauth_state_row = OAuthStateRepo::take(&state.db, &params.state)
+        .await?
+        .ok_or_else(|| {
+            tracing::warn!(state_key = %params.state, "OAuth state not found in database");
+            AppError::OAuthError("Invalid state parameter".to_string())
+        })?;
+
+    tracing::debug!("OAuth state found, exchanging code for tokens");
 
     // Create OAuth service
     let oauth_service = OAuthService::new(&state.config)?;
@@ -188,7 +196,7 @@ async fn handle_google_callback(
 
     // Exchange code for tokens
     let token_info = google
-        .exchange_code(&params.code, &oauth_state.pkce_verifier)
+        .exchange_code(&params.code, &oauth_state_row.pkce_verifier)
         .await?;
 
     // Get user info
@@ -209,11 +217,13 @@ async fn handle_google_callback(
         state.config.auth.session_ttl_seconds,
     );
 
-    // Redirect to frontend app with session cookie
-    let redirect_url = format!("{}/today", state.config.server.frontend_url);
+    // Redirect to stored redirect_uri or default to /today
+    let redirect_url = oauth_state_row.redirect_uri
+        .unwrap_or_else(|| format!("{}/today", state.config.server.frontend_url));
+    
     let response = Response::builder()
         .status(StatusCode::FOUND)
-        .header(header::LOCATION, redirect_url)
+        .header(header::LOCATION, &redirect_url)
         .header(header::SET_COOKIE, cookie)
         .body(axum::body::Body::empty())
         .map_err(|e| AppError::Internal(e.to_string()))?;
@@ -221,6 +231,7 @@ async fn handle_google_callback(
     tracing::info!(
         user_id = %user.id,
         email = %user.email,
+        redirect_url = %redirect_url,
         "User authenticated via Google OAuth"
     );
 
@@ -230,10 +241,9 @@ async fn handle_google_callback(
 /// Azure OAuth callback
 async fn callback_azure(
     State(state): State<Arc<AppState>>,
-    Extension(oauth_store): Extension<OAuthStateStore>,
     Query(params): Query<OAuthCallback>,
 ) -> Response {
-    match handle_azure_callback(&state, oauth_store, params).await {
+    match handle_azure_callback(&state, params).await {
         Ok(response) => response,
         Err(e) => {
             tracing::error!("Azure OAuth callback error: {}", e);
@@ -249,16 +259,19 @@ async fn callback_azure(
 
 async fn handle_azure_callback(
     state: &Arc<AppState>,
-    oauth_store: OAuthStateStore,
     params: OAuthCallback,
 ) -> AppResult<Response> {
-    // Validate state and get stored OAuth state
-    let oauth_state = {
-        let mut store = oauth_store.write().await;
-        store
-            .remove(&params.state)
-            .ok_or(AppError::OAuthError("Invalid state parameter".to_string()))?
-    };
+    tracing::debug!(state_key = %params.state, "Looking up OAuth state from database");
+    
+    // Validate state and get stored OAuth state from database
+    let oauth_state_row = OAuthStateRepo::take(&state.db, &params.state)
+        .await?
+        .ok_or_else(|| {
+            tracing::warn!(state_key = %params.state, "OAuth state not found in database");
+            AppError::OAuthError("Invalid state parameter".to_string())
+        })?;
+
+    tracing::debug!("OAuth state found, exchanging code for tokens");
 
     // Create OAuth service
     let oauth_service = OAuthService::new(&state.config)?;
@@ -268,7 +281,7 @@ async fn handle_azure_callback(
 
     // Exchange code for tokens
     let token_info = azure
-        .exchange_code(&params.code, &oauth_state.pkce_verifier)
+        .exchange_code(&params.code, &oauth_state_row.pkce_verifier)
         .await?;
 
     // Get user info
@@ -287,11 +300,13 @@ async fn handle_azure_callback(
         state.config.auth.session_ttl_seconds,
     );
 
-    // Redirect to frontend app with session cookie
-    let redirect_url = format!("{}/today", state.config.server.frontend_url);
+    // Redirect to stored redirect_uri or default to /today
+    let redirect_url = oauth_state_row.redirect_uri
+        .unwrap_or_else(|| format!("{}/today", state.config.server.frontend_url));
+    
     let response = Response::builder()
         .status(StatusCode::FOUND)
-        .header(header::LOCATION, redirect_url)
+        .header(header::LOCATION, &redirect_url)
         .header(header::SET_COOKIE, cookie)
         .body(axum::body::Body::empty())
         .map_err(|e| AppError::Internal(e.to_string()))?;
@@ -299,6 +314,7 @@ async fn handle_azure_callback(
     tracing::info!(
         user_id = %user.id,
         email = %user.email,
+        redirect_url = %redirect_url,
         "User authenticated via Azure OAuth"
     );
 

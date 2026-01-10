@@ -21,6 +21,8 @@ pub mod learn_repos;
 pub mod market_models;
 pub mod market_repos;
 pub mod models;
+pub mod oauth_models;
+pub mod oauth_repos;
 pub mod platform_models;
 pub mod platform_repos;
 pub mod quests_models;

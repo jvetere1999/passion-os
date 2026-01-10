@@ -13,8 +13,6 @@ export {
   getTimingSummary,
   timeAsync,
   timeSync,
-  getMemoizedCloudflareContext,
-  getDB,
   type RequestTimings,
   type RequestContext,
 } from "./request-context";

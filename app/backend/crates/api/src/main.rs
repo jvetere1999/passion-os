@@ -25,7 +25,6 @@ mod storage;
 mod tests;
 
 use config::AppConfig;
-use routes::auth::create_oauth_state_store;
 use state::AppState;
 
 #[tokio::main]
@@ -67,9 +66,6 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn build_router(state: Arc<AppState>) -> Router {
-    // Create OAuth state store
-    let oauth_state_store = create_oauth_state_store();
-
     // Create base router with state type
     let app: Router<Arc<AppState>> = Router::new()
         // Health check (no auth required)
@@ -77,7 +73,7 @@ fn build_router(state: Arc<AppState>) -> Router {
         // Auth routes (needs session extraction for /session endpoint, but no CSRF)
         .nest(
             "/auth",
-            routes::auth::router(oauth_state_store).layer(axum::middleware::from_fn_with_state(
+            routes::auth::router().layer(axum::middleware::from_fn_with_state(
                 state.clone(),
                 middleware::auth::extract_session,
             )),

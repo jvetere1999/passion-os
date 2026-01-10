@@ -5,12 +5,10 @@
  * within a single request lifecycle on Cloudflare Workers.
  *
  * Key features:
- * - Memoize expensive operations (auth, db context, user lookup)
+ * - Memoize expensive operations (auth, user lookup)
  * - Track timing metrics for performance analysis
  * - Safe for concurrent requests (uses AsyncLocalStorage pattern)
  */
-
-import type { D1Database } from "@cloudflare/workers-types";
 
 /**
  * Timing metrics collected per request
@@ -225,38 +223,5 @@ export function timeSync<T>(
   }
 }
 
-// ============================================================
-// Memoized wrappers for common operations
-// ============================================================
-
-/**
- * Memoized Cloudflare context getter
- * Avoids repeated getCloudflareContext() calls within a request
- */
-let cachedCloudflareContext: { env: { DB?: D1Database } } | null = null;
-
-export async function getMemoizedCloudflareContext(): Promise<{ env: { DB?: D1Database } }> {
-  if (cachedCloudflareContext) {
-    return cachedCloudflareContext;
-  }
-
-  try {
-    const { getCloudflareContext } = await import("@opennextjs/cloudflare");
-    const ctx = await getCloudflareContext({ async: true });
-    cachedCloudflareContext = ctx as { env: { DB?: D1Database } };
-    return cachedCloudflareContext;
-  } catch {
-    // Fallback for local dev
-    const env = (globalThis as unknown as { env?: { DB?: D1Database } }).env;
-    return { env: { DB: env?.DB } };
-  }
-}
-
-/**
- * Get D1 database with memoization
- */
-export async function getDB(): Promise<D1Database | null> {
-  const ctx = await getMemoizedCloudflareContext();
-  return ctx.env?.DB ?? null;
-}
+// D1 backward compatibility removed - all data access via Rust backend API
 

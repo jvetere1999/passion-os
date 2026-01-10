@@ -74,6 +74,7 @@ async function checkSession(request: NextRequest): Promise<{ authenticated: bool
     console.log(`[middleware] checkSession: has session cookie: ${cookieHeader.includes('session=')}`);
     
     const response = await fetch(`${API_BASE_URL}/auth/session`, {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Cookie': cookieHeader,

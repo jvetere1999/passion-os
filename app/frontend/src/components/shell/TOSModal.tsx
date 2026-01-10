@@ -25,8 +25,17 @@ export function TOSModal({ onAccept }: TOSModalProps) {
 
     setIsAccepting(true);
     try {
-      const response = await fetch("/api/auth/accept-tos", {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online';
+      const response = await fetch(`${API_BASE_URL}/auth/accept-tos`, {
         method: "POST",
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          accepted: true,
+          version: '1.0',
+        }),
       });
 
       if (response.ok) {

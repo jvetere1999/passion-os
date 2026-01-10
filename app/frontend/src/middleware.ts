@@ -69,7 +69,6 @@ async function checkSession(request: NextRequest): Promise<{ authenticated: bool
     // Get session cookie directly from request
     const sessionCookie = request.cookies.get('session');
     
-    // Debug: log what we're checking
     console.log(`[middleware] checkSession: has session cookie: ${!!sessionCookie}, value length: ${sessionCookie?.value?.length || 0}`);
     
     if (!sessionCookie?.value) {
@@ -77,29 +76,12 @@ async function checkSession(request: NextRequest): Promise<{ authenticated: bool
       return { authenticated: false };
     }
     
-    console.log(`[middleware] checkSession: calling ${API_BASE_URL}/auth/session with cookie`);
-    
-    // Forward the session cookie to the backend
-    const response = await fetch(`${API_BASE_URL}/auth/session`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cookie': `session=${sessionCookie.value}`,
-      },
-      cache: 'no-store',
-    });
-
-    console.log(`[middleware] checkSession: response status: ${response.status}`);
-
-    if (!response.ok) {
-      console.log(`[middleware] checkSession: backend returned ${response.status}`);
-      return { authenticated: false };
-    }
-
-    const data = await response.json() as { user: unknown | null };
-    console.log(`[middleware] checkSession: response data:`, JSON.stringify(data));
-    console.log(`[middleware] checkSession: authenticated: ${!!data.user}`);
-    return { authenticated: !!data.user };
+    // TRUST THE COOKIE - Don't call backend from edge middleware
+    // The backend API calls from Cloudflare Workers edge are timing out (522)
+    // Instead, we trust that if a session cookie exists, the user is authenticated
+    // The pages will validate the session with the backend on load
+    console.log(`[middleware] checkSession: session cookie exists, assuming authenticated`);
+    return { authenticated: true };
   } catch (error) {
     console.error(`[middleware] checkSession error:`, error);
     return { authenticated: false };

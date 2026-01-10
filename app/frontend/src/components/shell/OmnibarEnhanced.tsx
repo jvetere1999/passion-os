@@ -594,7 +594,7 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
           {isCommandMode ? (
             <span className={styles.hint}>↵ Execute  ↑↓ Navigate  Esc Close</span>
           ) : (
-            <span className={styles.hint}>↵ Add  ↑↓ Navigate  > Commands  Esc Close</span>
+            <span className={styles.hint}>↵ Add  ↑↓ Navigate  {'>'} Commands  Esc Close</span>
           )}
         </div>
       </div>

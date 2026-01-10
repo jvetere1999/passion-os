@@ -1,19 +1,15 @@
 /**
  * Admin Documentation Page
  * Technical documentation accessible only to admins
+ * 
+ * Auth handled client-side via backend API session validation
  */
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { isAdminEmail } from "@/lib/admin";
 import { readFile } from "fs/promises";
 import { join } from "path";
 import styles from "./page.module.css";
-
-// Main app URL for redirects
-const MAIN_APP_URL = process.env.NEXT_PUBLIC_MAIN_APP_URL || "https://ignition.ecent.online";
 
 export const metadata: Metadata = {
   title: "Technical Documentation - Admin",
@@ -22,16 +18,8 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminDocsPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect(`${MAIN_APP_URL}/auth/signin`);
-  }
-
-  // Check if user is admin
-  if (!isAdminEmail(session.user.email)) {
-    redirect(`${MAIN_APP_URL}/today`);
-  }
+  // Auth and admin verification handled client-side
+  // AdminClient wrapper will redirect if not authenticated/authorized
 
   // Read the database schema markdown
   // NOTE: In the admin app, this path needs to point to the main repo docs

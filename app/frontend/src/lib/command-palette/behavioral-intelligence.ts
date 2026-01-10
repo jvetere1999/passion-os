@@ -1,7 +1,14 @@
-// Enhanced Omnibar with Behavioral Intelligence
-// Adds command execution tracking, fuzzy search, recency scoring, and smart command ranking
+//! Command Palette Enhancement System
+//! 
+//! Adds behavioral intelligence to the Omnibar command palette:
+//! - Fuzzy search for command discovery
+//! - Command execution tracking & analytics
+//! - Recent commands for quick access
+//! - Frequency-based command ranking
+//! - Time-of-day context awareness
+//! - Search scoring & intelligent result ordering
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 
 /**
  * Command execution history for learning user patterns

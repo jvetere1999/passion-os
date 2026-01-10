@@ -10,6 +10,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { listInboxItems, createInboxItem, deleteInboxItem as deleteInboxItemAPI } from "@/lib/api/inbox";
+import { useCommandHistory, calculateCommandScore } from "@/lib/command-palette/behavioral-intelligence";
 import styles from "./Omnibar.module.css";
 
 // ============================================
@@ -103,6 +104,9 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  
+  // Behavioral intelligence tracking
+  const { recordExecution, getMetadata, getRecentCommands } = useCommandHistory();
 
   // Determine if we're in command mode
   const isCommandMode = input.startsWith(">");
@@ -200,16 +204,32 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
     ];
   }, [router]);
 
-  // Filter commands
+  // Filter commands with behavioral intelligence scoring
   const filteredCommands = useMemo(() => {
-    if (!searchQuery) return commands;
-    const lower = searchQuery.toLowerCase();
-    return commands.filter(
-      (c) =>
-        c.title.toLowerCase().includes(lower) ||
-        c.category.toLowerCase().includes(lower)
-    );
-  }, [commands, searchQuery]);
+    if (!searchQuery) {
+      // If no query, show recent commands first, then all commands
+      const recentIds = getRecentCommands(5);
+      const recent = commands.filter((c) => recentIds.includes(c.id));
+      const others = commands.filter((c) => !recentIds.includes(c.id));
+      return [...recent, ...others];
+    }
+    
+    // Score and sort commands based on behavioral intelligence
+    const scored = commands
+      .map((cmd) => ({
+        cmd,
+        score: calculateCommandScore(
+          searchQuery,
+          { id: cmd.id, title: cmd.title, description: cmd.description },
+          getMetadata(cmd.id)
+        ),
+      }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .map((item) => item.cmd);
+    
+    return scored;
+  }, [commands, searchQuery, getMetadata, getRecentCommands]);
 
   // Group commands by category
   const groupedCommands = useMemo(() => {
@@ -271,10 +291,12 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
   // Execute selected command
   const executeCommand = useCallback(() => {
     if (filteredCommands[selectedIndex]) {
-      filteredCommands[selectedIndex].action();
+      const cmd = filteredCommands[selectedIndex];
+      recordExecution(cmd.id);
+      cmd.action();
       onClose();
     }
-  }, [filteredCommands, selectedIndex, onClose]);
+  }, [filteredCommands, selectedIndex, onClose, recordExecution]);
 
   // Keyboard navigation
   const handleKeyDown = useCallback(

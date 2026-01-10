@@ -106,31 +106,39 @@ export async function middleware(req: NextRequest) {
   const perfDebug = req.headers.get("x-perf-debug") === "1";
   const { pathname } = req.nextUrl;
 
+  console.log(`[middleware] START: ${pathname}`);
+
   // Early bailout for API routes and static files (no auth needed in middleware)
   if (
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
     pathname.includes(".")
   ) {
+    console.log(`[middleware] SKIP: static/api route`);
     return NextResponse.next();
   }
 
   // Check public routes before auth (avoid API call when not needed)
   const isPublic = isPublicRoute(pathname);
+  console.log(`[middleware] isPublic: ${isPublic}`);
 
   // For the landing page, we need auth to check for redirect
   // For other public routes, skip auth entirely
   if (isPublic && pathname !== "/") {
+    console.log(`[middleware] ALLOW: public route (non-landing)`);
     return NextResponse.next();
   }
 
   // Get session from backend - this is the expensive call
   const authStart = performance.now();
+  console.log(`[middleware] Checking session...`);
   const { authenticated } = await checkSession(req);
   const authDuration = performance.now() - authStart;
+  console.log(`[middleware] Session check complete: authenticated=${authenticated}, duration=${authDuration.toFixed(2)}ms`);
 
   // Redirect authenticated users from landing page to Today
   if (pathname === "/" && authenticated) {
+    console.log(`[middleware] REDIRECT: authenticated user at landing -> /today`);
     const response = NextResponse.redirect(new URL("/today", req.url));
     if (perfDebug) {
       response.headers.set(
@@ -143,17 +151,20 @@ export async function middleware(req: NextRequest) {
 
   // Allow public routes (landing page for unauthenticated)
   if (isPublic) {
+    console.log(`[middleware] ALLOW: public route (landing page)`);
     return NextResponse.next();
   }
 
   // Redirect unauthenticated users to sign in
   if (!authenticated) {
+    console.log(`[middleware] REDIRECT: unauthenticated user -> /auth/signin?callbackUrl=${pathname}`);
     const signInUrl = new URL("/auth/signin", req.url);
     signInUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(signInUrl);
   }
 
   // Authenticated user accessing protected route
+  console.log(`[middleware] ALLOW: authenticated user accessing ${pathname}`);
   const response = NextResponse.next();
   if (perfDebug) {
     response.headers.set(

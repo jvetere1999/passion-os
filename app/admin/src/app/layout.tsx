@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -28,22 +29,24 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div className="admin-container">
-          <header className="admin-header">
-            <div className="admin-logo">
-              <span className="admin-logo-icon">&#9881;</span>
-              <span className="admin-logo-text">Ignition Admin</span>
-            </div>
-            <nav className="admin-nav">
-              <Link href="/" className="admin-nav-link">Dashboard</Link>
-              <Link href="/templates" className="admin-nav-link">Templates</Link>
-              <Link href="/docs" className="admin-nav-link">Docs</Link>
-            </nav>
-          </header>
-          <main className="admin-main">
-            {children}
-          </main>
-        </div>
+        <AuthProvider>
+          <div className="admin-container">
+            <header className="admin-header">
+              <div className="admin-logo">
+                <span className="admin-logo-icon">&#9881;</span>
+                <span className="admin-logo-text">Ignition Admin</span>
+              </div>
+              <nav className="admin-nav">
+                <Link href="/" className="admin-nav-link">Dashboard</Link>
+                <Link href="/templates" className="admin-nav-link">Templates</Link>
+                <Link href="/docs" className="admin-nav-link">Docs</Link>
+              </nav>
+            </header>
+            <main className="admin-main">
+              {children}
+            </main>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

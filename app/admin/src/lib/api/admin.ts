@@ -3,7 +3,58 @@
  * API client for admin operations (users, stats, quests, skills, feedback)
  */
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://api.ecent.online";
+
+// ============================================
+// Admin Status Types
+// ============================================
+
+export interface AdminStatus {
+  isAdmin: boolean;
+  canClaim: boolean; // True if no admins exist yet
+  user: {
+    id: string;
+    email: string;
+    name: string | null;
+  } | null;
+}
+
+/**
+ * Check if current user is admin and if admin claiming is available
+ */
+export async function checkAdminStatus(): Promise<AdminStatus> {
+  const response = await fetch(`${API_BASE}/api/admin/status`, {
+    credentials: 'include',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to check admin status: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Claim admin role (only works if no admins exist)
+ * @param claimKey - Special key logged in API for verification
+ */
+export async function claimAdmin(claimKey: string): Promise<{ success: boolean; message: string }> {
+  const response = await fetch(`${API_BASE}/api/admin/claim`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ claimKey }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'Failed to claim admin' }));
+    throw new Error(error.message || `Claim failed: ${response.status}`);
+  }
+
+  return response.json();
+}
 
 // ============================================
 // User Types

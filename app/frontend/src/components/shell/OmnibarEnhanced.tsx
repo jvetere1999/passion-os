@@ -499,7 +499,7 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
       <div className={styles.omnibarContainer} onClick={(e) => e.stopPropagation()}>
         {/* Input */}
         <div className={styles.inputWrapper}>
-          <span className={styles.modeIndicator}>{isCommandMode ? ">" : "📝"}</span>
+          <span className={styles.modeIndicator}>{isCommandMode ? ">" : "✏"}</span>
           <input
             ref={inputRef}
             type="text"

@@ -8,6 +8,40 @@ use sqlx::FromRow;
 use uuid::Uuid;
 
 // ============================================
+// Admin Status & Claiming
+// ============================================
+
+/// Admin status response
+#[derive(Debug, Serialize)]
+pub struct AdminStatus {
+    pub is_admin: bool,
+    pub can_claim: bool,
+    pub user: Option<AdminUserInfo>,
+}
+
+/// Simplified user info for admin status
+#[derive(Debug, Serialize)]
+pub struct AdminUserInfo {
+    pub id: String,
+    pub email: String,
+    pub name: Option<String>,
+}
+
+/// Claim request payload
+#[derive(Debug, Deserialize)]
+pub struct ClaimRequest {
+    #[serde(rename = "claimKey")]
+    pub claim_key: String,
+}
+
+/// Claim response
+#[derive(Debug, Serialize)]
+pub struct ClaimResponse {
+    pub success: bool,
+    pub message: String,
+}
+
+// ============================================
 // User Management
 // ============================================
 

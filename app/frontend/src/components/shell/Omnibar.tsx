@@ -9,6 +9,7 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { listInboxItems, createInboxItem, deleteInboxItem as deleteInboxItemAPI } from "@/lib/api/inbox";
 import styles from "./Omnibar.module.css";
 
 // ============================================
@@ -26,9 +27,10 @@ interface Command {
 
 interface InboxItem {
   id: string;
-  text: string;
-  createdAt: string;
-  type: "note" | "task" | "idea";
+  title: string;
+  description?: string;
+  created_at: string;
+  tags?: string[];
 }
 
 // ============================================
@@ -84,8 +86,6 @@ const THEME_COMMANDS: Omit<Command, "action">[] = [
   { id: "theme-system", title: "Use System Theme", category: "Theme" },
 ];
 
-const INBOX_STORAGE_KEY = "passion_inbox_v1";
-
 // ============================================
 // Component
 // ============================================
@@ -100,6 +100,7 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
   const [input, setInput] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [inboxItems, setInboxItems] = useState<InboxItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -107,32 +108,25 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
   const isCommandMode = input.startsWith(">");
   const searchQuery = isCommandMode ? input.slice(1).trim() : input;
 
-  // DEPRECATED: localStorage-based inbox (2026-01-10)
-  // This should be replaced with backend API: GET /api/user/inbox
-  // See: agent/STATELESS_SYNC_VALIDATION.md - Priority 2
-  // Load inbox items
+  // Load inbox items from backend
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(INBOX_STORAGE_KEY);
-      if (stored) {
-        setInboxItems(JSON.parse(stored));
+    const loadInbox = async () => {
+      try {
+        setIsLoading(true);
+        const response = await listInboxItems(1, 100);
+        setInboxItems(response.items);
+      } catch (error) {
+        console.error("Failed to load inbox items:", error);
+        // Fallback: empty inbox if API fails
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.error("Failed to load inbox:", e);
-    }
-  }, []);
+    };
 
-  // DEPRECATED: localStorage-based inbox persistence (2026-01-10)
-  // This should be replaced with backend API: POST /api/user/inbox
-  // Save inbox items
-  const saveInboxItems = useCallback((items: InboxItem[]) => {
-    setInboxItems(items);
-    try {
-      localStorage.setItem(INBOX_STORAGE_KEY, JSON.stringify(items));
-    } catch (e) {
-      console.error("Failed to save inbox:", e);
+    if (isOpen) {
+      loadInbox();
     }
-  }, []);
+  }, [isOpen]);
 
   // Build commands with actions
   const commands: Command[] = useMemo(() => {
@@ -233,7 +227,7 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
   const filteredInbox = useMemo(() => {
     if (!searchQuery) return inboxItems;
     const lower = searchQuery.toLowerCase();
-    return inboxItems.filter((item) => item.text.toLowerCase().includes(lower));
+    return inboxItems.filter((item) => item.title.toLowerCase().includes(lower));
   }, [inboxItems, searchQuery]);
 
   // Focus input when opened
@@ -246,24 +240,33 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
   }, [isOpen]);
 
   // Add new inbox item
-  const addInboxItem = useCallback(() => {
+  const addInboxItem = useCallback(async () => {
     if (!input.trim() || isCommandMode) return;
 
-    const item: InboxItem = {
-      id: crypto.randomUUID(),
-      text: input.trim(),
-      createdAt: new Date().toISOString(),
-      type: "note",
-    };
-
-    saveInboxItems([item, ...inboxItems]);
-    setInput("");
-  }, [input, isCommandMode, inboxItems, saveInboxItems]);
+    try {
+      setIsLoading(true);
+      const newItem = await createInboxItem(input.trim());
+      setInboxItems([newItem, ...inboxItems]);
+      setInput("");
+    } catch (error) {
+      console.error("Failed to create inbox item:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, isCommandMode, inboxItems]);
 
   // Delete inbox item
-  const deleteInboxItem = useCallback((id: string) => {
-    saveInboxItems(inboxItems.filter((item) => item.id !== id));
-  }, [inboxItems, saveInboxItems]);
+  const deleteInboxItem = useCallback(async (id: string) => {
+    try {
+      setIsLoading(true);
+      await deleteInboxItemAPI(id);
+      setInboxItems(inboxItems.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Failed to delete inbox item:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [inboxItems]);
 
   // Execute selected command
   const executeCommand = useCallback(() => {
@@ -464,10 +467,10 @@ export function Omnibar({ isOpen, onClose }: OmnibarProps) {
                         setSelectedIndex(index);
                       }}
                     >
-                      <span className={styles.inboxText}>{item.text}</span>
+                      <span className={styles.inboxText}>{item.title}</span>
                       <div className={styles.inboxMeta}>
                         <span className={styles.inboxDate}>
-                          {new Date(item.createdAt).toLocaleDateString()}
+                          {new Date(item.created_at).toLocaleDateString()}
                         </span>
                         <button
                           className={styles.deleteBtn}

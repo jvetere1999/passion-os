@@ -26,6 +26,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify lockfile exists
+        run: test -f app/frontend/package-lock.json || (echo "ERROR: package-lock.json not found" && exit 1)
 
       - name: Setup Node.js
         uses: actions/setup-node@v4

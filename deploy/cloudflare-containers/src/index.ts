@@ -229,7 +229,7 @@ function getApiContainer(env: Env, instanceId: number = 0) {
  * Simple round-robin load balancer across container instances.
  */
 let requestCounter = 0;
-const MAX_INSTANCES = 2;
+const MAX_INSTANCES = 1; // Reduced to 1 for stability
 
 function loadBalance(env: Env) {
   const instanceId = requestCounter % MAX_INSTANCES;

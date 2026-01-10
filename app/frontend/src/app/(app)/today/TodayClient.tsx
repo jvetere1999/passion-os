@@ -12,6 +12,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/auth";
 import {
   getTodayData,
   getDefaultUserState,
@@ -28,8 +29,6 @@ import { TodayGridClient } from "./TodayGridClient";
 
 interface TodayClientProps {
   greeting: string;
-  firstName: string;
-  userId: string;
 }
 
 /**
@@ -49,7 +48,8 @@ function computeVisibility(userState: TodayUserState) {
   };
 }
 
-export function TodayClient({ greeting, firstName }: TodayClientProps) {
+export function TodayClient({ greeting }: TodayClientProps) {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [userState, setUserState] = useState<TodayUserState>(getDefaultUserState());
   const [dynamicUIData, setDynamicUIData] = useState<DynamicUIData | null>(null);
@@ -57,6 +57,8 @@ export function TodayClient({ greeting, firstName }: TodayClientProps) {
   const [personalization, setPersonalization] = useState<UserPersonalization>(
     getDefaultPersonalization()
   );
+
+  const firstName = user?.name?.split(" ")[0] || "there";
 
   useEffect(() => {
     async function fetchData() {

@@ -8,11 +8,10 @@
  * Architecture:
  * - Frontend performs 0% data logic
  * - All data flows through Rust backend at api.ecent.online
+ * - Middleware handles auth protection (no server-side auth check needed)
  */
 
 import type { Metadata } from "next";
-import { auth } from "@/lib/auth/server";
-import { redirect } from "next/navigation";
 import { TodayClient } from "./TodayClient";
 
 export const metadata: Metadata = {
@@ -21,20 +20,14 @@ export const metadata: Metadata = {
 };
 
 export default async function TodayPage() {
-  const session = await auth();
-
-  if (!session?.user) {
-    redirect("/auth/signin?callbackUrl=/today");
-  }
+  // Auth is handled by middleware - no server-side check needed
+  // This prevents redirect loops caused by SSR not forwarding cookies properly
 
   const greeting = getGreeting();
-  const firstName = session.user.name?.split(" ")[0] || "there";
 
   return (
     <TodayClient
       greeting={greeting}
-      firstName={firstName}
-      userId={session.user.id}
     />
   );
 }

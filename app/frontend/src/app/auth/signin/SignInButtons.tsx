@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getSignInUrl } from "@/lib/auth/api-auth";
 import styles from "./SignInButtons.module.css";
 
@@ -10,11 +10,21 @@ import styles from "./SignInButtons.module.css";
  */
 export function SignInButtons() {
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
+
+  // Extract callbackUrl from query params on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const callback = params.get('callbackUrl');
+    if (callback) {
+      setCallbackUrl(callback);
+    }
+  }, []);
 
   const handleSignIn = (provider: 'google' | 'azure') => {
     setIsLoading(provider);
-    // Redirect to backend OAuth endpoint
-    window.location.href = getSignInUrl(provider);
+    // Redirect to backend OAuth endpoint with callback URL
+    window.location.href = getSignInUrl(provider, callbackUrl);
   };
 
   return (

@@ -85,9 +85,18 @@ export async function getSession(): Promise<SessionResponse> {
 /**
  * Get OAuth sign-in URL for a provider
  * User will be redirected to this URL to start OAuth flow
+ * @param provider - OAuth provider ('google' or 'azure')
+ * @param redirectPath - Optional path to redirect to after auth (e.g. '/today')
  */
-export function getSignInUrl(provider: 'google' | 'azure'): string {
-  return `${API_BASE_URL}/auth/signin/${provider}`;
+export function getSignInUrl(provider: 'google' | 'azure', redirectPath?: string | null): string {
+  const baseUrl = `${API_BASE_URL}/auth/signin/${provider}`;
+  if (redirectPath) {
+    // Build full redirect URL from the frontend origin
+    const frontendOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+    const fullRedirectUrl = `${frontendOrigin}${redirectPath}`;
+    return `${baseUrl}?redirect_uri=${encodeURIComponent(fullRedirectUrl)}`;
+  }
+  return baseUrl;
 }
 
 /**

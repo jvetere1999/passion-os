@@ -29,7 +29,7 @@ impl ReferencesRepo {
                  LIMIT $3 OFFSET $4",
             )
             .bind(user_id)
-            .bind(cat)
+            .bind(&cat)
             .bind(page_size)
             .bind(offset)
             .fetch_all(db)

@@ -2,7 +2,7 @@
 //!
 //! Database operations for learning system.
 
-use sqlx::{FromRow, PgPool, Row};
+use sqlx::{FromRow, PgPool};
 use uuid::Uuid;
 
 use crate::error::AppError;

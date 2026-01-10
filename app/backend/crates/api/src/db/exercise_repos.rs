@@ -3,7 +3,7 @@
 //! Database operations for exercises, workouts, sessions, and programs.
 
 use chrono::Utc;
-use sqlx::{FromRow, PgPool, Row};
+use sqlx::{FromRow, PgPool};
 use uuid::Uuid;
 
 use crate::error::AppError;

@@ -22,7 +22,7 @@ use super::db::user_settings_repos::UserSettingsRepo;
 pub fn router() -> Router<AppState> {
     Router::new()
         .route("/", get(get_all_settings).post(upsert_setting))
-        .route("/:key", get(get_setting).delete(delete_setting))
+        .route("/{key}", get(get_setting).delete(delete_setting))
 }
 
 /// GET /api/settings - Get all settings for authenticated user

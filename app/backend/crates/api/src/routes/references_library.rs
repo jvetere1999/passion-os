@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Extension, Path, Query, State},
-    routing::{delete, get, post, put},
+    routing::get,
     Json, Router,
 };
 use serde::Deserialize;
@@ -22,7 +22,7 @@ use crate::state::AppState;
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_references).post(create_reference))
-        .route("/:id", get(get_reference).put(update_reference).delete(delete_reference))
+        .route("/{id}", get(get_reference).put(update_reference).delete(delete_reference))
 }
 
 // ============================================================================

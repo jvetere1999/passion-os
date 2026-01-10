@@ -4,6 +4,7 @@
 //! Per DEC-004=B: Role-based access using DB-backed roles.
 
 use std::sync::Arc;
+use std::sync::OnceLock;
 use rand::Rng;
 
 use axum::{
@@ -39,8 +40,10 @@ fn generate_claim_key() -> String {
     key
 }
 
-lazy_static::lazy_static! {
-    static ref CLAIM_KEY: String = generate_claim_key();
+static CLAIM_KEY: OnceLock<String> = OnceLock::new();
+
+fn get_claim_key() -> &'static str {
+    CLAIM_KEY.get_or_init(generate_claim_key).as_str()
 }
 
 /// Create admin claiming routes (no admin role required)
@@ -157,7 +160,7 @@ async fn admin_claim(
     }
 
     // Validate claim key
-    if payload.claim_key != *CLAIM_KEY {
+    if payload.claim_key != get_claim_key() {
         tracing::warn!(
             "Invalid admin claim attempt by user {} with key: {}",
             auth.user_id,

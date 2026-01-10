@@ -6,7 +6,7 @@ use std::sync::Arc;
 
 use axum::{
     extract::{Extension, Path, Query, State},
-    routing::{delete, get, post, put},
+    routing::get,
     Json, Router,
 };
 use serde::Deserialize;
@@ -22,7 +22,7 @@ use crate::state::AppState;
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_inbox).post(create_inbox_item))
-        .route("/:id", get(get_inbox_item).put(update_inbox_item).delete(delete_inbox_item))
+        .route("/{id}", get(get_inbox_item).put(update_inbox_item).delete(delete_inbox_item))
 }
 
 // ============================================================================

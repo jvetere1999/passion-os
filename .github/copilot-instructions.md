@@ -113,3 +113,9 @@ test("API returns valid response", async ({ request }) => {
 });
 ```
 
+### Deployment Rules (MANDATORY)
+- **Frontend**: ALWAYS deploys via GitHub Actions → Cloudflare Workers. NEVER manually deploy frontend.
+- **Backend**: Deploy via `flyctl deploy` from `app/backend/` directory.
+- **Admin**: Deploys via GitHub Actions → Cloudflare Workers.
+- Push changes to `main` branch to trigger frontend/admin deploys automatically.
+

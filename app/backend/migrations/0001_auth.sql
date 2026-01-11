@@ -74,15 +74,14 @@ CREATE INDEX sessions_expires_at_idx ON sessions(expires_at);
 -- OAUTH_STATES (CSRF protection for OAuth flows)
 -- =============================================================================
 CREATE TABLE oauth_states (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    state TEXT UNIQUE NOT NULL,
-    provider TEXT NOT NULL,
+    state_key TEXT PRIMARY KEY,
+    pkce_verifier TEXT NOT NULL,
     redirect_uri TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     expires_at TIMESTAMPTZ NOT NULL
 );
 
-CREATE INDEX oauth_states_state_idx ON oauth_states(state);
+CREATE INDEX oauth_states_state_idx ON oauth_states(state_key);
 CREATE INDEX oauth_states_expires_idx ON oauth_states(expires_at);
 
 -- =============================================================================

@@ -318,8 +318,8 @@ impl FocusPauseRepo {
         user_id: Uuid,
     ) -> Result<Option<FocusPauseState>, AppError> {
         let state = sqlx::query_as::<_, FocusPauseState>(
-            r#"SELECT id, user_id, session_id, mode, time_remaining_seconds,
-                      paused_at, created_at, updated_at
+            r#"SELECT id, user_id, session_id, mode, is_paused, time_remaining_seconds,
+                      paused_at, resumed_at, created_at, updated_at
                FROM focus_pause_state WHERE user_id = $1"#,
         )
         .bind(user_id)
@@ -360,16 +360,16 @@ impl FocusPauseRepo {
         // Upsert pause state
         let state = sqlx::query_as::<_, FocusPauseState>(
             r#"INSERT INTO focus_pause_state
-               (user_id, session_id, mode, time_remaining_seconds, paused_at)
-               VALUES ($1, $2, $3, $4, NOW())
-               ON CONFLICT (user_id) DO UPDATE
-               SET session_id = EXCLUDED.session_id,
-                   mode = EXCLUDED.mode,
+               (user_id, session_id, mode, is_paused, time_remaining_seconds, paused_at)
+               VALUES ($1, $2, $3, true, $4, NOW())
+               ON CONFLICT (session_id) DO UPDATE
+               SET mode = EXCLUDED.mode,
+                   is_paused = true,
                    time_remaining_seconds = EXCLUDED.time_remaining_seconds,
                    paused_at = NOW(),
                    updated_at = NOW()
-               RETURNING id, user_id, session_id, mode, time_remaining_seconds,
-                         paused_at, created_at, updated_at"#,
+               RETURNING id, user_id, session_id, mode, is_paused, time_remaining_seconds,
+                         paused_at, resumed_at, created_at, updated_at"#,
         )
         .bind(user_id)
         .bind(session.id)
@@ -387,13 +387,11 @@ impl FocusPauseRepo {
         let pause_state = pause_state
             .ok_or_else(|| AppError::NotFound("No paused session to resume".to_string()))?;
 
-        let session_id = pause_state.session_id.ok_or_else(|| {
-            AppError::NotFound("No session associated with pause state".to_string())
-        })?;
+        let session_id = pause_state.session_id;
 
         // Calculate new expiry
-        let new_expires_at =
-            Utc::now() + Duration::seconds(pause_state.time_remaining_seconds as i64);
+        let time_remaining = pause_state.time_remaining_seconds.unwrap_or(0);
+        let new_expires_at = Utc::now() + Duration::seconds(time_remaining as i64);
 
         // Update session
         let session = sqlx::query_as::<_, FocusSession>(

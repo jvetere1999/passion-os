@@ -20,7 +20,7 @@ pub struct Habit {
     pub description: Option<String>,
     pub frequency: String,
     pub target_count: i32,
-    pub custom_days: Option<String>,
+    pub custom_days: Option<Vec<i32>>,
     pub icon: Option<String>,
     pub color: Option<String>,
     pub is_active: bool,
@@ -52,7 +52,7 @@ pub struct CreateHabitRequest {
     pub frequency: String,
     #[serde(default = "default_target")]
     pub target_count: i32,
-    pub custom_days: Option<String>,
+    pub custom_days: Option<Vec<i32>>,
     pub icon: Option<String>,
     pub color: Option<String>,
 }

@@ -109,10 +109,12 @@ pub struct FocusSession {
 pub struct FocusPauseState {
     pub id: Uuid,
     pub user_id: Uuid,
-    pub session_id: Option<Uuid>,
-    pub mode: String,
-    pub time_remaining_seconds: i32,
-    pub paused_at: DateTime<Utc>,
+    pub session_id: Uuid,
+    pub mode: Option<String>,
+    pub is_paused: bool,
+    pub time_remaining_seconds: Option<i32>,
+    pub paused_at: Option<DateTime<Utc>>,
+    pub resumed_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
 }
@@ -200,9 +202,9 @@ pub struct ActiveFocusResponse {
 /// Pause state response
 #[derive(Debug, Clone, Serialize)]
 pub struct PauseStateResponse {
-    pub mode: String,
-    pub time_remaining_seconds: i32,
-    pub paused_at: DateTime<Utc>,
+    pub mode: Option<String>,
+    pub time_remaining_seconds: Option<i32>,
+    pub paused_at: Option<DateTime<Utc>>,
 }
 
 impl From<FocusPauseState> for PauseStateResponse {

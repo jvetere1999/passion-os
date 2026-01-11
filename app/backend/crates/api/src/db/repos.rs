@@ -379,20 +379,22 @@ impl AuditLogRepo {
 pub struct RbacRepo;
 
 impl RbacRepo {
-    /// Check if user has a specific entitlement
+    /// Check if user has a specific entitlement (now checks role names)
+    /// NOTE: Full entitlement system removed (DEC-003). Checks role names instead.
     #[allow(dead_code)]
     pub async fn has_entitlement(
         pool: &PgPool,
         user_id: Uuid,
         entitlement: &str,
     ) -> Result<bool, AppError> {
+        // Entitlements/role_entitlements tables were removed per DEC-003
+        // Check role names instead
         let result: (bool,) = sqlx::query_as(
             r#"SELECT EXISTS(
                 SELECT 1 FROM user_roles ur
-                JOIN role_entitlements re ON ur.role_id = re.role_id
-                JOIN entitlements e ON re.entitlement_id = e.id
+                JOIN roles r ON ur.role_id = r.id
                 WHERE ur.user_id = $1
-                  AND e.name = $2
+                  AND r.name = $2
                   AND (ur.expires_at IS NULL OR ur.expires_at > NOW())
             )"#,
         )
@@ -406,12 +408,14 @@ impl RbacRepo {
     }
 
     /// Get all entitlements for a user
+    /// NOTE: Full entitlement system removed (DEC-003). Returns role names as entitlements.
     pub async fn get_entitlements(pool: &PgPool, user_id: Uuid) -> Result<Vec<String>, AppError> {
+        // Entitlements/role_entitlements tables were removed per DEC-003
+        // Return role names instead for basic RBAC
         let rows: Vec<(String,)> = sqlx::query_as(
-            r#"SELECT DISTINCT e.name
+            r#"SELECT DISTINCT r.name
             FROM user_roles ur
-            JOIN role_entitlements re ON ur.role_id = re.role_id
-            JOIN entitlements e ON re.entitlement_id = e.id
+            JOIN roles r ON ur.role_id = r.id
             WHERE ur.user_id = $1
               AND (ur.expires_at IS NULL OR ur.expires_at > NOW())"#,
         )

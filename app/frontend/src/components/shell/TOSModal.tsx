@@ -1,12 +1,14 @@
 /**
  * TOS Acceptance Modal
  * Shows when user needs to accept Terms of Service
+ * Shows loading state while sync data loads
  */
 
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSyncState } from "@/lib/sync/SyncStateContext";
 import styles from "./TOSModal.module.css";
 
 interface TOSModalProps {
@@ -16,6 +18,29 @@ interface TOSModalProps {
 export function TOSModal({ onAccept }: TOSModalProps) {
   const [isAccepting, setIsAccepting] = useState(false);
   const [hasRead, setHasRead] = useState(false);
+  const { user, isLoading: syncLoading } = useSyncState();
+
+  // Show loading bar while sync state initializes
+  if (syncLoading || !user) {
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.modal}>
+          <div className={styles.loadingContainer}>
+            <h2 className={styles.title}>Loading...</h2>
+            <div className={styles.progressBar}>
+              <div className={styles.progressFill}></div>
+            </div>
+            <p className={styles.loadingText}>Initializing your workspace</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't show modal if TOS already accepted
+  if (user.tos_accepted) {
+    return null;
+  }
 
   const handleAccept = async () => {
     if (!hasRead) {

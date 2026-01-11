@@ -22,7 +22,7 @@ pub struct InboxItem {
     pub action_url: Option<String>,
     pub action_data: Option<serde_json::Value>,
     pub priority: i32,
-    pub is_read: bool,
+    pub is_processed: bool,
     pub is_archived: bool,
     pub expires_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
@@ -52,7 +52,7 @@ pub struct CreateInboxRequest {
 /// Update inbox item request
 #[derive(Debug, Deserialize)]
 pub struct UpdateInboxRequest {
-    pub is_read: Option<bool>,
+    pub is_processed: Option<bool>,
     pub is_archived: Option<bool>,
 }
 
@@ -66,7 +66,7 @@ pub struct InboxResponse {
     pub action_url: Option<String>,
     pub action_data: Option<serde_json::Value>,
     pub priority: i32,
-    pub is_read: bool,
+    pub is_processed: bool,
     pub is_archived: bool,
     pub expires_at: Option<DateTime<Utc>>,
     pub created_at: DateTime<Utc>,
@@ -82,7 +82,7 @@ impl From<InboxItem> for InboxResponse {
             action_url: item.action_url,
             action_data: item.action_data,
             priority: item.priority,
-            is_read: item.is_read,
+            is_processed: item.is_processed,
             is_archived: item.is_archived,
             expires_at: item.expires_at,
             created_at: item.created_at,

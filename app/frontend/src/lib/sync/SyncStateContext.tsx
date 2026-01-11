@@ -33,6 +33,7 @@ import {
   type BadgeData,
   type FocusStatusData,
   type PlanStatusData,
+  type UserData,
 } from "@/lib/api/sync";
 
 // ============================================
@@ -48,6 +49,8 @@ interface SyncStateContextValue {
   focus: FocusStatusData | null;
   /** Daily plan completion status */
   plan: PlanStatusData | null;
+  /** User profile and settings */
+  user: UserData | null;
   /** Whether initial load is complete */
   isLoading: boolean;
   /** Last error (cleared on success) */
@@ -83,6 +86,7 @@ export function SyncStateProvider({ children, disabled = false }: SyncStateProvi
   const [badges, setBadges] = useState<BadgeData | null>(null);
   const [focus, setFocus] = useState<FocusStatusData | null>(null);
   const [plan, setPlan] = useState<PlanStatusData | null>(null);
+  const [user, setUser] = useState<UserData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
@@ -116,6 +120,7 @@ export function SyncStateProvider({ children, disabled = false }: SyncStateProvi
       setBadges(data.badges);
       setFocus(data.focus);
       setPlan(data.plan);
+      setUser(data.user);
       setLastSyncAt(new Date());
       setError(null);
       lastEtagRef.current = data.etag;
@@ -208,6 +213,7 @@ export function SyncStateProvider({ children, disabled = false }: SyncStateProvi
     badges,
     focus,
     plan,
+    user,
     isLoading,
     error,
     lastSyncAt,

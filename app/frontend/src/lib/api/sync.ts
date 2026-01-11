@@ -47,11 +47,21 @@ export interface PlanStatusData {
   percent_complete: number;
 }
 
+export interface UserData {
+  id: string;
+  email: string;
+  name: string;
+  image: string | null;
+  theme: string;
+  tos_accepted: boolean;
+}
+
 export interface PollResponse {
   progress: ProgressData;
   badges: BadgeData;
   focus: FocusStatusData;
   plan: PlanStatusData;
+  user: UserData;
   server_time: string;
   etag: string;
 }

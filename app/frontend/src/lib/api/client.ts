@@ -105,6 +105,7 @@ function buildUrl(path: string, params?: Record<string, string | number | boolea
 
 /**
  * Execute fetch with standard configuration
+ * Automatically tracks errors via error notification system if available
  */
 async function executeFetch<T>(
   method: string,
@@ -163,19 +164,42 @@ async function executeFetch<T>(
   } catch (error) {
     if (timeoutId) clearTimeout(timeoutId);
     
+    let apiError: ApiError;
+    
     if (error instanceof ApiError) {
-      throw error;
+      apiError = error;
+    } else if (error instanceof DOMException && error.name === 'AbortError') {
+      apiError = new ApiError('Request timeout', 408, 'timeout');
+    } else {
+      apiError = new ApiError(
+        error instanceof Error ? error.message : 'Unknown error',
+        0,
+        'network_error'
+      );
     }
-    
-    if (error instanceof DOMException && error.name === 'AbortError') {
-      throw new ApiError('Request timeout', 408, 'timeout');
+
+    // Track error in notification system if available
+    if (typeof window !== 'undefined') {
+      try {
+        // Dynamically import to avoid circular dependencies
+        const { useErrorStore } = await import('@/lib/hooks/useErrorNotification');
+        const store = useErrorStore.getState();
+        store.addError({
+          id: `api-${Date.now()}-${Math.random()}`,
+          timestamp: new Date(),
+          message: apiError.message,
+          endpoint: path,
+          method,
+          status: apiError.status,
+          type: 'error',
+          details: apiError.details,
+        });
+      } catch {
+        // Error notification system not available, silently continue
+      }
     }
-    
-    throw new ApiError(
-      error instanceof Error ? error.message : 'Unknown error',
-      0,
-      'network_error'
-    );
+
+    throw apiError;
   }
 }
 

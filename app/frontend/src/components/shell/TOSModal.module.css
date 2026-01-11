@@ -117,3 +117,42 @@
   cursor: not-allowed;
 }
 
+.loadingContainer {
+  padding: var(--space-8) var(--space-6);
+  text-align: center;
+}
+
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: var(--space-6) 0;
+}
+
+.progressFill {
+  height: 100%;
+  width: 60%;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent-primary),
+    var(--color-accent-secondary)
+  );
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}
+
+.loadingText {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  margin: 0;
+}

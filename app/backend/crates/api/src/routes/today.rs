@@ -158,26 +158,33 @@ async fn fetch_user_state(pool: &PgPool, user_id: Uuid) -> Result<UserState, App
     let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
     
     // Check if plan exists for today
-    let plan_row = sqlx::query_as::<_, (i64, i32, i32)>(
+    let plan_row = sqlx::query_as::<_, (serde_json::Value,)>(
         r#"
-        SELECT 
-            COUNT(*) as plan_count,
-            COALESCE(SUM(CASE WHEN completed THEN 1 ELSE 0 END), 0)::int as completed,
-            COALESCE(COUNT(*), 0)::int as total
-        FROM daily_plan_items dpi
-        JOIN daily_plans dp ON dp.id = dpi.plan_id
-        WHERE dp.user_id = $1 AND dp.date = $2
+        SELECT items
+        FROM daily_plans
+        WHERE user_id = $1 AND date = $2::date
         "#
     )
     .bind(user_id)
     .bind(&today)
     .fetch_optional(pool)
     .await
-    .map_err(|e| AppError::Database(e.to_string()))?
-    .unwrap_or((0, 0, 0));
+    .map_err(|e| AppError::Database(e.to_string()))?;
     
-    let (plan_count, completed, total) = plan_row;
-    let plan_exists = plan_count > 0;
+    let (plan_exists, completed, total) = match plan_row {
+        Some((items_json,)) => {
+            // Parse items from JSONB array
+            let items: Vec<serde_json::Value> = serde_json::from_value(items_json)
+                .unwrap_or_default();
+            let total_count = items.len() as i32;
+            let completed_count = items.iter()
+                .filter(|item| item.get("completed").and_then(|v| v.as_bool()).unwrap_or(false))
+                .count() as i32;
+            (true, completed_count, total_count)
+        }
+        None => (false, 0, 0),
+    };
+    
     let has_incomplete = total > completed;
     
     // Check for active focus session
@@ -244,52 +251,60 @@ async fn fetch_user_state(pool: &PgPool, user_id: Uuid) -> Result<UserState, App
 async fn fetch_plan_summary(pool: &PgPool, user_id: Uuid) -> Result<DailyPlanSummary, AppError> {
     let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
     
-    // Get plan items for today
-    let items = sqlx::query_as::<_, (String, String, i32, String, bool)>(
+    // Get plan for today
+    let plan_row = sqlx::query_as::<_, (serde_json::Value,)>(
         r#"
-        SELECT 
-            dpi.id::text,
-            dpi.title,
-            dpi.priority,
-            dpi.item_type,
-            dpi.completed
-        FROM daily_plan_items dpi
-        JOIN daily_plans dp ON dp.id = dpi.plan_id
-        WHERE dp.user_id = $1 AND dp.date = $2
-        ORDER BY dpi.priority ASC, dpi.created_at ASC
+        SELECT items
+        FROM daily_plans
+        WHERE user_id = $1 AND date = $2::date
         "#
     )
     .bind(user_id)
     .bind(&today)
-    .fetch_all(pool)
+    .fetch_optional(pool)
     .await
     .map_err(|e| AppError::Database(e.to_string()))?;
     
-    let total_count = items.len() as i32;
-    let completed_count = items.iter().filter(|i| i.4).count() as i32;
-    let plan_exists = total_count > 0;
-    let has_incomplete = total_count > completed_count;
+    let (items_json, total_count, completed_count, plan_exists, has_incomplete) = match plan_row {
+        Some((items_json,)) => {
+            // Parse items from JSONB array
+            let items: Vec<serde_json::Value> = serde_json::from_value(items_json.clone())
+                .unwrap_or_default();
+            let total = items.len() as i32;
+            let completed = items.iter()
+                .filter(|item| item.get("completed").and_then(|v| v.as_bool()).unwrap_or(false))
+                .count() as i32;
+            (items_json, total, completed, true, total > completed)
+        }
+        None => (serde_json::json!([]), 0, 0, false, false),
+    };
     
-    // Find next incomplete item
-    let next_incomplete = items.iter()
-        .find(|i| !i.4)
-        .map(|(id, title, priority, item_type, _)| {
-            let action_url = match item_type.as_str() {
-                "focus" => "/focus".to_string(),
-                "quest" => format!("/quests/{}", id),
-                "workout" => "/exercise".to_string(),
-                "learning" => "/learn".to_string(),
-                "habit" => "/habits".to_string(),
-                _ => "/today".to_string(),
-            };
-            NextItem {
-                id: id.clone(),
-                title: title.clone(),
-                priority: *priority,
-                action_url,
-                item_type: item_type.clone(),
-            }
-        });
+    // Find next incomplete item from JSONB
+    let next_item = match serde_json::from_value::<Vec<serde_json::Value>>(items_json) {
+        Ok(items) => {
+            items.iter()
+                .find(|item| !item.get("completed").and_then(|v| v.as_bool()).unwrap_or(false))
+                .and_then(|item| {
+                    let id = item.get("id")?.as_str().map(|s| s.to_string());
+                    let title = item.get("title")?.as_str().map(|s| s.to_string());
+                    match (id, title) {
+                        (Some(id), Some(title)) => Some((id, title)),
+                        _ => None,
+                    }
+                })
+        }
+        Err(_) => None,
+    };
+    let next_incomplete = next_item.map(|(id, title)| {
+        let action_url = "/today".to_string(); // Default action for plan items
+        NextItem {
+            id,
+            title,
+            priority: 0,
+            action_url,
+            item_type: "task".to_string(),
+        }
+    });
     
     Ok(DailyPlanSummary {
         plan_exists,

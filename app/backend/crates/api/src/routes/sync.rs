@@ -59,10 +59,23 @@ pub struct PollResponse {
     pub focus: FocusStatusData,
     /// Daily plan completion status
     pub plan: PlanStatusData,
+    /// User profile data
+    pub user: UserData,
     /// Server timestamp for sync verification
     pub server_time: String,
     /// ETag for conditional polling
     pub etag: String,
+}
+
+/// User profile data for UI caching
+#[derive(Serialize)]
+pub struct UserData {
+    pub id: String,
+    pub email: String,
+    pub name: String,
+    pub image: Option<String>,
+    pub theme: String,
+    pub tos_accepted: bool,
 }
 
 /// Gamification progress for HUD
@@ -121,11 +134,12 @@ async fn poll_all(
     let user_id = auth.user_id;
     
     // Fetch all data in parallel
-    let (progress, badges, focus, plan) = tokio::try_join!(
+    let (progress, badges, focus, plan, user) = tokio::try_join!(
         fetch_progress(&state.db, user_id),
         fetch_badges(&state.db, user_id),
         fetch_focus_status(&state.db, user_id),
         fetch_plan_status(&state.db, user_id),
+        fetch_user_data(&state.db, user_id),
     )?;
     
     let server_time = chrono::Utc::now().to_rfc3339();
@@ -138,6 +152,7 @@ async fn poll_all(
         badges,
         focus,
         plan,
+        user,
         server_time,
         etag: etag.clone(),
     };
@@ -299,16 +314,14 @@ async fn fetch_focus_status(pool: &PgPool, user_id: Uuid) -> Result<FocusStatusD
 }
 
 async fn fetch_plan_status(pool: &PgPool, user_id: Uuid) -> Result<PlanStatusData, AppError> {
-    // Get today's plan completion status
+    // Get today's plan
     let today = chrono::Utc::now().format("%Y-%m-%d").to_string();
     
-    let plan = sqlx::query_as::<_, (i32, i32)>(
+    let plan = sqlx::query_as::<_, (serde_json::Value,)>(
         r#"
-        SELECT 
-            COALESCE(completed_count, 0) as completed,
-            COALESCE(total_count, 0) as total
+        SELECT items
         FROM daily_plans
-        WHERE user_id = $1 AND date = $2
+        WHERE user_id = $1 AND date = $2::date
         "#
     )
     .bind(user_id)
@@ -318,12 +331,22 @@ async fn fetch_plan_status(pool: &PgPool, user_id: Uuid) -> Result<PlanStatusDat
     .map_err(|e| AppError::Database(e.to_string()))?;
     
     match plan {
-        Some((completed, total)) => {
+        Some((items_json,)) => {
+            // Parse items from JSONB array
+            let items: Vec<serde_json::Value> = serde_json::from_value(items_json)
+                .unwrap_or_default();
+            
+            let total = items.len() as i32;
+            let completed = items.iter()
+                .filter(|item| item.get("completed").and_then(|v| v.as_bool()).unwrap_or(false))
+                .count() as i32;
+            
             let percent = if total > 0 {
                 (completed as f32 / total as f32 * 100.0).min(100.0)
             } else {
                 0.0
             };
+            
             Ok(PlanStatusData {
                 has_plan: true,
                 completed,
@@ -344,9 +367,38 @@ async fn fetch_plan_status(pool: &PgPool, user_id: Uuid) -> Result<PlanStatusDat
 // Helper Queries
 // ============================================
 
+async fn fetch_user_data(pool: &PgPool, user_id: Uuid) -> Result<UserData, AppError> {
+    let user = sqlx::query_as::<_, (String, String, String, Option<String>, String, bool)>(
+        r#"
+        SELECT 
+            id::text,
+            email,
+            name,
+            image,
+            COALESCE(theme, 'dark') as theme,
+            tos_accepted
+        FROM users
+        WHERE id = $1
+        "#
+    )
+    .bind(user_id)
+    .fetch_one(pool)
+    .await
+    .map_err(|e| AppError::Database(e.to_string()))?;
+    
+    Ok(UserData {
+        id: user.0,
+        email: user.1,
+        name: user.2,
+        image: user.3,
+        theme: user.4,
+        tos_accepted: user.5,
+    })
+}
+
 async fn fetch_unread_inbox_count(pool: &PgPool, user_id: Uuid) -> Result<i32, AppError> {
     let count = sqlx::query_scalar::<_, i64>(
-        "SELECT COUNT(*) FROM inbox_items WHERE user_id = $1 AND is_read = false"
+        "SELECT COUNT(*) FROM inbox_items WHERE user_id = $1 AND is_processed = false"
     )
     .bind(user_id)
     .fetch_one(pool)

@@ -119,12 +119,12 @@ impl InboxRepo {
 
         let item = sqlx::query_as::<_, InboxItem>(
             "UPDATE inbox_items 
-             SET is_read = COALESCE($1, is_read),
+             SET is_processed = COALESCE($1, is_processed),
                  is_archived = COALESCE($2, is_archived)
              WHERE id = $3 AND user_id = $4
              RETURNING *",
         )
-        .bind(&req.is_read)
+        .bind(&req.is_processed)
         .bind(&req.is_archived)
         .bind(item_id)
         .bind(user_id)

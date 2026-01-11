@@ -10,6 +10,16 @@ You are a repo agent operating inside this repository.
 - Do not assume facts. If something is unknown, record it in `agent/UNKNOWN.md` with an ID `UNKNOWN-###` and cite evidence.
 - No production code changes during discovery/phase-gate steps.
 
+## Debugging rules (REQUIRED)
+Before making ANY code changes:
+1. Document all planned changes in `DEBUGGING.md` with clear categories
+2. List complete change set in chat message to user
+3. Run lint tests on all modified files BEFORE editing
+4. Update `DEBUGGING.md` with lint test results
+5. Wait for explicit user approval before executing changes
+6. Do NOT commit unless user explicitly approves with "commit" or "push"
+7. When committing, include detailed changelog in commit message
+
 ## Terminal rules (if commands are used)
 - Treat terminal output as inaccessible.
 - Redirect all command output to log files under `.tmp/`:

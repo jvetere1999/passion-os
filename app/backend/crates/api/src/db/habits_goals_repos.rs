@@ -85,7 +85,7 @@ impl HabitsRepo {
         // Get today's completions
         let completions = sqlx::query_scalar::<_, Uuid>(
             r#"SELECT habit_id FROM habit_completions
-               WHERE user_id = $1 AND completed_date = $2"#,
+               WHERE user_id = $1 AND completed_date = $2::date"#,
         )
         .bind(user_id)
         .bind(today)
@@ -130,7 +130,7 @@ impl HabitsRepo {
 
         // Check if already completed today
         let already_completed = sqlx::query_scalar::<_, i64>(
-            "SELECT COUNT(*) FROM habit_completions WHERE habit_id = $1 AND completed_date = $2",
+            "SELECT COUNT(*) FROM habit_completions WHERE habit_id = $1 AND completed_date = $2::date",
         )
         .bind(habit_id)
         .bind(today)

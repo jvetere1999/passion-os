@@ -176,7 +176,7 @@ jobs:
       
       - name: Check deployment logs
         if: always()
-        run: flyctl logs --app ignition-api -n 50
+        run: flyctl logs --app ignition-api --no-tail | tail -50
 
   deploy-frontend:
     if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'

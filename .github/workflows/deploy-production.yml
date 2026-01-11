@@ -159,8 +159,8 @@ jobs:
         if: always()
         run: flyctl logs --app ignition-api -n 50
 
-  deif: contains(github.event.head_commit.modified, 'app/frontend') || github.event_name == 'workflow_dispatch'
-    ploy-frontend:
+  deploy-frontend:
+    if: contains(github.event.head_commit.modified, 'app/frontend') || github.event_name == 'workflow_dispatch'
     needs: build-and-deploy-backend
     runs-on: ubuntu-latest
     environment:

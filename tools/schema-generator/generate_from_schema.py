@@ -77,6 +77,35 @@ CREATE TABLE {table_name} (
 );
 """
 
+def generate_change_file(schema):
+    """Generate schema change tracking file"""
+    change_file_content = f"""# SCHEMA CHANGES TRACKING
+# ⚠️  DO NOT USE THIS UNTIL WE ARE AT BASE FEATURE SET ⚠️
+# 
+# This file tracks schema changes for incremental migrations.
+# Currently in development phase - full wipe/rebuild is being used.
+# Once base feature set is stable, this will enable incremental migrations.
+
+Schema Version: {schema['version']}
+Total Tables: {len(schema['tables'])}
+Generated: {__import__('datetime').datetime.now().isoformat()}
+
+## Tables
+"""
+    for table_name in schema['tables'].keys():
+        change_file_content += f"- {table_name}\n"
+    
+    change_file_content += f"""
+
+## ⚠️  WARNING ⚠️
+This change tracking is NOT YET ACTIVE.
+Current deployment strategy: Full database wipe + rebuild
+Target strategy (future): Incremental migrations using this file
+
+DO NOT USE UNTIL BASE FEATURE SET IS COMPLETE.
+"""
+    return change_file_content
+
 def main():
     schema = load_schema()
     
@@ -98,6 +127,12 @@ def main():
     print("\n### SQL MIGRATIONS ###\n")
     for table_name, table_def in schema['tables'].items():
         print(generate_sql_migration(table_name, table_def, schema['type_mappings']))
+    
+    # Write change file
+    change_file = Path('SCHEMA_CHANGES.md')
+    change_file.write_text(generate_change_file(schema))
+    print("\n✓ Schema change file generated: SCHEMA_CHANGES.md")
+    print("⚠️  DO NOT USE THIS UNTIL BASE FEATURE SET IS COMPLETE")
 
 if __name__ == '__main__':
     main()

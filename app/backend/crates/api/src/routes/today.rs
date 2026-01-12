@@ -200,11 +200,12 @@ async fn fetch_user_state(pool: &PgPool, user_id: Uuid) -> Result<UserState, App
     .await
     .map_err(|e| AppError::Database(e.to_string()))? > 0;
     
-    // Check for active streak (user has logged activity in the last 2 days)
+    // Check for active streak (user has completed habits recently)
+    // Schema: habits table has current_streak field, check if any active habit has streak > 0
     let active_streak = sqlx::query_scalar::<_, i64>(
         r#"
-        SELECT COUNT(*) FROM user_progress 
-        WHERE user_id = $1 AND streak_days > 0
+        SELECT COUNT(*) FROM habits 
+        WHERE user_id = $1 AND is_active = true AND current_streak > 0
         "#
     )
     .bind(user_id)
@@ -335,11 +336,12 @@ async fn fetch_personalization(pool: &PgPool, user_id: Uuid) -> Result<UserPerso
         .collect();
     
     // Check onboarding status from user_onboarding_state
-    let onboarding = sqlx::query_as::<_, (bool, Option<String>)>(
+    // Schema has: status (TEXT), completed_at (TIMESTAMPTZ), current_step_id (UUID)
+    let onboarding = sqlx::query_as::<_, (Option<String>, Option<String>)>(
         r#"
         SELECT 
-            NOT completed as active,
-            current_step
+            status,
+            current_step_id::text
         FROM user_onboarding_state
         WHERE user_id = $1
         "#
@@ -349,11 +351,13 @@ async fn fetch_personalization(pool: &PgPool, user_id: Uuid) -> Result<UserPerso
     .await
     .map_err(|e| AppError::Database(e.to_string()))?;
     
-    let (onboarding_active, current_step) = onboarding.unwrap_or((false, None));
-    let onboarding_route = if onboarding_active {
-        current_step.map(|s| format!("/onboarding/{}", s))
-    } else {
-        None
+    let (onboarding_active, onboarding_route) = match onboarding {
+        Some((Some(status), current_step_id)) if status == "active" || status == "in_progress" => {
+            // Onboarding is active, format route with step ID if available
+            let route = current_step_id.map(|id| format!("/onboarding/{}", id));
+            (true, route)
+        }
+        _ => (false, None),
     };
     
     // Return personalization with correct schema mappings

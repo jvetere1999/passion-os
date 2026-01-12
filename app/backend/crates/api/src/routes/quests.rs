@@ -43,17 +43,17 @@ pub struct ListQuestsQuery {
 
 #[derive(Serialize)]
 struct QuestResponseWrapper {
-    data: QuestResponse,
+    quest: QuestResponse,
 }
 
 #[derive(Serialize)]
 struct QuestsListWrapper {
-    data: QuestsListResponse,
+    quests: Vec<QuestResponse>,
 }
 
 #[derive(Serialize)]
 struct CompleteQuestWrapper {
-    data: CompleteQuestResult,
+    result: CompleteQuestResult,
 }
 
 // ============================================================================
@@ -69,7 +69,7 @@ async fn list_quests(
 ) -> Result<Json<QuestsListWrapper>, AppError> {
     let result = QuestsRepo::list(&state.db, user.id, query.status.as_deref()).await?;
 
-    Ok(Json(QuestsListWrapper { data: result }))
+    Ok(Json(QuestsListWrapper { quests: result.quests }))
 }
 
 /// POST /quests
@@ -81,7 +81,7 @@ async fn create_quest(
 ) -> Result<Json<QuestResponseWrapper>, AppError> {
     let quest = QuestsRepo::create(&state.db, user.id, &req).await?;
 
-    Ok(Json(QuestResponseWrapper { data: quest.into() }))
+    Ok(Json(QuestResponseWrapper { quest: quest.into() }))
 }
 
 /// GET /quests/:id
@@ -94,7 +94,7 @@ async fn get_quest(
     let quest = QuestsRepo::get_by_id(&state.db, id, user.id).await?;
     let quest = quest.ok_or_else(|| AppError::NotFound("Quest not found".to_string()))?;
 
-    Ok(Json(QuestResponseWrapper { data: quest.into() }))
+    Ok(Json(QuestResponseWrapper { quest: quest.into() }))
 }
 
 /// POST /quests/:id/accept
@@ -106,7 +106,7 @@ async fn accept_quest(
 ) -> Result<Json<QuestResponseWrapper>, AppError> {
     let quest = QuestsRepo::accept_quest(&state.db, id, user.id).await?;
 
-    Ok(Json(QuestResponseWrapper { data: quest.into() }))
+    Ok(Json(QuestResponseWrapper { quest: quest.into() }))
 }
 
 /// POST /quests/:id/complete
@@ -118,7 +118,7 @@ async fn complete_quest(
 ) -> Result<Json<CompleteQuestWrapper>, AppError> {
     let result = QuestsRepo::complete_quest(&state.db, id, user.id).await?;
 
-    Ok(Json(CompleteQuestWrapper { data: result }))
+    Ok(Json(CompleteQuestWrapper { result }))
 }
 
 /// POST /quests/:id/abandon
@@ -130,5 +130,5 @@ async fn abandon_quest(
 ) -> Result<Json<QuestResponseWrapper>, AppError> {
     let quest = QuestsRepo::abandon_quest(&state.db, id, user.id).await?;
 
-    Ok(Json(QuestResponseWrapper { data: quest.into() }))
+    Ok(Json(QuestResponseWrapper { quest: quest.into() }))
 }

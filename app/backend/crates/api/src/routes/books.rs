@@ -42,27 +42,27 @@ pub struct ListBooksQuery {
 
 #[derive(Serialize)]
 struct BookWrapper {
-    data: BookResponse,
+    book: BookResponse,
 }
 
 #[derive(Serialize)]
 struct BooksListWrapper {
-    data: BooksListResponse,
+    books: Vec<BookResponse>,
 }
 
 #[derive(Serialize)]
 struct SessionsListWrapper {
-    data: SessionsListResponse,
+    sessions: Vec<ReadingSessionResponse>,
 }
 
 #[derive(Serialize)]
 struct LogReadingWrapper {
-    data: LogReadingResult,
+    result: LogReadingResult,
 }
 
 #[derive(Serialize)]
 struct StatsWrapper {
-    data: ReadingStatsResponse,
+    stats: ReadingStatsResponse,
 }
 
 // ============================================================================
@@ -77,7 +77,7 @@ async fn list_books(
     Query(query): Query<ListBooksQuery>,
 ) -> Result<Json<BooksListWrapper>, AppError> {
     let result = BookRepo::list(&state.db, user.id, query.status.as_deref()).await?;
-    Ok(Json(BooksListWrapper { data: result }))
+    Ok(Json(BooksListWrapper { books: result.books }))
 }
 
 /// POST /books
@@ -88,7 +88,7 @@ async fn create_book(
     Json(req): Json<CreateBookRequest>,
 ) -> Result<Json<BookWrapper>, AppError> {
     let book = BookRepo::create(&state.db, user.id, &req).await?;
-    Ok(Json(BookWrapper { data: book.into() }))
+    Ok(Json(BookWrapper { book: book.into() }))
 }
 
 /// GET /books/:id
@@ -100,7 +100,7 @@ async fn get_book(
 ) -> Result<Json<BookWrapper>, AppError> {
     let book = BookRepo::get_by_id(&state.db, id, user.id).await?;
     let book = book.ok_or_else(|| AppError::NotFound("Book not found".to_string()))?;
-    Ok(Json(BookWrapper { data: book.into() }))
+    Ok(Json(BookWrapper { book: book.into() }))
 }
 
 /// PUT /books/:id
@@ -112,7 +112,7 @@ async fn update_book(
     Json(req): Json<UpdateBookRequest>,
 ) -> Result<Json<BookWrapper>, AppError> {
     let book = BookRepo::update(&state.db, id, user.id, &req).await?;
-    Ok(Json(BookWrapper { data: book.into() }))
+    Ok(Json(BookWrapper { book: book.into() }))
 }
 
 /// DELETE /books/:id
@@ -137,7 +137,7 @@ async fn list_book_sessions(
     Path(book_id): Path<Uuid>,
 ) -> Result<Json<SessionsListWrapper>, AppError> {
     let result = ReadingSessionRepo::list_for_book(&state.db, book_id, user.id).await?;
-    Ok(Json(SessionsListWrapper { data: result }))
+    Ok(Json(SessionsListWrapper { sessions: result.sessions }))
 }
 
 /// POST /books/:id/sessions
@@ -149,7 +149,7 @@ async fn log_reading(
     Json(req): Json<LogReadingRequest>,
 ) -> Result<Json<LogReadingWrapper>, AppError> {
     let result = ReadingSessionRepo::log_reading(&state.db, user.id, book_id, &req).await?;
-    Ok(Json(LogReadingWrapper { data: result }))
+    Ok(Json(LogReadingWrapper { result }))
 }
 
 /// GET /books/stats
@@ -159,5 +159,5 @@ async fn get_reading_stats(
     Extension(user): Extension<User>,
 ) -> Result<Json<StatsWrapper>, AppError> {
     let stats = ReadingSessionRepo::get_stats(&state.db, user.id).await?;
-    Ok(Json(StatsWrapper { data: stats }))
+    Ok(Json(StatsWrapper { stats }))
 }

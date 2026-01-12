@@ -64,42 +64,42 @@ pub struct ListSessionsQuery {
 
 #[derive(Serialize)]
 struct ExerciseWrapper {
-    data: ExerciseResponse,
+    exercise: ExerciseResponse,
 }
 
 #[derive(Serialize)]
 struct ExercisesListWrapper {
-    data: ExercisesListResponse,
+    exercises: Vec<ExerciseResponse>,
 }
 
 #[derive(Serialize)]
 struct WorkoutWrapper {
-    data: WorkoutResponse,
+    workout: WorkoutResponse,
 }
 
 #[derive(Serialize)]
 struct WorkoutsListWrapper {
-    data: WorkoutsListResponse,
+    workouts: Vec<WorkoutResponse>,
 }
 
 #[derive(Serialize)]
 struct SessionWrapper {
-    data: WorkoutSessionResponse,
+    session: WorkoutSessionResponse,
 }
 
 #[derive(Serialize)]
 struct SessionsListWrapper {
-    data: SessionsListResponse,
+    sessions: Vec<WorkoutSessionResponse>,
 }
 
 #[derive(Serialize)]
 struct CompleteSessionWrapper {
-    data: CompleteSessionResult,
+    result: CompleteSessionResult,
 }
 
 #[derive(Serialize)]
 struct SetWrapper {
-    data: SetResponse,
+    set: SetResponse,
 }
 
 #[derive(Serialize)]
@@ -112,12 +112,12 @@ struct SetResponse {
 
 #[derive(Serialize)]
 struct ProgramWrapper {
-    data: ProgramResponse,
+    program: ProgramResponse,
 }
 
 #[derive(Serialize)]
 struct ProgramsListWrapper {
-    data: ProgramsListResponse,
+    programs: Vec<ProgramResponse>,
 }
 
 #[derive(Serialize)]
@@ -138,7 +138,7 @@ async fn list_exercises(
     Query(query): Query<ListExercisesQuery>,
 ) -> Result<Json<ExercisesListWrapper>, AppError> {
     let result = ExerciseRepo::list(&state.db, user.id, query.category.as_deref()).await?;
-    Ok(Json(ExercisesListWrapper { data: result }))
+    Ok(Json(ExercisesListWrapper { exercises: result.exercises }))
 }
 
 /// POST /exercise
@@ -150,7 +150,7 @@ async fn create_exercise(
 ) -> Result<Json<ExerciseWrapper>, AppError> {
     let exercise = ExerciseRepo::create(&state.db, user.id, &req).await?;
     Ok(Json(ExerciseWrapper {
-        data: exercise.into(),
+        exercise: exercise.into(),
     }))
 }
 
@@ -164,7 +164,7 @@ async fn get_exercise(
     let exercise = ExerciseRepo::get_by_id(&state.db, id, user.id).await?;
     let exercise = exercise.ok_or_else(|| AppError::NotFound("Exercise not found".to_string()))?;
     Ok(Json(ExerciseWrapper {
-        data: exercise.into(),
+        exercise: exercise.into(),
     }))
 }
 
@@ -213,7 +213,7 @@ async fn list_workouts(
 ) -> Result<Json<WorkoutsListWrapper>, AppError> {
     let result =
         WorkoutRepo::list(&state.db, user.id, query.templates_only.unwrap_or(false)).await?;
-    Ok(Json(WorkoutsListWrapper { data: result }))
+    Ok(Json(WorkoutsListWrapper { workouts: result.workouts }))
 }
 
 /// POST /exercise/workouts
@@ -225,7 +225,7 @@ async fn create_workout(
 ) -> Result<Json<WorkoutWrapper>, AppError> {
     let workout = WorkoutRepo::create(&state.db, user.id, &req).await?;
     Ok(Json(WorkoutWrapper {
-        data: WorkoutResponse {
+        workout: WorkoutResponse {
             id: workout.id,
             name: workout.name,
             description: workout.description,
@@ -246,7 +246,7 @@ async fn get_workout(
 ) -> Result<Json<WorkoutWrapper>, AppError> {
     let workout = WorkoutRepo::get_by_id(&state.db, id, user.id).await?;
     let workout = workout.ok_or_else(|| AppError::NotFound("Workout not found".to_string()))?;
-    Ok(Json(WorkoutWrapper { data: workout }))
+    Ok(Json(WorkoutWrapper { workout }))
 }
 
 /// DELETE /exercise/workouts/:id
@@ -276,7 +276,7 @@ async fn list_sessions(
 ) -> Result<Json<SessionsListWrapper>, AppError> {
     let limit = query.limit.unwrap_or(20).min(100);
     let result = WorkoutSessionRepo::list(&state.db, user.id, limit).await?;
-    Ok(Json(SessionsListWrapper { data: result }))
+    Ok(Json(SessionsListWrapper { sessions: result.sessions }))
 }
 
 /// POST /exercise/sessions
@@ -307,7 +307,7 @@ async fn start_session(
     };
 
     Ok(Json(SessionWrapper {
-        data: WorkoutSessionResponse {
+        session: WorkoutSessionResponse {
             id: session.id,
             workout_id: session.workout_id,
             workout_name,
@@ -351,7 +351,7 @@ async fn get_active_session(
                     .await?;
 
             Ok(Json(serde_json::json!({
-                "data": {
+                "session": {
                     "id": s.id,
                     "workout_id": s.workout_id,
                     "workout_name": workout_name,
@@ -360,7 +360,7 @@ async fn get_active_session(
                 }
             })))
         }
-        None => Ok(Json(serde_json::json!({ "data": null }))),
+        None => Ok(Json(serde_json::json!({ "session": null }))),
     }
 }
 
@@ -374,7 +374,7 @@ async fn log_set(
 ) -> Result<Json<SetWrapper>, AppError> {
     let set = WorkoutSessionRepo::log_set(&state.db, user.id, session_id, &req).await?;
     Ok(Json(SetWrapper {
-        data: SetResponse {
+        set: SetResponse {
             id: set.id,
             set_number: set.set_number,
             reps: set.reps,
@@ -392,7 +392,7 @@ async fn complete_session(
     Json(req): Json<CompleteSessionRequest>,
 ) -> Result<Json<CompleteSessionWrapper>, AppError> {
     let result = WorkoutSessionRepo::complete(&state.db, user.id, session_id, &req).await?;
-    Ok(Json(CompleteSessionWrapper { data: result }))
+    Ok(Json(CompleteSessionWrapper { result }))
 }
 
 // ============================================================================
@@ -406,7 +406,7 @@ async fn list_programs(
     Extension(user): Extension<User>,
 ) -> Result<Json<ProgramsListWrapper>, AppError> {
     let result = ProgramRepo::list(&state.db, user.id).await?;
-    Ok(Json(ProgramsListWrapper { data: result }))
+    Ok(Json(ProgramsListWrapper { programs: result.programs }))
 }
 
 /// POST /exercise/programs
@@ -418,7 +418,7 @@ async fn create_program(
 ) -> Result<Json<ProgramWrapper>, AppError> {
     let program = ProgramRepo::create(&state.db, user.id, &req).await?;
     Ok(Json(ProgramWrapper {
-        data: program.into(),
+        program: program.into(),
     }))
 }
 
@@ -432,7 +432,7 @@ async fn get_program(
     let program = ProgramRepo::get_by_id(&state.db, id, user.id).await?;
     let program = program.ok_or_else(|| AppError::NotFound("Program not found".to_string()))?;
     Ok(Json(ProgramWrapper {
-        data: program.into(),
+        program: program.into(),
     }))
 }
 
@@ -445,6 +445,6 @@ async fn activate_program(
 ) -> Result<Json<ProgramWrapper>, AppError> {
     let program = ProgramRepo::activate(&state.db, id, user.id).await?;
     Ok(Json(ProgramWrapper {
-        data: program.into(),
+        program: program.into(),
     }))
 }

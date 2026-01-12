@@ -68,32 +68,32 @@ fn default_page_size() -> i64 {
 
 #[derive(Serialize)]
 struct SessionResponse {
-    data: FocusSessionResponse,
+    session: FocusSessionResponse,
 }
 
 #[derive(Serialize)]
 struct ActiveResponse {
-    data: ActiveFocusResponse,
+    active: ActiveFocusResponse,
 }
 
 #[derive(Serialize)]
 struct PauseResponse {
-    data: Option<PauseStateResponse>,
+    pause: Option<PauseStateResponse>,
 }
 
 #[derive(Serialize)]
 struct CompleteResponse {
-    data: CompleteSessionResult,
+    result: CompleteSessionResult,
 }
 
 #[derive(Serialize)]
 struct ListResponse {
-    data: FocusSessionsListResponse,
+    sessions: Vec<FocusSessionResponse>,
 }
 
 #[derive(Serialize)]
 struct StatsResponse {
-    data: FocusStatsResponse,
+    stats: FocusStatsResponse,
 }
 
 // ============================================================================
@@ -116,13 +116,13 @@ async fn list_sessions(
         };
 
         let stats = FocusSessionRepo::get_stats(&state.db, user.id, since).await?;
-        return Ok(Json(serde_json::json!({ "data": stats })));
+        return Ok(Json(serde_json::json!({ "stats": stats })));
     }
 
     let result =
         FocusSessionRepo::list_sessions(&state.db, user.id, query.page, query.page_size).await?;
 
-    Ok(Json(serde_json::json!({ "data": result })))
+    Ok(Json(serde_json::json!({ "sessions": result })))
 }
 
 /// POST /focus
@@ -135,7 +135,7 @@ async fn start_session(
     let session = FocusSessionRepo::start_session(&state.db, user.id, &req).await?;
 
     Ok(Json(SessionResponse {
-        data: session.into(),
+        session: session.into(),
     }))
 }
 
@@ -149,7 +149,7 @@ async fn get_active(
     let pause_state = FocusPauseRepo::get_pause_state(&state.db, user.id).await?;
 
     Ok(Json(ActiveResponse {
-        data: ActiveFocusResponse {
+        active: ActiveFocusResponse {
             session: session.map(|s| s.into()),
             pause_state: pause_state.map(|p| p.into()),
         },
@@ -165,7 +165,7 @@ async fn get_pause_state(
     let pause_state = FocusPauseRepo::get_pause_state(&state.db, user.id).await?;
 
     Ok(Json(PauseResponse {
-        data: pause_state.map(|p| p.into()),
+        pause: pause_state.map(|p| p.into()),
     }))
 }
 
@@ -178,7 +178,7 @@ async fn pause_session(
     let pause_state = FocusPauseRepo::pause_session(&state.db, user.id).await?;
 
     Ok(Json(PauseResponse {
-        data: Some(pause_state.into()),
+        pause: Some(pause_state.into()),
     }))
 }
 
@@ -191,7 +191,7 @@ async fn resume_session(
     let session = FocusPauseRepo::resume_session(&state.db, user.id).await?;
 
     Ok(Json(SessionResponse {
-        data: session.into(),
+        session: session.into(),
     }))
 }
 
@@ -204,7 +204,7 @@ async fn complete_session(
 ) -> Result<Json<CompleteResponse>, AppError> {
     let result = FocusSessionRepo::complete_session(&state.db, id, user.id).await?;
 
-    Ok(Json(CompleteResponse { data: result }))
+    Ok(Json(CompleteResponse { result }))
 }
 
 /// POST /focus/:id/abandon
@@ -217,7 +217,7 @@ async fn abandon_session(
     let session = FocusSessionRepo::abandon_session(&state.db, id, user.id).await?;
 
     Ok(Json(SessionResponse {
-        data: session.into(),
+        session: session.into(),
     }))
 }
 
@@ -227,12 +227,12 @@ async fn abandon_session(
 
 #[derive(Serialize)]
 struct LibraryWrapper {
-    data: FocusLibraryResponse,
+    library: FocusLibraryResponse,
 }
 
 #[derive(Serialize)]
 struct LibrariesWrapper {
-    data: FocusLibrariesListResponse,
+    libraries: Vec<FocusLibraryResponse>,
 }
 
 /// GET /focus/libraries
@@ -243,7 +243,7 @@ async fn list_libraries(
     Query(query): Query<ListSessionsQuery>,
 ) -> Result<Json<LibrariesWrapper>, AppError> {
     let response = FocusLibraryRepo::list(&state.db, user.id, query.page, query.page_size).await?;
-    Ok(Json(LibrariesWrapper { data: response }))
+    Ok(Json(LibrariesWrapper { libraries: response.libraries }))
 }
 
 /// POST /focus/libraries
@@ -259,7 +259,7 @@ async fn create_library(
 
     let library = FocusLibraryRepo::create(&state.db, user.id, &req).await?;
     Ok(Json(LibraryWrapper {
-        data: FocusLibraryResponse::from(library),
+        library: FocusLibraryResponse::from(library),
     }))
 }
 
@@ -272,7 +272,7 @@ async fn get_library(
 ) -> Result<Json<LibraryWrapper>, AppError> {
     let library = FocusLibraryRepo::get(&state.db, user.id, id).await?;
     Ok(Json(LibraryWrapper {
-        data: FocusLibraryResponse::from(library),
+        library: FocusLibraryResponse::from(library),
     }))
 }
 
@@ -299,7 +299,7 @@ async fn toggle_favorite(
 ) -> Result<Json<LibraryWrapper>, AppError> {
     let library = FocusLibraryRepo::toggle_favorite(&state.db, user.id, id).await?;
     Ok(Json(LibraryWrapper {
-        data: FocusLibraryResponse::from(library),
+        library: FocusLibraryResponse::from(library),
     }))
 }
 

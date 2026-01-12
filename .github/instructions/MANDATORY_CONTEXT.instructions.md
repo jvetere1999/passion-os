@@ -49,6 +49,38 @@ dev → test → production → main
 
 ## Workflow Steps
 
+### Step 0: Schema Changes MUST Regenerate Migrations (Critical)
+
+**IF YOU MODIFY `schema.json`:**
+
+```bash
+# After editing schema.json, IMMEDIATELY regenerate migrations
+cd /Users/Shared/passion-os-next
+./generate_schema.sh
+
+# This regenerates:
+# ✅ app/backend/migrations/0001_schema.sql (database schema)
+# ✅ app/frontend/src/lib/generated_types.ts (TypeScript types)
+# ✅ app/backend/crates/api/src/db/generated.rs (Rust models)
+# ✅ app/backend/migrations/0002_seeds.sql (seed data)
+
+# Stage the regenerated files
+git add app/backend/migrations/ app/frontend/src/lib/generated_types.ts app/backend/crates/api/src/db/generated.rs
+
+# Verify no errors in regenerated code
+cargo check --bin ignition-api    # Backend must compile
+npm run lint                        # Frontend must lint cleanly
+```
+
+**⚠️ CRITICAL FAILURE SCENARIO:**
+- You edit `schema.json` but DON'T run `generate_schema.sh`
+- Changes deploy to `production`
+- Database migration has OLD schema, code expects NEW schema
+- Result: `column "X" does not exist` errors in production
+- Solution: Must rollback `production` branch and regenerate
+
+---
+
 ### Step 1: Make Changes on `dev`
 ```bash
 git checkout dev
@@ -135,6 +167,9 @@ Admin Deployment (Cloudflare)
 | Never force push | ❌ `git push --force` | Manual review required |
 | Always wait for tests in `test` | ⏭️ Skip to `production` | Unvalidated code in production |
 | Always use merge (not rebase) | ⏭️ Rebase to `production` | History lost, rollback broken |
+| **ALWAYS regenerate schema after editing `schema.json`** | ❌ Commit `schema.json` without running `generate_schema.sh` | Production deploy fails with "column does not exist" errors |
+| **Verify regenerated code compiles** | ❌ Run `generate_schema.sh` but skip `cargo check` | Compilation errors block production deployment |
+| **Never edit migrations directly** | ❌ Hand-edit `app/backend/migrations/*.sql` | Migrations out of sync with schema.json; regeneration overwrites changes |
 
 ---
 
@@ -236,6 +271,97 @@ git push origin --delete <branch>
 - `main` branch is **read-only** (mirrors `production`)
 - Always check `main` equals latest `production` state
 - If diverged: Production deployment failed
+
+---
+
+## Schema Management Workflow (CRITICAL)
+
+### When to Regenerate
+
+Regenerate schema **IMMEDIATELY** after ANY edit to `schema.json`:
+
+```
+Edit schema.json
+   ↓
+Run: ./generate_schema.sh
+   ↓
+Verify: cargo check + npm lint
+   ↓
+Stage & commit regenerated files
+   ↓
+Follow normal dev → test → production workflow
+```
+
+### What Gets Regenerated
+
+The `generate_schema.sh` script (at repo root) updates:
+
+| File | Source | Purpose | Must Commit |
+|------|--------|---------|-------------|
+| `app/backend/migrations/0001_schema.sql` | `schema.json` | PostgreSQL DDL for all tables | ✅ YES |
+| `app/backend/migrations/0002_seeds.sql` | `schema.json` | Default seed data for enums/lookups | ✅ YES |
+| `app/frontend/src/lib/generated_types.ts` | `schema.json` | TypeScript interfaces for API responses | ✅ YES |
+| `app/backend/crates/api/src/db/generated.rs` | `schema.json` | Rust models for database rows | ✅ YES |
+
+### Validation After Regeneration
+
+```bash
+# Step 1: Backend must compile
+cd app/backend
+cargo check --bin ignition-api
+# Expected: "Finished `dev` profile..."
+# If errors: Fix schema.json, rerun generate_schema.sh
+
+# Step 2: Frontend must lint
+cd ../frontend
+npm run lint
+# Expected: "0 errors found"
+# If errors: Check generated_types.ts for type issues
+
+# Step 3: Check git diff
+git diff app/backend/migrations/0001_schema.sql
+# Verify changes match your schema.json edits
+# Look for: CREATE TABLE, ALTER TABLE, ADD COLUMN, DROP COLUMN
+```
+
+### If Schema Regeneration Fails
+
+```bash
+# Clear any partial regeneration
+git checkout app/backend/migrations/ app/frontend/src/lib/generated_types.ts app/backend/crates/api/src/db/generated.rs
+
+# Check schema.json for syntax errors
+cat schema.json | python3 -m json.tool > /dev/null
+# If error: Fix JSON syntax
+
+# Re-run generation with verbose output
+cd /Users/Shared/passion-os-next
+python3 tools/schema-generator/generate_all.py --verbose
+```
+
+### Deployment Implication
+
+When schema changes deploy to `production`:
+
+```
+Push to production branch
+   ↓
+GitHub Actions downloads deployment branch
+   ↓
+Checks for changes in: app/backend/migrations/**
+   ↓
+IF CHANGED: Triggers Neon database migration
+   ├─ Pulls ALL migrations from repo
+   ├─ Applies only NEW migrations (not already run)
+   ├─ IF ERROR: Deployment stops, main is NOT updated
+   └─ Database now has the new schema
+   ↓
+IF NOT CHANGED: Skips Neon step
+   ├─ Uses existing database schema
+   └─ If code expects new columns: "column does not exist" errors
+   ↓
+Backend deployment proceeds (or rolls back if DB migration failed)
+```
 
 ---
 

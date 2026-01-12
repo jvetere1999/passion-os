@@ -45,21 +45,16 @@ struct ListEventsQuery {
 
 #[derive(Serialize)]
 struct EventWrapper {
-    data: CalendarEventResponse,
+    event: CalendarEventResponse,
 }
 
 #[derive(Serialize)]
 struct EventsListWrapper {
-    data: CalendarEventsListResponse,
+    events: Vec<CalendarEventResponse>,
 }
 
 #[derive(Serialize)]
 struct DeleteSuccessWrapper {
-    data: DeleteSuccess,
-}
-
-#[derive(Serialize)]
-struct DeleteSuccess {
     success: bool,
 }
 
@@ -87,7 +82,7 @@ async fn list_events(
         CalendarRepo::list(&state.db, user.id).await?
     };
 
-    Ok(Json(EventsListWrapper { data: result }))
+    Ok(Json(EventsListWrapper { events: result.events }))
 }
 
 /// GET /calendar/:id
@@ -98,7 +93,7 @@ async fn get_event(
     Path(id): Path<Uuid>,
 ) -> Result<Json<EventWrapper>, AppError> {
     let event = CalendarRepo::get(&state.db, id, user.id).await?;
-    Ok(Json(EventWrapper { data: event }))
+    Ok(Json(EventWrapper { event }))
 }
 
 /// POST /calendar
@@ -109,7 +104,7 @@ async fn create_event(
     Json(req): Json<CreateCalendarEventRequest>,
 ) -> Result<Json<EventWrapper>, AppError> {
     let event = CalendarRepo::create(&state.db, user.id, &req).await?;
-    Ok(Json(EventWrapper { data: event }))
+    Ok(Json(EventWrapper { event }))
 }
 
 /// PUT /calendar/:id
@@ -121,7 +116,7 @@ async fn update_event(
     Json(req): Json<UpdateCalendarEventRequest>,
 ) -> Result<Json<EventWrapper>, AppError> {
     let event = CalendarRepo::update(&state.db, id, user.id, &req).await?;
-    Ok(Json(EventWrapper { data: event }))
+    Ok(Json(EventWrapper { event }))
 }
 
 /// DELETE /calendar/:id
@@ -132,7 +127,5 @@ async fn delete_event(
     Path(id): Path<Uuid>,
 ) -> Result<Json<DeleteSuccessWrapper>, AppError> {
     CalendarRepo::delete(&state.db, id, user.id).await?;
-    Ok(Json(DeleteSuccessWrapper {
-        data: DeleteSuccess { success: true },
-    }))
+    Ok(Json(DeleteSuccessWrapper { success: true }))
 }

@@ -161,7 +161,7 @@ export function PlannerClient({ initialEvents = [] }: PlannerClientProps) {
       setIsLoading(true);
       const response = await fetch("/api/calendar");
       if (response.ok) {
-        const data = await response.json() as { events?: APICalendarEvent[] };
+        const data = await response.json() as { events: APICalendarEvent[] };
         const localEvents = (data.events || []).map(apiEventToLocal);
         setEvents(localEvents);
       } else {
@@ -362,7 +362,7 @@ export function PlannerClient({ initialEvents = [] }: PlannerClientProps) {
 
     setIsSaving(true);
     try {
-      const response = await fetch(`/api/calendar?id=${id}`, {
+      const response = await fetch(`/api/calendar/${id}`, {
         method: "DELETE",
       });
 

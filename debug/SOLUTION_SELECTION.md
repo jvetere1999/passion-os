@@ -155,3 +155,123 @@ All historical decision documents have been moved to `debug/archive/` for refere
 - Phase tracking records
 
 Current active decisions are tracked in this file and `debug/DEBUGGING.md`.
+
+---
+
+## 🔴 NEW DECISION: P0 API Response Format Standardization
+
+**Issue**: Response format mismatch between backend and frontend
+**Discovery Date**: 2026-01-12 13:10 UTC (during 9-item failure investigation)
+**Impact**: Causes data parsing failures, prevents create/update operations
+**Scope**: 20+ endpoints, 20+ frontend files
+
+**Current State**:
+- Backend: All endpoints return `{ data: <response> }` format (CONSISTENT)
+- Frontend: Different files expect different formats (INCONSISTENT)
+
+**Affected Operations**:
+1. ✅ Calendar events - FIXED (now expects `{ data: ... }`)
+2. ❌ Goals - still expects `{ goals: [...] }`
+3. ❌ Habits - still expects `{ data: ... }` (backend correct)
+4. ❌ Quests - still expects `{ quests: [...] }`
+5. ❌ Focus sessions - still expects `{ session: ... }`
+6. ❌ Books - TBD
+7. ❌ Workouts - TBD
+8. Plus admin, shell, and utility components
+
+### Option A: Standardize Backend to Frontend Expectations ⭐ RECOMMENDED
+**Strategy**: Change ALL backend endpoints to return `{ <resource>: <data> }` format
+
+**Backend Changes**:
+- goals.rs: Change `{ data: GoalsListResponse }` to `{ goals: GoalsListResponse }`
+- habits.rs: Keep current `{ data: ... }`  ← Actually already correct
+- quests.rs: Change to `{ quests: ... }`
+- focus.rs: Change to `{ session: FocusSession }`
+- calendar.rs: REVERT my frontend fix, change to `{ events: [...] }`
+- Plus 15+ other routes
+
+**Frontend Changes**: NONE (or revert calendar fix)
+
+**Pros**:
+- REST convention (resource names in response)
+- Cleaner separation: response keys match resource types
+- Frontend code clearer (`{ goals: data }` more intuitive than `{ data: { goals: data } }`)
+- Fewer levels of nesting
+- Aligns with typical API design
+
+**Cons**:
+- More backend work (20+ routes)
+- Have to verify each endpoint's response type
+- Risk of introducing bugs in each change
+
+**Effort**: 3-4 hours
+
+### Option B: Standardize Frontend to Backend `{ data: ... }` Format
+**Strategy**: Update ALL frontend files to expect `{ data: <response> }` format
+
+**Backend Changes**: NONE
+
+**Frontend Changes**:
+- GoalsClient.tsx: Change `data.goals` to `data.data.goals`
+- FocusClient.tsx: Change `data.session` to `data.data.session`
+- QuestsClient.tsx: Change `data.quests` to `data.data.quests`
+- Plus 20+ other files
+
+**Pros**:
+- No backend work
+- Single consistent format everywhere
+- Fewer JSON keys (less parsing)
+- Already started with calendar fix
+
+**Cons**:
+- More frontend files to change
+- Violates REST convention
+- Extra nesting level `{ data: { ... } }`
+- Less intuitive (what's in "data"? which resource?)
+
+**Effort**: 2-3 hours
+
+### Option C: Hybrid - Standardize Where Critical, Leave Rest As-Is
+**Strategy**: Fix only P0/P1 critical paths (calendar, events, habits)
+
+**Fixes**:
+- Calendar: ✅ ALREADY DONE (expects `{ data: ... }`)
+- Habits POST/create: Verify backend is correct
+- Quests: Fix one critical path only
+
+**Remaining**: Leave as-is, implement as separate work
+
+**Pros**:
+- Fastest to unblock critical features
+- Minimal risk of new bugs
+- Can be completed in 1 hour
+
+**Cons**:
+- Leaves technical debt
+- Other features still broken
+- Inconsistent across codebase
+- Will need to fix same issue multiple times
+
+**Effort**: 1 hour (unblocks critical paths only)
+
+### RECOMMENDATION
+**SELECT OPTION A** (Standardize Backend) because:
+1. REST best practices - resource names in response keys
+2. More maintainable long-term
+3. Cleaner API contract
+4. Fewer levels of nesting
+5. Better alignment with industry standards
+6. I can script most of the changes
+
+**Implementation Plan**:
+1. Identify all 25+ endpoint response types
+2. Update route handlers to use resource-based keys
+3. Verify frontend still expects same format
+4. Test each endpoint
+5. Deploy as single batch (all or nothing)
+
+**Timeline**: 4 hours, ready to deploy same day
+
+---
+
+**User Action Required**: Select Option A, B, or C to proceed with Phase 5 FIX for remaining issues

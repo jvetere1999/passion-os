@@ -42,22 +42,22 @@ pub struct ListGoalsQuery {
 
 #[derive(Serialize)]
 struct GoalResponseWrapper {
-    data: GoalResponse,
+    goal: GoalResponse,
 }
 
 #[derive(Serialize)]
 struct GoalsListWrapper {
-    data: GoalsListResponse,
+    goals: Vec<GoalResponse>,
 }
 
 #[derive(Serialize)]
 struct MilestoneWrapper {
-    data: GoalMilestone,
+    milestone: GoalMilestone,
 }
 
 #[derive(Serialize)]
 struct CompleteMilestoneWrapper {
-    data: CompleteMilestoneResult,
+    result: CompleteMilestoneResult,
 }
 
 // ============================================================================
@@ -73,7 +73,7 @@ async fn list_goals(
 ) -> Result<Json<GoalsListWrapper>, AppError> {
     let result = GoalsRepo::list(&state.db, user.id, query.status.as_deref()).await?;
 
-    Ok(Json(GoalsListWrapper { data: result }))
+    Ok(Json(GoalsListWrapper { goals: result.goals }))
 }
 
 /// POST /goals
@@ -86,7 +86,7 @@ async fn create_goal(
     let goal = GoalsRepo::create(&state.db, user.id, &req).await?;
 
     Ok(Json(GoalResponseWrapper {
-        data: GoalResponse {
+        goal: GoalResponse {
             id: goal.id,
             title: goal.title,
             description: goal.description,
@@ -114,7 +114,7 @@ async fn get_goal(
     let goal = GoalsRepo::get_by_id(&state.db, id, user.id).await?;
     let goal = goal.ok_or_else(|| AppError::NotFound("Goal not found".to_string()))?;
 
-    Ok(Json(GoalResponseWrapper { data: goal }))
+    Ok(Json(GoalResponseWrapper { goal }))
 }
 
 /// POST /goals/:id/milestones
@@ -127,7 +127,7 @@ async fn add_milestone(
 ) -> Result<Json<MilestoneWrapper>, AppError> {
     let milestone = GoalsRepo::add_milestone(&state.db, id, user.id, &req).await?;
 
-    Ok(Json(MilestoneWrapper { data: milestone }))
+    Ok(Json(MilestoneWrapper { milestone }))
 }
 
 /// POST /goals/milestones/:id/complete
@@ -139,5 +139,5 @@ async fn complete_milestone(
 ) -> Result<Json<CompleteMilestoneWrapper>, AppError> {
     let result = GoalsRepo::complete_milestone(&state.db, id, user.id).await?;
 
-    Ok(Json(CompleteMilestoneWrapper { data: result }))
+    Ok(Json(CompleteMilestoneWrapper { result }))
 }

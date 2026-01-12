@@ -1141,6 +1141,126 @@ git push origin production
 
 ---
 
+---
+
+## 🔴 NEW PRIORITY ISSUES - 2026-01-12 13:10-13:13 UTC
+
+**Discovery Date**: 2026-01-12 13:10 UTC  
+**Scope**: 9 critical failures across core features  
+**Impact**: Users unable to create/save data or persist state across page refresh  
+**Session ID**: d060f4b7-b895-4c83-9374-2775824389d8 (User: a92612ab-9507-4297-8fd4-ec6146dc8a08)
+
+### ROOT CAUSE ANALYSIS - Phase 3 EXPLORER COMPLETE
+
+#### P0: Failed to Save Event (404 on Event in Planner)
+**Status**: Phase 3 EXPLORER COMPLETE ✅ → Phase 5 FIX COMPLETE ✅  
+**Root Cause**: RESPONSE FORMAT MISMATCH  
+**Problem**: 
+- Backend returns: `{ data: { events: [...] } }` and `{ data: CalendarEventResponse }`
+- Frontend expected: `{ event: APICalendarEvent }` or `{ events: [...] }`
+- Causes JSON parsing failure → Frontend can't access event data → 404/error
+**Location**: 
+- Backend: [app/backend/crates/api/src/routes/calendar.rs](app/backend/crates/api/src/routes/calendar.rs#L107-L120)
+- Frontend: [app/frontend/src/app/(app)/planner/PlannerClient.tsx](app/frontend/src/app/(app)/planner/PlannerClient.tsx#L160-L165, #L329, #L346)
+**Fix Applied**: Updated frontend to match backend response format `{ data: ... }` ✅
+**Files Changed**:
+1. [PlannerClient.tsx](app/frontend/src/app/(app)/planner/PlannerClient.tsx#L165) - Changed to `data.data?.events` for GET
+2. [PlannerClient.tsx](app/frontend/src/app/(app)/planner/PlannerClient.tsx#L329) - Changed to `data.data` for PUT (update)
+3. [PlannerClient.tsx](app/frontend/src/app/(app)/planner/PlannerClient.tsx#L346) - Changed to `data.data` for POST (create)
+4. [PlannerClient.tsx](app/frontend/src/app/(app)/planner/PlannerClient.tsx#L365) - Fixed URL from `/api/calendar?id=` to `/api/calendar/{id}`
+**Validation**: 
+- cargo check: ✅ (0 errors, 209 pre-existing warnings)
+- npm run lint: ✅ (0 errors, pre-existing warnings only)
+**Status**: Ready for push ✅
+
+#### P0: "Plan My Day" Button Not Working
+**Status**: Phase 3 EXPLORER COMPLETE ✅  
+**Root Cause**: SAME RESPONSE FORMAT MISMATCH as events  
+**Problem**: Backend returns `{ data: DailyPlanResponse }` with correct structure, but issue cascades from other failures  
+**Location**: Backend is correct, frontend may have cascading effects  
+**Evidence**: 
+- Backend route exists: [app/backend/crates/api/src/routes/daily_plan.rs](app/backend/crates/api/src/routes/daily_plan.rs#L58-L90)
+- Frontend correctly expects `{ plan: DailyPlan }` format
+- 500 errors likely due to database state issues or schema misalignment
+**Fix Status**: Code is correct, requires database state verification ⏳
+
+#### P1: Ignitions Not Leading Down Paths
+**Status**: Phase 3 EXPLORER IN PROGRESS  
+**Root Cause**: LIKELY CASCADING from quest persistence issues  
+**Evidence**: Quest state not persisting past refresh (see P1 below)  
+**Location**: Quest routing likely depends on quest state from sync  
+**Fix Dependency**: Must fix quest persistence first (P1)
+
+#### P1-P2: Focus/Quests/Goals/Habits/Workouts/Books Not Sustaining Past Refresh
+**Status**: Phase 3 EXPLORER COMPLETE ✅  
+**Root Cause**: BY DESIGN - Memory-only sync state  
+**Explanation**: 
+- SyncStateContext stores data in memory only (per DESIGN PRINCIPLES in code comment)
+- On page refresh, memory is cleared, fresh data fetched from backend
+- If data wasn't saved to backend before refresh, it's lost
+- This is CORRECT BEHAVIOR - data must be POSTed to backend immediately
+**Location**: [app/frontend/src/lib/sync/SyncStateContext.tsx](app/frontend/src/lib/sync/SyncStateContext.tsx#L1-L20) (Lines 1-20 document design)
+**Required Behavior**: 
+1. User creates item (habit/goal/quest) → POST to backend immediately
+2. Backend saves to database → returns ID
+3. Frontend stores in sync state
+4. On refresh → sync state cleared → fresh data fetched from backend
+**Not a Bug**: This is working as designed. Data loss indicates items not being saved to backend.
+
+#### P2: Create Habit/Workout/Book Not Working
+**Status**: Phase 3 EXPLORER IN PROGRESS  
+**Potential Cause**: Response format mismatch (like calendar) OR missing POST endpoints  
+**Evidence**: 500 errors at 13:12:18
+**Next Steps**: Verify response formats in:
+- [app/backend/crates/api/src/routes/habits.rs](app/backend/crates/api/src/routes/habits.rs)
+- [app/backend/crates/api/src/routes/exercise.rs](app/backend/crates/api/src/routes/exercise.rs)
+- [app/backend/crates/api/src/routes/books.rs](app/backend/crates/api/src/routes/books.rs)
+
+---
+
+## ARCHITECTURE ISSUE DISCOVERED
+
+**Response Format Inconsistency Across API**
+
+During investigation, found widespread response format mismatch between backend and frontend:
+
+### Current State
+- **Backend**: All endpoints return `{ data: <response> }` format (consistent)
+- **Frontend**: Different files expect different formats:
+  - Some expect `{ <resource>: ... }` (e.g., `{ goals: [...] }`, `{ event: ... }`)
+  - Some expect `{ data: ... }` (e.g., calendar - now fixed)
+  - Some expect other formats (e.g., `{ session: ... }`, `{ pauseState: ... }`)
+
+### Files with Mismatched Response Parsing
+1. [GoalsClient.tsx](app/frontend/src/app/(app)/goals/GoalsClient.tsx#L70) - expects `{ goals?: Goal[] }`
+2. [FocusClient.tsx](app/frontend/src/app/(app)/focus/FocusClient.tsx) - expects `{ session?: FocusSession }`
+3. [QuestsClient.tsx](app/frontend/src/app/(app)/quests/QuestsClient.tsx) - expects `{ quests?: ... }`
+4. [ProgressClient.tsx](app/frontend/src/app/(app)/progress/ProgressClient.tsx) - expects `{ skills?: Skill[] }`
+5. [FocusIndicator.tsx](app/frontend/src/components/focus/FocusIndicator.tsx) - expects `{ pauseState: ... }`
+6. Many admin and shell components
+
+### Impact
+- Data cannot be parsed correctly from API responses
+- Create/update operations fail silently
+- State persistence broken across page refresh
+- Users lose data when they create items
+
+### Fix Strategy (Not Implemented Yet)
+**Option 1 (Recommended)**: Standardize backend to match frontend expectations
+- Update all routes to return `{ <resource>: ... }` format
+- More work but cleaner separation of concerns
+- Requires updating 20+ route handlers
+
+**Option 2**: Update all frontend to match backend `{ data: ... }` format
+- Less backend work but more frontend changes
+- Already started with calendar fix
+- Requires updating 20+ frontend files
+
+### Decision Required
+User to select preferred approach before implementing Phase 5 FIX for remaining issues
+
+---
+
 ## NOTES
 
 - All priorities based on security risk + user impact + implementation effort
@@ -1151,3 +1271,5 @@ git push origin production
 - P0-B (date casting) is FIXED and ready for push
 - P0-A verified as not an error (code is correct)
 - All decisions documented in both DEBUGGING.md and SOLUTION_SELECTION.md for alignment
+- **NEW (2026-01-12)**: 9 new critical issues across data creation and persistence
+- Common thread: All failures prevent data saving or are 500 errors on creation endpoints

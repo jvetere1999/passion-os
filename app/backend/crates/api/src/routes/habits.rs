@@ -31,17 +31,17 @@ pub fn router() -> Router<Arc<AppState>> {
 
 #[derive(Serialize)]
 struct HabitResponseWrapper {
-    data: HabitResponse,
+    habit: HabitResponse,
 }
 
 #[derive(Serialize)]
 struct HabitsListWrapper {
-    data: HabitsListResponse,
+    habits: Vec<HabitResponse>,
 }
 
 #[derive(Serialize)]
 struct CompleteResultWrapper {
-    data: CompleteHabitResult,
+    result: CompleteHabitResult,
 }
 
 // ============================================================================
@@ -56,7 +56,7 @@ async fn list_habits(
 ) -> Result<Json<HabitsListWrapper>, AppError> {
     let result = HabitsRepo::list_active(&state.db, user.id).await?;
 
-    Ok(Json(HabitsListWrapper { data: result }))
+    Ok(Json(HabitsListWrapper { habits: result.habits }))
 }
 
 /// POST /habits
@@ -69,7 +69,7 @@ async fn create_habit(
     let habit = HabitsRepo::create(&state.db, user.id, &req).await?;
 
     Ok(Json(HabitResponseWrapper {
-        data: HabitResponse {
+        habit: HabitResponse {
             id: habit.id,
             name: habit.name,
             description: habit.description,
@@ -103,5 +103,5 @@ async fn complete_habit(
     let notes = body.and_then(|b| b.notes.clone());
     let result = HabitsRepo::complete_habit(&state.db, id, user.id, notes.as_deref()).await?;
 
-    Ok(Json(CompleteResultWrapper { data: result }))
+    Ok(Json(CompleteResultWrapper { result }))
 }

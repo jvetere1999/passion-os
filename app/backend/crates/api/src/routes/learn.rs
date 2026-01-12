@@ -39,47 +39,47 @@ pub fn router() -> Router<Arc<AppState>> {
 
 #[derive(Serialize)]
 struct TopicsWrapper {
-    data: TopicsListResponse,
+    topics: Vec<TopicResponse>,
 }
 
 #[derive(Serialize)]
 struct LessonsWrapper {
-    data: LessonsListResponse,
+    lessons: Vec<LessonResponse>,
 }
 
 #[derive(Serialize)]
 struct LessonContentWrapper {
-    data: LessonContentResponse,
+    lesson: LessonContentResponse,
 }
 
 #[derive(Serialize)]
 struct LessonProgressWrapper {
-    data: LessonProgressInfo,
+    progress: LessonProgressInfo,
 }
 
 #[derive(Serialize)]
 struct CompleteLessonWrapper {
-    data: CompleteLessonResult,
+    result: CompleteLessonResult,
 }
 
 #[derive(Serialize)]
 struct DrillsWrapper {
-    data: DrillsListResponse,
+    drills: Vec<DrillResponse>,
 }
 
 #[derive(Serialize)]
 struct DrillResultWrapper {
-    data: DrillResultResponse,
+    result: DrillResultResponse,
 }
 
 #[derive(Serialize)]
 struct ReviewWrapper {
-    data: ReviewItemsResponse,
+    review: ReviewItemsResponse,
 }
 
 #[derive(Serialize)]
 struct ProgressWrapper {
-    data: LearnProgressSummary,
+    progress: LearnProgressSummary,
 }
 
 #[derive(Serialize)]
@@ -91,7 +91,7 @@ struct LearnOverview {
 
 #[derive(Serialize)]
 struct OverviewWrapper {
-    data: LearnOverview,
+    overview: LearnOverview,
 }
 
 // ============================================================================
@@ -109,7 +109,7 @@ async fn get_overview(
     let review = LearnRepo::get_review_items(&state.db, user.id).await?;
 
     Ok(Json(OverviewWrapper {
-        data: LearnOverview {
+        overview: LearnOverview {
             progress,
             review_count: review.total_due,
             topics: topics.topics,
@@ -124,7 +124,7 @@ async fn list_topics(
     Extension(user): Extension<User>,
 ) -> Result<Json<TopicsWrapper>, AppError> {
     let result = LearnRepo::list_topics(&state.db, user.id).await?;
-    Ok(Json(TopicsWrapper { data: result }))
+    Ok(Json(TopicsWrapper { topics: result.topics }))
 }
 
 /// GET /learn/topics/:topic_id/lessons
@@ -135,7 +135,7 @@ async fn list_lessons(
     Path(topic_id): Path<Uuid>,
 ) -> Result<Json<LessonsWrapper>, AppError> {
     let result = LearnRepo::list_lessons(&state.db, user.id, topic_id).await?;
-    Ok(Json(LessonsWrapper { data: result }))
+    Ok(Json(LessonsWrapper { lessons: result.lessons }))
 }
 
 /// GET /learn/topics/:topic_id/drills
@@ -146,7 +146,7 @@ async fn list_drills(
     Path(topic_id): Path<Uuid>,
 ) -> Result<Json<DrillsWrapper>, AppError> {
     let result = LearnRepo::list_drills(&state.db, user.id, topic_id).await?;
-    Ok(Json(DrillsWrapper { data: result }))
+    Ok(Json(DrillsWrapper { drills: result.drills }))
 }
 
 /// GET /learn/lessons/:id
@@ -158,7 +158,7 @@ async fn get_lesson(
 ) -> Result<Json<LessonContentWrapper>, AppError> {
     let lesson = LearnRepo::get_lesson_content(&state.db, user.id, id).await?;
     let lesson = lesson.ok_or_else(|| AppError::NotFound("Lesson not found".to_string()))?;
-    Ok(Json(LessonContentWrapper { data: lesson }))
+    Ok(Json(LessonContentWrapper { lesson }))
 }
 
 /// POST /learn/lessons/:id/start
@@ -169,7 +169,7 @@ async fn start_lesson(
     Path(lesson_id): Path<Uuid>,
 ) -> Result<Json<LessonProgressWrapper>, AppError> {
     let progress = LearnRepo::start_lesson(&state.db, user.id, lesson_id).await?;
-    Ok(Json(LessonProgressWrapper { data: progress }))
+    Ok(Json(LessonProgressWrapper { progress }))
 }
 
 /// POST /learn/lessons/:id/complete
@@ -185,7 +185,7 @@ async fn complete_lesson(
         quiz_score: body.quiz_score,
     };
     let result = LearnRepo::complete_lesson(&state.db, user.id, &req).await?;
-    Ok(Json(CompleteLessonWrapper { data: result }))
+    Ok(Json(CompleteLessonWrapper { result }))
 }
 
 #[derive(Deserialize)]
@@ -209,7 +209,7 @@ async fn submit_drill(
         time_seconds: body.time_seconds,
     };
     let result = LearnRepo::submit_drill(&state.db, user.id, &req).await?;
-    Ok(Json(DrillResultWrapper { data: result }))
+    Ok(Json(DrillResultWrapper { result }))
 }
 
 #[derive(Deserialize)]
@@ -227,7 +227,7 @@ async fn get_review_items(
     Extension(user): Extension<User>,
 ) -> Result<Json<ReviewWrapper>, AppError> {
     let result = LearnRepo::get_review_items(&state.db, user.id).await?;
-    Ok(Json(ReviewWrapper { data: result }))
+    Ok(Json(ReviewWrapper { review: result }))
 }
 
 /// GET /learn/progress
@@ -237,5 +237,5 @@ async fn get_progress(
     Extension(user): Extension<User>,
 ) -> Result<Json<ProgressWrapper>, AppError> {
     let progress = LearnRepo::get_progress_summary(&state.db, user.id).await?;
-    Ok(Json(ProgressWrapper { data: progress }))
+    Ok(Json(ProgressWrapper { progress }))
 }

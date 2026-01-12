@@ -1487,7 +1487,7 @@ impl UserSettingsRepo {
         let settings = sqlx::query_as::<_, UserSettings>(
             r#"
             SELECT id, user_id, notifications_enabled, email_notifications,
-                   push_notifications, theme, timezone, locale, profile_public,
+                   push_notifications, timezone, locale, profile_public,
                    show_activity, soft_landing_until, daily_reminder_time,
                    created_at, updated_at
             FROM user_settings
@@ -1504,7 +1504,6 @@ impl UserSettingsRepo {
                 notifications_enabled: true,
                 email_notifications: true,
                 push_notifications: false,
-                theme: "system".to_string(),
                 timezone: None,
                 locale: "en".to_string(),
                 profile_public: false,
@@ -1546,14 +1545,14 @@ impl UserSettingsRepo {
             r#"
             INSERT INTO user_settings (
                 id, user_id, notifications_enabled, email_notifications,
-                push_notifications, theme, timezone, locale, profile_public,
+                push_notifications, timezone, locale, profile_public,
                 show_activity, daily_reminder_time, created_at, updated_at
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $12)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $11)
             ON CONFLICT (user_id) DO UPDATE SET
                 notifications_enabled = $3, email_notifications = $4,
-                push_notifications = $5, theme = $6, timezone = $7, locale = $8,
-                profile_public = $9, show_activity = $10, daily_reminder_time = $11,
-                updated_at = $12
+                push_notifications = $5, timezone = $6, locale = $7,
+                profile_public = $8, show_activity = $9, daily_reminder_time = $10,
+                updated_at = $11
             "#,
         )
         .bind(Uuid::new_v4())
@@ -1561,7 +1560,6 @@ impl UserSettingsRepo {
         .bind(notifications_enabled)
         .bind(email_notifications)
         .bind(push_notifications)
-        .bind(theme)
         .bind(&timezone)
         .bind(locale)
         .bind(profile_public)
@@ -1575,7 +1573,6 @@ impl UserSettingsRepo {
             notifications_enabled,
             email_notifications,
             push_notifications,
-            theme: theme.clone(),
             timezone,
             locale: locale.clone(),
             profile_public,
@@ -1589,7 +1586,6 @@ impl UserSettingsRepo {
             notifications_enabled: s.notifications_enabled,
             email_notifications: s.email_notifications,
             push_notifications: s.push_notifications,
-            theme: s.theme,
             timezone: s.timezone,
             locale: s.locale,
             profile_public: s.profile_public,

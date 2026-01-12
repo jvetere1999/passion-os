@@ -410,10 +410,11 @@ async fn fetch_dynamic_ui(pool: &PgPool, user_id: Uuid) -> Result<DynamicUIData,
     
     // Check active quests
     // Schema: user_quest_progress has status (TEXT) not completed (boolean)
+    // Note: expires_at is in user_quests, not universal_quests
     let active_quests = sqlx::query_scalar::<_, i64>(
         r#"
         SELECT COUNT(*) FROM user_quest_progress uqp
-        JOIN universal_quests uq ON uq.id = uqp.quest_id
+        JOIN user_quests uq ON uq.id = uqp.quest_id
         WHERE uqp.user_id = $1 AND uqp.status = 'accepted'
         AND (uq.expires_at IS NULL OR uq.expires_at > NOW())
         "#

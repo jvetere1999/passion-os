@@ -1,53 +1,143 @@
-# SOLUTION SELECTION - Updated Decision Status
+# SOLUTION SELECTION - Current Decisions Awaiting Action
 
-**Generated**: 2026-01-11  
-**Updated**: 2026-01-12 21:45 UTC  
-**Status**: 🟠 **P0 COMPLETE, P1 DECISION PENDING**  
-**Current Gate**: P1 Auth Redirect Target (Option A or B)  
-**Purpose**: Document all decisions made and PENDING decisions  
-**Production Status**: Schema fixes ready to deploy, auth redirect issue discovered
+**Updated**: 2026-01-12 18:54 UTC  
+**Status**: 🟡 **Testing Phase - 2 Decisions Pending**  
+**Purpose**: Document decisions to resolve remaining test failures  
+**Test Results**: 17 passed / 17 failed (50% pass rate)
 
 ---
 
-## 🟠 CURRENT DECISION: P1 Auth Redirect Target
+## P1: CSRF Bypass for Development Mode
 
-**Issue**: When session expires (401), code redirects to `/login` which doesn't exist, causing endless redirect loop.
+**Issue**: POST/PATCH requests failing with 403 CSRF errors in test suite  
+**Affected Tests**: 5 tests (POST /api/quests, /api/focus/start, /api/exercise, /api/books, PATCH /api/settings)  
+**Impact**: Medium - Blocks mutation endpoint testing
 
-**Evidence**: 
-- User report: "clearing cookies locks you into endless cycle"
-- Code analysis: client.ts:117 redirects to non-existent `/login` page
-- Frontend structure: Main landing is `/`, signin is `/auth/signin`, no `/login`
-
-### Option A: Redirect to Main Landing Page `/` ⭐ RECOMMENDED
-```typescript
-// Change in client.ts:117
-window.location.href = '/';
+### Option A: Disable CSRF in Dev Mode ⭐ RECOMMENDED
+**Implementation**:
+```rust
+// In csrf middleware
+if env::var("AUTH_DEV_BYPASS").is_ok() && 
+   (host == "localhost" || host == "127.0.0.1") {
+    return Ok(next.run(req).await); // Skip CSRF check in dev
+}
 ```
 
-**Rationale**:
-- Clean slate after session clear
-- User lands on public page, can see features
-- Can choose to sign in or browse
-- No redirect loop (/ is public route)
-- Natural user experience
+**Pros**:
+- Simple: ~10 lines of code
+- Aligns with existing dev bypass pattern
+- Allows full test coverage immediately
+- No request modifications needed
 
-**Trade-offs**:
-- Loses context of original destination
-- User must manually click "Start Ignition" to sign in again
-- But notification still shows "session expired" message
+**Cons**:
+- Slightly reduces security in dev environment
+- But: Dev environment is local-only, low risk
 
-### Option B: Redirect to Signin Page `/auth/signin`
+**Effort**: 30-60 minutes
+**Priority**: High (enables POST test validation)
+
+### Option B: Auto-Generate CSRF Tokens in Tests
+**Implementation**:
 ```typescript
-// Change in client.ts:117
-window.location.href = '/auth/signin';
+// In playwright test setup
+const csrfToken = await page.evaluate(() => 
+  document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+);
+
+// Include in request headers
+headers: {
+  'X-CSRF-Token': csrfToken,
+  ...
+}
 ```
 
-**Rationale**:
-- Direct path to re-authenticate
-- Clear what user needs to do next
-- Faster to regain access
+**Pros**:
+- Tests real CSRF flow
+- More production-like
 
-**Trade-offs**:
+**Cons**:
+- Requires meta tag on all pages
+- Complex test setup
+- May not work with API-only endpoints
+
+**Effort**: 2-3 hours
+**Priority**: Medium (more realistic but higher effort)
+
+### Recommendation
+**Choose Option A** - Simple, fast, aligns with dev bypass philosophy  
+**Decision Owner**: User  
+**Status**: ⏳ AWAITING USER SELECTION
+
+---
+
+## P2: Missing Route Registration
+
+**Issue**: 7 tests getting 404 Not Found on valid endpoints  
+**Affected Routes**:
+- `GET /api/habits/archived` - Get archived habits
+- `GET /api/focus/sessions` - List focus sessions
+- `GET /api/focus/stats` - Focus statistics
+- `POST /api/focus/start` - Start new focus session
+- `GET /api/learn` - Learning items
+- (3 more related to focus pagination)
+
+**Root Cause**: Routes either not implemented or not registered in router
+
+### Option A: Audit & Register Missing Routes (Recommended)
+**Steps**:
+1. Check `/api/habits` route - Find or create `/archived` variant
+2. Check `/api/focus` route - Verify `/sessions`, `/stats`, `/start` exist
+3. Check `/api/learn` route - Verify implementation and registration
+4. Register all missing routes in main router
+
+**Evidence Needed**:
+- [ ] Check [app/backend/crates/api/src/routes/](../app/backend/crates/api/src/routes/) for route files
+- [ ] Verify each route is `.nest()`d in [api.rs](../app/backend/crates/api/src/routes/api.rs)
+- [ ] Check if handlers exist but route is missing
+
+**Effort**: 1-2 hours (depends on complexity)
+**Priority**: High (enables endpoint testing)
+
+### Option B: Disable Failing Tests & Continue
+**Steps**:
+1. Comment out focus/learn/archived tests
+2. Deploy working 17 tests
+3. Implement routes post-deployment
+
+**Pros**:
+- Fast: 5 minutes
+- Avoids blocking other work
+
+**Cons**:
+- Leaves known issues untested
+- Post-deployment fixes riskier
+
+**Effort**: 5 minutes
+**Priority**: Low (not recommended - better to fix first)
+
+### Recommendation
+**Choose Option A** - Investigate and register routes  
+**Decision Owner**: User  
+**Status**: ⏳ AWAITING USER SELECTION
+
+---
+
+## Current Decision Status
+
+| Priority | Issue | Options | Status |
+|----------|-------|---------|--------|
+| P1 | CSRF 403 Errors | A (Dev Mode), B (Auto-Token) | ⏳ User Selection |
+| P2 | 404 Routes | A (Register Routes), B (Disable Tests) | ⏳ User Selection |
+
+**Next Action**: User selects approach for each issue, agent implements
+
+---
+
+## Reference
+
+- **Main Tracking**: [debug/DEBUGGING.md](DEBUGGING.md)
+- **Test Results**: [tests/api-response-format.spec.ts](../tests/api-response-format.spec.ts)
+- **Test Command**: `cd /Users/Shared/passion-os-next && npx playwright test tests/api-response-format.spec.ts`
 - More aggressive (forces login choice)
 - Less friendly after clearing cookies
 - Doesn't let user just browse first

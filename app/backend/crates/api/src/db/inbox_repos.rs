@@ -49,7 +49,7 @@ impl InboxRepo {
         .await?;
 
         let unread: (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM inbox_items WHERE user_id = $1 AND is_read = false AND is_archived = false",
+            "SELECT COUNT(*) FROM inbox_items WHERE user_id = $1 AND is_processed = false AND is_archived = false",
         )
         .bind(user_id)
         .fetch_one(db)
@@ -140,7 +140,7 @@ impl InboxRepo {
         user_id: Uuid,
     ) -> Result<i64, AppError> {
         let result = sqlx::query(
-            "UPDATE inbox_items SET is_read = true WHERE user_id = $1 AND is_read = false",
+            "UPDATE inbox_items SET is_processed = true WHERE user_id = $1 AND is_processed = false",
         )
         .bind(user_id)
         .execute(db)
@@ -176,7 +176,7 @@ impl InboxRepo {
         user_id: Uuid,
     ) -> Result<i64, AppError> {
         let count: (i64,) = sqlx::query_as(
-            "SELECT COUNT(*) FROM inbox_items WHERE user_id = $1 AND is_read = false AND is_archived = false",
+            "SELECT COUNT(*) FROM inbox_items WHERE user_id = $1 AND is_processed = false AND is_archived = false",
         )
         .bind(user_id)
         .fetch_one(db)

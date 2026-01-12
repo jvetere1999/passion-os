@@ -1539,7 +1539,6 @@ impl UserSettingsRepo {
         let push_notifications = req
             .push_notifications
             .unwrap_or(existing.push_notifications);
-        let theme = req.theme.as_ref().unwrap_or(&existing.theme);
         let timezone = req.timezone.clone().or(existing.timezone);
         let locale = req.locale.as_ref().unwrap_or(&existing.locale);
         let profile_public = req.profile_public.unwrap_or(existing.profile_public);

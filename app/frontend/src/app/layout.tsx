@@ -6,8 +6,10 @@ import { themeScript } from "@/lib/theme/script";
 import { SiteFooter } from "@/components/shell/SiteFooter";
 import { ErrorNotifications } from "@/components/ui/ErrorNotifications";
 import { ErrorNotificationInitializer } from "@/components/ui/ErrorNotificationInitializer";
+import { ZenBrowserInitializer } from "@/components/browser/ZenBrowserInitializer";
 import "@/styles/tokens.css";
 import "./globals.css";
+import "./zen-browser.css";
 
 // AdSense publisher ID - set to empty to disable ads
 const ADSENSE_PUBLISHER_ID = process.env.NEXT_PUBLIC_ADSENSE_PUBLISHER_ID || "";
@@ -136,6 +138,7 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <ThemeProvider>
+            <ZenBrowserInitializer />
             <div id="app-root">{children}</div>
             <SiteFooter />
             <ErrorNotifications />

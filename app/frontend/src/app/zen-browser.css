@@ -1,0 +1,110 @@
+/**
+ * Zen Browser Transparency Support (2026-01-11)
+ *
+ * Zen Browser v3.3 with Zen-Nebula theme has issues with backdrop-filter
+ * and CSS variable inheritance for transparency effects.
+ *
+ * This file adds:
+ * 1. Transparency CSS variables for better control
+ * 2. Backdrop-filter polyfills for Zen Browser
+ * 3. Browser-specific overrides for visual consistency
+ */
+
+:root {
+  /* Transparency variables for consistent opacity across components */
+  --backdrop-opacity: 0.85;
+  --bg-transparency: 0.9;
+  --surface-transparency: 0.95;
+  --overlay-transparency: 0.8;
+  --modal-transparency: 0.98;
+}
+
+/* Backdrop filter support - main browsers */
+@supports (backdrop-filter: blur(4px)) {
+  .modal,
+  .dropdown,
+  .popover,
+  .tooltip {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+}
+
+/* Zen Browser specific - no backdrop filter support */
+@-moz-document url-prefix() {
+  /* Firefox-based browser (including Zen) */
+  .modal {
+    background-color: rgba(45, 45, 45, var(--modal-transparency));
+    border: 1px solid var(--border-default);
+  }
+
+  .dropdown,
+  .popover {
+    background-color: rgba(45, 45, 45, var(--bg-transparency));
+    border: 1px solid var(--border-default);
+  }
+
+  .tooltip {
+    background-color: rgba(61, 61, 61, 0.95);
+    color: var(--text-primary);
+  }
+}
+
+/* Zen Browser user agent detection */
+@supports selector(:is(body)) {
+  body[data-browser="zen"] {
+    /* Zen Browser specific overrides */
+  }
+
+  body[data-browser="zen"] .modal {
+    background-color: rgba(45, 45, 45, 0.98);
+  }
+
+  body[data-browser="zen"] .surface-elevated {
+    background-color: rgba(77, 77, 77, 0.95);
+  }
+}
+
+/* Fallback for older browsers without backdrop-filter */
+.surface-overlay {
+  background: linear-gradient(
+    135deg,
+    rgba(45, 45, 45, 0.9) 0%,
+    rgba(55, 55, 55, 0.85) 100%
+  );
+  border: 1px solid var(--border-default);
+}
+
+/* Increase opacity on critical interactive elements for Zen */
+.button {
+  background-color: var(--bg-secondary);
+  opacity: 1;
+}
+
+.button:hover {
+  background-color: var(--surface-hover);
+  opacity: 1;
+}
+
+.input,
+.select,
+.textarea {
+  background-color: var(--surface-default);
+  opacity: 1;
+}
+
+/* Error notifications - must be visible */
+.notification-error,
+.toast-error {
+  background-color: rgba(255, 82, 82, 0.95);
+  color: #ffffff;
+  opacity: 1;
+}
+
+/* Success notifications - must be visible */
+.notification-success,
+.toast-success {
+  background-color: rgba(135, 193, 87, 0.95);
+  color: #ffffff;
+  opacity: 1;
+}

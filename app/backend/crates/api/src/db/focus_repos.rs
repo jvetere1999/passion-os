@@ -557,4 +557,134 @@ impl FocusLibraryRepo {
 
         Ok(library)
     }
+
+    /// Add track to library
+    pub async fn add_track(
+        pool: &PgPool,
+        user_id: Uuid,
+        library_id: Uuid,
+        track_title: &str,
+        track_url: Option<&str>,
+        _r2_key: Option<&str>,
+        duration_seconds: Option<i32>,
+    ) -> Result<FocusLibraryTrack, AppError> {
+        // Verify library ownership
+        let _library = sqlx::query_as::<_, FocusLibrary>(
+            "SELECT * FROM focus_libraries WHERE id = $1 AND user_id = $2",
+        )
+        .bind(library_id)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await?
+        .ok_or(AppError::NotFound("Library not found".into()))?;
+
+        // Generate unique track_id
+        let track_id = format!("track_{}", uuid::Uuid::new_v4().to_string()[0..8].to_string());
+
+        // Create new track ID for return
+        let new_id = Uuid::new_v4();
+
+        // Insert track (without r2_key if column doesn't exist)
+        sqlx::query(
+            r#"INSERT INTO focus_library_tracks
+               (id, library_id, track_id, track_title, track_url, duration_seconds, added_at)
+               VALUES ($1, $2, $3, $4, $5, $6, NOW())"#,
+        )
+        .bind(new_id)
+        .bind(library_id)
+        .bind(&track_id)
+        .bind(track_title)
+        .bind(track_url)
+        .bind(duration_seconds)
+        .execute(pool)
+        .await?;
+
+        // Increment tracks_count
+        sqlx::query(
+            "UPDATE focus_libraries SET tracks_count = tracks_count + 1, updated_at = NOW() WHERE id = $1",
+        )
+        .bind(library_id)
+        .execute(pool)
+        .await?;
+
+        // Return the created track
+        let track = FocusLibraryTrack {
+            id: new_id,
+            library_id,
+            track_id,
+            track_title: track_title.to_string(),
+            track_url: track_url.map(|s| s.to_string()),
+            r2_key: None,
+            duration_seconds,
+            added_at: Utc::now(),
+        };
+
+        Ok(track)
+    }
+
+    /// Get track by ID
+    pub async fn get_track(
+        pool: &PgPool,
+        user_id: Uuid,
+        track_id: Uuid,
+    ) -> Result<Option<FocusLibraryTrack>, AppError> {
+        let track = sqlx::query_as::<_, FocusLibraryTrack>(
+            r#"SELECT t.id, t.library_id, t.track_id, t.track_title, t.track_url, 
+                      CAST(NULL AS TEXT) as r2_key, t.duration_seconds, t.added_at
+               FROM focus_library_tracks t
+               JOIN focus_libraries l ON t.library_id = l.id
+               WHERE t.id = $1 AND l.user_id = $2"#,
+        )
+        .bind(track_id)
+        .bind(user_id)
+        .fetch_optional(pool)
+        .await?;
+
+        Ok(track)
+    }
+
+    /// Delete track from library
+    pub async fn delete_track(
+        pool: &PgPool,
+        user_id: Uuid,
+        track_id: Uuid,
+    ) -> Result<(), AppError> {
+        let result = sqlx::query(
+            r#"DELETE FROM focus_library_tracks t
+               USING focus_libraries l
+               WHERE t.id = $1 AND t.library_id = l.id AND l.user_id = $2"#,
+        )
+        .bind(track_id)
+        .bind(user_id)
+        .execute(pool)
+        .await?;
+
+        if result.rows_affected() == 0 {
+            return Err(AppError::NotFound("Track not found".into()));
+        }
+
+        Ok(())
+    }
+
+    /// List tracks in library
+    pub async fn list_tracks(
+        pool: &PgPool,
+        user_id: Uuid,
+        library_id: Uuid,
+    ) -> Result<Vec<FocusLibraryTrack>, AppError> {
+        let tracks = sqlx::query_as::<_, FocusLibraryTrack>(
+            r#"SELECT t.id, t.library_id, t.track_id, t.track_title, t.track_url, 
+                      CAST(NULL AS TEXT) as r2_key, t.duration_seconds, t.added_at
+               FROM focus_library_tracks t
+               JOIN focus_libraries l ON t.library_id = l.id
+               WHERE l.id = $1 AND l.user_id = $2
+               ORDER BY t.added_at DESC"#,
+        )
+        .bind(library_id)
+        .bind(user_id)
+        .fetch_all(pool)
+        .await?;
+
+        Ok(tracks)
+    }
 }

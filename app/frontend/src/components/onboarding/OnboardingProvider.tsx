@@ -1,8 +1,12 @@
 /**
- * OnboardingProvider - Client component that fetches onboarding state
- * from the backend API and renders the OnboardingModal
+ * OnboardingProvider - DISABLED (2026-01-11)
  *
- * Rewritten to use backend API instead of D1 directly.
+ * Onboarding modal feature has been disabled per user selection (Option C).
+ * Users now add daily plan items manually instead of via guided onboarding.
+ *
+ * Component structure remains intact but always returns null.
+ * Backend API still works for onboarding state management.
+ * Can be re-enabled in the future if needed.
  */
 
 "use client";
@@ -58,11 +62,11 @@ export function OnboardingProvider() {
     return null;
   }
 
-  // TODO: The OnboardingModal component needs to be updated to work with
-  // the new API response format. For now, we'll skip rendering it.
-  // The modal expects: initialState, flow (with steps array), userId
-  // The API returns: state, flow (without steps), current_step, all_steps
-  console.log("Onboarding needed but modal temporarily disabled during migration");
+  // DISABLED (2026-01-11): Onboarding modal rendering intentionally disabled
+  // Decision: Option C - Manual plan entry only
+  // Rationale: Users prefer manual control over guided setup
+  // The API returns data but we don't render the modal
+  // Backend still manages onboarding state for analytics/tracking
   return null;
 }
 

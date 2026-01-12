@@ -272,6 +272,7 @@ pub struct FocusLibraryTrack {
     pub track_id: String,
     pub track_title: String,
     pub track_url: Option<String>,
+    pub r2_key: Option<String>,
     pub duration_seconds: Option<i32>,
     pub added_at: DateTime<Utc>,
 }

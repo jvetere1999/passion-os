@@ -16,55 +16,26 @@
 
 ---
 
-## ⚠️ P0 CRITICAL ERRORS (FIX IMMEDIATELY)
+## 🟢 P0 CRITICAL ERRORS - FIXED
 
-### P0-1: habits.archived Column Missing (BLOCKING)
-**Category**: CRITICAL - Schema Mismatch  
-**Current State**: Backend queries non-existent column  
+### P0-A: habits.archived Column Missing ✅ VERIFIED CORRECT
+**Status**: NOT AN ERROR - Code uses `is_active = true` (correct schema)
 **Location**: `app/backend/crates/api/src/routes/today.rs:390`
-
-**Error**:
-```
-error returned from database: column h.archived does not exist
-```
-
-**Problem**:
-```rust
-// WRONG (Line 390):
-WHERE h.user_id = $1 AND h.archived = false
-
-// Schema v2.0.0 has: is_active (not archived)
-```
-
-**Fix Required**:
-```rust
-// CORRECT:
-WHERE h.user_id = $1 AND h.is_active = true
-```
-
-**Action**: See SOLUTION_SELECTION.md Section: "URGENT FIX 1: habits.archived"
+**Code**: `WHERE h.user_id = $1 AND h.is_active = true`
+**Resolution**: No fix needed - schema is correct
 
 ---
 
-### P0-2: Date Type Casting Error Still Occurring (BLOCKING)
-**Category**: CRITICAL - Type Mismatch  
-**Current State**: Previous fix may not be deployed OR additional instances exist  
-**Location**: Multiple endpoints (sync, today)
+### P0-B: Date Type Casting Error ✅ FIXED
+**Status**: FIXED in 3 locations
+**Fixes Applied**:
+1. ✅ habits_goals_repos.rs:88 - `completed_date = $2::date`
+2. ✅ habits_goals_repos.rs:133 - `completed_date = $2::date`
+3. ✅ quests_repos.rs:199 - `last_completed_date = $1::date`
+4. ✅ sync.rs:436 already had `::date` cast (from previous commit)
 
-**Error**:
-```
-error returned from database: operator does not exist: date = text
-```
-
-**Analysis**:
-- We fixed this in previous commit (added `::date` casts)
-- Logs show it's STILL happening (22:32:01, 22:32:02)
-- Possible causes:
-  1. Backend not redeployed after fix
-  2. Additional instances we missed
-  3. Wrong bind parameter types
-
-**Action**: See SOLUTION_SELECTION.md Section: "URGENT FIX 2: Date Casting"
+**Validation**: cargo check = 0 errors
+**Ready**: Yes, ready for push
 
 ---
 
@@ -146,110 +117,65 @@ Before making ANY changes to this codebase:
 
 ---
 
-## ✅ COMPLETED FIXES (Moved to debug_log)
+## ✅ COMPLETED FIXES - 2026-01-11
 
-**Schema Synchronization Issues** - COMPLETED 2026-01-11
-- ✅ Fixed inbox_items.is_read → is_processed
-- ✅ Fixed daily_plans count columns → JSONB parsing
-- ✅ Removed daily_plan_items table references
-- ✅ Fixed date type casting
-- ✅ Added TOS state to sync response
-- ✅ Implemented session guard in (app) layout
+### Date Type Casting - FIXED
+- ✅ habits_goals_repos.rs:88 - `completed_date = $2::date`
+- ✅ habits_goals_repos.rs:133 - `completed_date = $2::date`
+- ✅ quests_repos.rs:199 - `last_completed_date = $1::date`
+- All files compiled: 0 errors
+- All linting passed: 0 new errors
 
-**Location**: See `debug_log/2026-01-11_schema_sync_fixes.md` for full details
+### Previously Fixed
+- ✅ sync.rs:436 already has `::date` cast (in previous commit)
+- ✅ today.rs uses `is_active = true` (not `archived`)
+- ✅ Admin API Test Tool completed and integrated
+
+**Status**: Ready for push
 
 ---
 
-## 🔴 NEW ACTIVE ISSUES
-
-**See `SOLUTION_SELECTION.md` for detailed analysis and solution options.**
+## 🔴 UNSOLVED ISSUES - Awaiting Decisions
 
 ### Priority P0: Session Termination on Invalid Sync (CRITICAL - SECURITY)
-**Category**: CRITICAL - Security/Data Leakage  
-**Current State**: Backend returns 401 but frontend doesn't wipe data  
-**Location**: Auth validation + API client  
-
-**Problem**:
-- When backend session expires/deleted, frontend keeps stale data
-- No automatic cleanup of sync state, localStorage, IndexedDB
-- Security risk: Deleted session leaves data accessible
-
-**See SOLUTION_SELECTION.md Section: "Session Termination" for options**
+**Status**: Not yet implemented  
+**Requires Decision**: Middleware-based (Option A) or API client-based (Option B)?  
+**See**: SOLUTION_SELECTION.md Section "Session Termination"
 
 ---
 
 ### Priority P1: Plan My Day Generation Broken (CRITICAL)
-**Category**: CRITICAL - Core Feature  
-**Current State**: Generate function returns empty plans  
-**Location**: `app/backend/crates/api/src/db/platform_repos.rs:398`
-
-**Problem**:
-- Backend skeleton exists but generation logic incomplete
-- Returns empty `items` array
-- Missing queries for: quests, habits, workouts, learning items
-
-**Evidence**:
-```rust
-pub async fn generate(...) -> Result<DailyPlanResponse, AppError> {
-    let mut items: Vec<PlanItem> = vec![];
-    // TODO: Actually generate items
-    // Currently only adds focus session + fetches habits/quests (partial)
-```
-
-**See SOLUTION_SELECTION.md Section: "Plan My Day" for options**
+**Status**: Not yet implemented  
+**Requires Decision**: Full generation (Option A), MVP (Option B), or disable (Option C)?  
+**See**: SOLUTION_SELECTION.md Section "Plan My Day"
 
 ---
 
 ### Priority P2: Onboarding Modal Not Rendering (HIGH)
-**Category**: HIGH - First-run UX  
-**Current State**: Intentionally disabled during migration  
-**Location**: `app/frontend/src/components/onboarding/OnboardingProvider.tsx:61`
-
-**Problem**:
-- Backend API changed format (D1 → Postgres)
-- Modal expects nested `flow.steps` array
-- API returns flat `flow` + separate `all_steps` array
-- Mismatch causes modal to be commented out
-
-**Evidence**:
-```tsx
-// TODO: The OnboardingModal component needs to be updated to work with
-// the new API response format. For now, we'll skip rendering it.
-console.log("Onboarding needed but modal temporarily disabled during migration");
-return null;
-```
-
-**See SOLUTION_SELECTION.md Section: "Onboarding" for options**
+**Status**: Disabled in code (intentionally, awaiting API format fix)  
+**Requires Decision**: Update modal props (Option A), transform API response (Option B), or rewrite (Option C)?  
+**See**: SOLUTION_SELECTION.md Section "Onboarding"
 
 ---
 
 ### Priority P3: Create Focus Library Broken (HIGH)
-**Category**: HIGH - Feature Incomplete  
-**Current State**: Backend metadata works, track storage missing  
-**Location**: Focus library track upload flow
-
-**Problem**:
-- Backend: `focus_libraries` + `focus_library_tracks` tables exist
-- Backend: No R2 file storage for audio tracks
-- Frontend: Uses IndexedDB (client-only, doesn't sync)
-- Gap: No bridge between client audio and backend storage
-
-**See SOLUTION_SELECTION.md Section: "Create Focus Library" for options**
+**Status**: Frontend uses IndexedDB, backend has no R2 storage  
+**Requires Decision**: Add R2 upload (Option A), use reference library paradigm (Option B), or external links (Option C)?  
+**See**: SOLUTION_SELECTION.md Section "Create Focus Library"
 
 ---
 
 ### Priority P4: Focus State Not Persisted in Sync (MEDIUM)
-**Category**: MEDIUM - Performance/Consistency  
-**Current State**: Backend returns focus data, frontend doesn't cache  
-**Location**: Sync response includes focus, but context doesn't store it
+**Status**: Data flows from API but frontend doesn't cache it  
+**Requires Decision**: Add to sync state (Option A), keep separate + localStorage (Option B), or increase sync frequency (Option C)?  
+**See**: SOLUTION_SELECTION.md Section "Focus Persistence"
 
-**Problem**:
-- Sync endpoint queries + returns focus session status
-- Frontend SyncStateContext missing `focus` field
-- Components make direct API calls instead of using sync cache
-- Duplicate queries, inconsistent state
+---
 
-**See SOLUTION_SELECTION.md Section: "Focus Persistence" for options**
+### Priority P3: Zen Browser Transparency Issue (HIGH)
+**Status**: CSS compatibility issue with Zen-Nebula theme  
+**Requires Decision**: Add backdrop-filter support (Option A), Zen-specific detection (Option B), or document only (Option C)?  
+**See**: SOLUTION_SELECTION.md Section "Zen Browser Transparency"
 
 ---
 

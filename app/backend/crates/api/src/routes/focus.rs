@@ -18,6 +18,7 @@ use crate::db::focus_repos::{FocusLibraryRepo, FocusPauseRepo, FocusSessionRepo}
 use crate::db::models::User;
 use crate::error::AppError;
 use crate::state::AppState;
+use crate::storage::{BlobCategory, SignedUrlResponse};
 
 /// Create focus routes
 pub fn router() -> Router<Arc<AppState>> {
@@ -35,6 +36,9 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/libraries", get(list_libraries).post(create_library))
         .route("/libraries/{id}", get(get_library).delete(delete_library))
         .route("/libraries/{id}/favorite", post(toggle_favorite))
+        // Track upload routes
+        .route("/libraries/{id}/tracks/upload-url", post(get_track_upload_url))
+        .route("/libraries/{id}/tracks", post(add_track))
 }
 
 // ============================================================================
@@ -296,5 +300,101 @@ async fn toggle_favorite(
     let library = FocusLibraryRepo::toggle_favorite(&state.db, user.id, id).await?;
     Ok(Json(LibraryWrapper {
         data: FocusLibraryResponse::from(library),
+    }))
+}
+
+// ============================================================================
+// FOCUS LIBRARY TRACKS HANDLERS
+// ============================================================================
+
+/// Request for track upload URL
+#[derive(Debug, Deserialize)]
+pub struct GetTrackUploadUrlRequest {
+    pub filename: String,
+    #[serde(default = "default_mime_type")]
+    pub mime_type: String,
+}
+
+fn default_mime_type() -> String {
+    "audio/mpeg".to_string()
+}
+
+/// Response for adding track
+#[derive(Debug, Serialize)]
+pub struct AddTrackResponse {
+    pub id: Uuid,
+    pub library_id: Uuid,
+    pub track_id: String,
+    pub track_title: String,
+    pub track_url: Option<String>,
+}
+
+/// Request for adding track after upload
+#[derive(Debug, Deserialize)]
+pub struct AddTrackRequest {
+    pub track_title: String,
+    pub track_url: Option<String>,
+    pub r2_key: Option<String>,
+    pub duration_seconds: Option<i32>,
+}
+
+/// POST /focus/libraries/:id/tracks/upload-url
+/// Get presigned upload URL for focus track
+async fn get_track_upload_url(
+    State(state): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(library_id): Path<Uuid>,
+    Json(req): Json<GetTrackUploadUrlRequest>,
+) -> Result<Json<SignedUrlResponse>, AppError> {
+    // Verify library ownership
+    FocusLibraryRepo::get(&state.db, user.id, library_id).await?;
+
+    // Get storage client (required for R2 uploads)
+    let storage = state
+        .storage
+        .as_ref()
+        .ok_or_else(|| AppError::Internal("Storage not configured".into()))?;
+
+    // Generate presigned upload URL
+    let signed_url = storage
+        .generate_signed_upload_url(&user.id, &req.mime_type, &req.filename)
+        .await?;
+
+    Ok(Json(signed_url))
+}
+
+/// POST /focus/libraries/:id/tracks
+/// Add track to library after upload to R2
+async fn add_track(
+    State(state): State<Arc<AppState>>,
+    Extension(user): Extension<User>,
+    Path(library_id): Path<Uuid>,
+    Json(req): Json<AddTrackRequest>,
+) -> Result<Json<AddTrackResponse>, AppError> {
+    // Verify library ownership
+    FocusLibraryRepo::get(&state.db, user.id, library_id).await?;
+
+    if req.track_title.is_empty() {
+        return Err(AppError::Validation("Track title cannot be empty".into()));
+    }
+
+    // Create track record
+    let track = FocusLibraryRepo::add_track(
+        &state.db,
+        user.id,
+        library_id,
+        &req.track_title,
+        req.track_url.as_deref(),
+        req.r2_key.as_deref(),
+        req.duration_seconds,
+    )
+    .await?;
+
+    Ok(Json(AddTrackResponse {
+        id: track.id,
+        library_id: track.library_id,
+        track_id: track.track_id,
+        track_title: track.track_title,
+        track_url: track.track_url,
     }))
 }

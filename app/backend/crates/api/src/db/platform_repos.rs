@@ -482,6 +482,44 @@ impl DailyPlanRepo {
             priority += 1;
         }
 
+        // Get scheduled workouts for today via calendar events
+        #[derive(FromRow)]
+        struct WorkoutRow {
+            id: Uuid,
+            title: String,
+            description: Option<String>,
+        }
+
+        let workouts = sqlx::query_as::<_, WorkoutRow>(
+            r#"
+            SELECT ce.id, ce.title, ce.description
+            FROM calendar_events ce
+            WHERE ce.user_id = $1 
+              AND ce.event_type = 'workout'
+              AND DATE(ce.start_time) = $2
+            LIMIT 2
+            "#,
+        )
+        .bind(user_id)
+        .bind(date)
+        .fetch_all(pool)
+        .await
+        .unwrap_or_default();
+
+        for workout in workouts {
+            items.push(PlanItem {
+                id: format!("plan_workout_{}", workout.id),
+                item_type: "workout".to_string(),
+                title: workout.title,
+                description: workout.description,
+                duration: None,
+                action_url: "/exercise".to_string(),
+                completed: false,
+                priority,
+            });
+            priority += 1;
+        }
+
         let req = UpsertDailyPlanRequest {
             date,
             items: Some(items.clone()),

@@ -52,6 +52,70 @@ export class ApiError extends Error {
 }
 
 /**
+ * Clear all client data on session expiry (401)
+ * This function handles cleanup when backend session is invalid
+ */
+async function clearAllClientData(): Promise<void> {
+  // Clear any localStorage data that might contain session info
+  if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+    try {
+      const keysToRemove = Array.from(localStorage.keys()).filter(key =>
+        key.includes('session') || key.includes('auth') || key.includes('token')
+      );
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+    } catch (error) {
+      console.error('[API] Error clearing localStorage:', error);
+    }
+  }
+
+  // Try to call signOut from API (this will clear server-side session)
+  if (typeof window !== 'undefined') {
+    try {
+      const { signOut: apiSignOut } = await import('@/lib/auth/api-auth');
+      await apiSignOut();
+    } catch (error) {
+      console.error('[API] Error calling API signOut:', error);
+      // Continue anyway - we'll redirect
+    }
+  }
+}
+
+/**
+ * Handle 401 Unauthorized response - session expired or invalid
+ */
+async function handle401(): Promise<void> {
+  console.warn('[API] 401 Unauthorized - Session expired, clearing client data');
+
+  // Clear all client-side session data
+  await clearAllClientData();
+
+  // Show error notification
+  if (typeof window !== 'undefined') {
+    try {
+      const { useErrorStore } = await import('@/lib/hooks/useErrorNotification');
+      const store = useErrorStore.getState();
+      store.addError({
+        id: `session-expired-${Date.now()}`,
+        timestamp: new Date(),
+        message: 'Your session has expired. Please log in again.',
+        endpoint: '/login',
+        method: 'REDIRECT',
+        status: 401,
+        type: 'error',
+        details: { reason: 'session_expired' },
+      });
+    } catch (error) {
+      console.error('[API] Error showing notification:', error);
+    }
+
+    // Redirect to login after brief delay to allow notification to display
+    setTimeout(() => {
+      window.location.href = '/login?session_expired=true';
+    }, 1000);
+  }
+}
+
+/**
  * Parse error response from API
  */
 async function parseErrorResponse(response: Response): Promise<ApiError> {
@@ -150,6 +214,12 @@ async function executeFetch<T>(
     });
 
     if (timeoutId) clearTimeout(timeoutId);
+
+    // Handle 401 Unauthorized - Session expired or invalid
+    if (response.status === 401) {
+      await handle401();
+      throw new ApiError('Session expired', 401, 'unauthorized');
+    }
 
     if (!response.ok) {
       throw await parseErrorResponse(response);

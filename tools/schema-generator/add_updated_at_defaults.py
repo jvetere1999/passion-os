@@ -8,7 +8,7 @@ from pathlib import Path
 
 def main():
     script_dir = Path(__file__).parent
-    schema_path = script_dir / 'tmp-schema.json'
+    schema_path = script_dir / 'schema.json'
     
     with open(schema_path, 'r') as f:
         schema = json.load(f)

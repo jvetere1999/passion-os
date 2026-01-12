@@ -84,8 +84,7 @@ build/
 # ============================================================================
 # GENERATED CODE
 # ============================================================================
-# Schema generator temporary outputs (use tmp-schema.json naming convention)
-/tmp-schema.json
+# Schema generator outputs at root (should use tools/schema-generator/ instead)
 /generated_*.rs
 /generated_*.ts
 /generated_*.sql

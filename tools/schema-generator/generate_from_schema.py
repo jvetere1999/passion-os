@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
 Schema Code Generator
-Generates Rust models and TypeScript types from tmp-schema.json
+Generates Rust models and TypeScript types from schema.json
 """
 import json
 from pathlib import Path
 
 def load_schema():
-    with open('tmp-schema.json') as f:
+    with open('schema.json') as f:
         return json.load(f)
 
 def generate_rust_model(table_name, table_def, type_mappings):

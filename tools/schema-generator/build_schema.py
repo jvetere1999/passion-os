@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Build tmp-schema.json from SCHEMA_SPEC definitions.
-Generates all 79 tables with complete field definitions.
+Build schema.json from root schema.json and SCHEMA_SPEC definitions.
+Regenerates all tables with complete field definitions.
+Output: tools/schema-generator/schema.json
 """
 
 import json
@@ -434,8 +435,10 @@ TABLES = {
         "created_at:TIMESTAMPTZ"
     ],
     "user_settings": [
-        "id:UUID:PK", "user_id:UUID:fk", "key:TEXT", "value:JSONB", "created_at:TIMESTAMPTZ",
-        "updated_at:TIMESTAMPTZ"
+        "id:UUID:PK", "user_id:UUID:fk", "notifications_enabled:BOOLEAN", "email_notifications:BOOLEAN",
+        "push_notifications:BOOLEAN", "theme:TEXT", "timezone:TEXT:null", "locale:TEXT",
+        "profile_public:BOOLEAN", "show_activity:BOOLEAN", "daily_reminder_time:TEXT:null",
+        "soft_landing_until:TIMESTAMPTZ:null", "created_at:TIMESTAMPTZ", "updated_at:TIMESTAMPTZ"
     ],
     "inbox_items": [
         "id:UUID:PK", "user_id:UUID:fk", "title:TEXT", "description:TEXT:null", "item_type:TEXT",
@@ -522,14 +525,13 @@ def main():
     
     # Determine output path
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    repo_root = os.path.dirname(script_dir)
-    output_path = os.path.join(repo_root, "tmp-schema.json")
+    output_path = os.path.join(script_dir, "schema.json")
     
-    # Write tmp-schema.json
+    # Write schema.json
     with open(output_path, "w") as f:
         json.dump(schema, f, indent=2)
     
-    print(f"✅ Generated tmp-schema.json with {len(schema['tables'])} tables")
+    print(f"✅ Generated schema.json with {len(schema['tables'])} tables")
     print(f"   Location: {output_path}")
     
     # Print table summary by migration

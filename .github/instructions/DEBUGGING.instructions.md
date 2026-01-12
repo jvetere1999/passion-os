@@ -355,24 +355,35 @@ Every decision between DEBUGGING.md and SOLUTION_SELECTION.md must be:
 
 ---
 
-## SCHEMA AUTHORITY
+## SCHEMA GENERATOR & MIGRATION FLOW
 
-**Single Source of Truth**: `schema.json` v2.0.0
+### Single Source of Truth
+**Root**: `schema.json` (v2.0.0) - ONLY authoritative schema file
 
-When in doubt:
-1. Check schema.json for field definitions
-2. Compare against code
-3. Document discrepancy in DEBUGGING.md
-4. Fix code to match schema (never the reverse)
-5. Validate with cargo check + npm lint
-
-Example:
+### Generation Pipeline
 ```
-Schema says: habits.is_active (BOOLEAN)
-Code used: habits.archived (BOOLEAN)
-Resolution: Update code to use is_active
-Validation: cargo check ✅
+schema.json (ROOT - Edit this only)
+   ↓
+generate_all.py (direct read from root)
+   ↓
+app/backend/migrations/0001_schema.sql (Generated)
+app/frontend/src/lib/generated_types.ts (Generated)
+app/backend/crates/api/src/db/generated.rs (Generated)
+app/backend/migrations/0002_seeds.sql (Generated)
 ```
+
+### Process
+1. **Edit root schema.json** with all schema changes
+2. **Run generate_all.py** to regenerate migrations and code
+3. Migrations are generated artifacts, NEVER edit directly
+4. NO intermediate schema file—direct pipeline from root
+
+### Mandatory Rules
+- ✅ Edit ONLY root `schema.json` for schema changes
+- ✅ Never edit migrations directly
+- ✅ Never run build_schema.py (deprecated)
+- ✅ Always run generate_all.py after schema changes
+- ✅ Always validate: cargo check + npm lint after generation
 
 ---
 

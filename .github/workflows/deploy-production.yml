@@ -40,7 +40,7 @@ jobs:
       
       - name: Validate schema.json
         run: |
-          python3 -c "import json; schema = json.load(open('tools/tmp-schema.json')); print(f'✓ Schema v{schema[\"version\"]}: {len(schema[\"tables\"])} tables')"
+          python3 -c "import json; schema = json.load(open('schema.json')); print(f'✓ Schema v{schema[\"version\"]}: {len(schema[\"tables\"])} tables')"
       
       - name: Check migration files exist
         run: |

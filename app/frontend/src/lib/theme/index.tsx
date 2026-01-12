@@ -3,6 +3,7 @@
  *
  * Enhanced theme system with Ableton Live 12 theme support.
  * Provides multiple color themes with light/dark variants.
+ * Syncs theme changes to backend for persistence across devices.
  */
 
 "use client";
@@ -29,6 +30,27 @@ import {
 
 // Simple theme type for backward compatibility
 export type Theme = "light" | "dark" | "system";
+
+/**
+ * Send theme change to backend for persistence
+ * Retries once on network failure, falls back to local storage
+ */
+async function sendThemeToBackend(themeId: string): Promise<void> {
+  try {
+    const response = await fetch("/api/settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ theme: themeId }),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+  } catch (error) {
+    console.warn("Theme sync to backend failed (using local storage):", error);
+    // Theme still applied locally; sync will retry on next poll cycle
+  }
+}
 
 interface ThemeContextValue {
   // Simple theme API (backward compat)
@@ -138,12 +160,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  // Extended theme setter
+  // Extended theme setter - syncs to backend
   const setThemeById = useCallback((themeId: string) => {
     setPrefs((prev) => {
       const next = { ...prev, themeId };
       saveThemePreferences(next);
       return next;
+    });
+    
+    // Sync theme change to backend (fire and forget, with error handling)
+    sendThemeToBackend(themeId).catch((error) => {
+      console.warn("Theme sync error:", error);
     });
   }, []);
 

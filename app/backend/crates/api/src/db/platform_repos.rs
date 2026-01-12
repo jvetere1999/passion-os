@@ -1549,6 +1549,7 @@ impl UserSettingsRepo {
             .daily_reminder_time
             .clone()
             .or(existing.daily_reminder_time);
+        let theme = req.theme.clone().unwrap_or(existing.theme.clone());
 
         sqlx::query(
             r#"
@@ -1578,14 +1579,17 @@ impl UserSettingsRepo {
         .execute(pool)
         .await?;
 
-        // Fetch theme from users table
-        let theme = sqlx::query_scalar::<_, String>(
-            "SELECT COALESCE(theme, 'dark') FROM users WHERE id = $1"
-        )
-        .bind(user_id)
-        .fetch_optional(pool)
-        .await?
-        .unwrap_or_else(|| "dark".to_string());
+        // Update theme in users table if provided
+        if req.theme.is_some() {
+            sqlx::query(
+                "UPDATE users SET theme = $1, updated_at = $2 WHERE id = $3"
+            )
+            .bind(&theme)
+            .bind(now)
+            .bind(user_id)
+            .execute(pool)
+            .await?;
+        }
 
         Ok(UserSettingsResponse {
             notifications_enabled,

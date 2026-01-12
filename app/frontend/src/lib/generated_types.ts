@@ -120,6 +120,7 @@ export interface Users {
   tos_version?: string;
   is_admin: boolean;
   last_activity_at?: string;
+  theme?: string;
   created_at: string;
   updated_at: string;
 }

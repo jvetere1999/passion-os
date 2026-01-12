@@ -135,6 +135,7 @@ pub struct Users {
     pub tos_version: Option<String>,
     pub is_admin: bool,
     pub last_activity_at: Option<chrono::DateTime<chrono::Utc>>,
+    pub theme: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub updated_at: chrono::DateTime<chrono::Utc>,
 }

@@ -110,6 +110,7 @@ CREATE TABLE users (
     tos_version TEXT,
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     last_activity_at TIMESTAMPTZ,
+    theme TEXT DEFAULT 'dark',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

@@ -1138,7 +1138,7 @@ ALTER TABLE user_lesson_progress ADD CONSTRAINT user_lesson_progress_unique UNIQ
 ALTER TABLE user_drill_stats ADD CONSTRAINT user_drill_stats_unique UNIQUE (user_id, drill_id);
 ALTER TABLE user_skills ADD CONSTRAINT user_skills_user_unique UNIQUE (user_id);
 ALTER TABLE user_purchases ADD CONSTRAINT user_purchases_unique UNIQUE (user_id, item_id);
-ALTER TABLE user_settings ADD CONSTRAINT user_settings_unique UNIQUE (user_id, key);
+ALTER TABLE user_settings ADD CONSTRAINT user_settings_unique UNIQUE (user_id);
 ALTER TABLE user_onboarding_state ADD CONSTRAINT user_onboarding_state_user_unique UNIQUE (user_id);
 ALTER TABLE user_onboarding_responses ADD CONSTRAINT user_onboarding_responses_unique UNIQUE (user_id, step_id);
 ALTER TABLE user_roles ADD CONSTRAINT user_roles_user_role_unique UNIQUE (user_id, role_id);

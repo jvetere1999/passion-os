@@ -215,20 +215,30 @@ if (response.status === 401) {
 
 ## FILE ORGANIZATION
 
-### Debug Folder Structure
+### Debug Folder Structure (STRICT)
 ```
 debug/
-├── DEBUGGING.md              # Active issues, fixes, validation results
-├── SOLUTION_SELECTION.md     # All decision options for unsolved issues
-├── archive/                  # Historical debug logs (timestamped)
-│   └── 2026-01-11_fixes.md  # Completed fixes with results
-└── VALIDATION_RESULTS.md     # Latest cargo check + npm lint output
+├── DEBUGGING.md              # ✅ ONLY active issues, fixes, validation results
+├── SOLUTION_SELECTION.md     # ✅ ONLY decision options for unsolved issues
+└── archive/                  # Everything else (historical, completed, reports)
+    ├── 2026-01-11_fixes.md
+    ├── ACTION_PLANS.md
+    ├── VALIDATION_RESULTS.md
+    ├── IMPLEMENTATION_RESULTS_*.md
+    ├── PHASE_*.md
+    └── README.md
 ```
 
+### Organization Rules (MANDATORY)
+- **debug/DEBUGGING.md**: Active issues only (Phase 2+)
+- **debug/SOLUTION_SELECTION.md**: Pending decisions only
+- **debug/archive/**: ALL historical files, completed phases, past results
+- **Nothing else in debug root**
+
 ### Reference
-- **Primary**: `debug/DEBUGGING.md` - Issues in Phase 2+ (analyzed/explored)
-- **Secondary**: `debug/SOLUTION_SELECTION.md` - All options for decisions
-- **Archive**: `debug/archive/` - Historical completed fixes
+- **Primary**: `debug/DEBUGGING.md` - Current active work
+- **Secondary**: `debug/SOLUTION_SELECTION.md` - Pending decisions
+- **History**: `debug/archive/` - Completed, past phases
 - **Schema**: `schema.json` (v2.0.0) - Authoritative data model
 
 ---

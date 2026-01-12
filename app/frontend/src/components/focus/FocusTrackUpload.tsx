@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useErrorStore } from '@/lib/stores/error-store';
+import { useErrorNotification } from '@/lib/hooks/useErrorNotification';
 import { apiPost } from '@/lib/api/client';
 
 interface FocusTrackUploadProps {
@@ -13,7 +13,7 @@ export function FocusTrackUpload({ libraryId, onTrackAdded }: FocusTrackUploadPr
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [fileName, setFileName] = useState<string>('');
-  const { showError, showSuccess } = useErrorStore();
+  const { notify } = useErrorNotification();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,12 +31,20 @@ export function FocusTrackUpload({ libraryId, onTrackAdded }: FocusTrackUploadPr
     const title = titleInput?.value || fileName;
 
     if (!file) {
-      showError('Please select a file to upload');
+      notify('Please select a file to upload', {
+        type: 'error',
+        endpoint: `/api/focus/libraries/${libraryId}/tracks`,
+        method: 'POST',
+      });
       return;
     }
 
     if (!title) {
-      showError('Please enter a track title');
+      notify('Please enter a track title', {
+        type: 'error',
+        endpoint: `/api/focus/libraries/${libraryId}/tracks`,
+        method: 'POST',
+      });
       return;
     }
 
@@ -45,7 +53,7 @@ export function FocusTrackUpload({ libraryId, onTrackAdded }: FocusTrackUploadPr
 
     try {
       // Step 1: Get presigned upload URL from backend
-      const uploadUrlResponse = await apiPost(
+      const uploadUrlResponse = await apiPost<{ url: string; key: string }>(
         `/api/focus/libraries/${libraryId}/tracks/upload-url`,
         {
           filename: file.name,
@@ -87,7 +95,11 @@ export function FocusTrackUpload({ libraryId, onTrackAdded }: FocusTrackUploadPr
       );
 
       setProgress(100);
-      showSuccess(`Track "${title}" uploaded successfully`);
+      notify(`Track "${title}" uploaded successfully`, {
+        type: 'info',
+        endpoint: `/api/focus/libraries/${libraryId}/tracks`,
+        method: 'POST',
+      });
       
       // Reset form
       setFileName('');
@@ -99,7 +111,12 @@ export function FocusTrackUpload({ libraryId, onTrackAdded }: FocusTrackUploadPr
       onTrackAdded();
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Upload failed';
-      showError(message);
+      notify(message, {
+        type: 'error',
+        endpoint: `/api/focus/libraries/${libraryId}/tracks`,
+        method: 'POST',
+        details: error instanceof Error ? { error: error.message } : undefined,
+      });
       setProgress(0);
     } finally {
       setIsUploading(false);

@@ -176,7 +176,7 @@ export function ApiTestTool() {
 
             {selectedEndpoint && (
               <div className={styles.endpointInfo}>
-                <div className={styles.methodBadge(selectedEndpoint.method)}>
+                <div className={`${styles.methodBadge} ${selectedEndpoint.method}`}>
                   {selectedEndpoint.method}
                 </div>
                 <code className={styles.path}>{selectedEndpoint.path}</code>
@@ -249,13 +249,13 @@ export function ApiTestTool() {
               {/* Status Line */}
               <div className={styles.statusLine}>
                 <span
-                  className={styles.statusBadge(
+                  className={`${styles.statusBadge} ${
                     result.status >= 200 && result.status < 300
                       ? "success"
                       : result.status >= 400
                         ? "error"
                         : "info"
-                  )}
+                  }`}
                 >
                   {result.status} {result.statusText}
                 </span>
@@ -317,11 +317,11 @@ export function ApiTestTool() {
                 <span className={styles.historyMethod}>{item.endpoint.method}</span>
                 <span className={styles.historyName}>{item.endpoint.name}</span>
                 <span
-                  className={styles.historyStatus(
+                  className={`${styles.historyStatus} ${
                     item.status >= 200 && item.status < 300
                       ? "success"
                       : "error"
-                  )}
+                  }`}
                 >
                   {item.status}
                 </span>

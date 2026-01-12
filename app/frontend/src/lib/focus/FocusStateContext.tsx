@@ -132,15 +132,6 @@ export function FocusStateProvider({ children }: { children: ReactNode }) {
     clearPausedState,
   };
 
-  const value: FocusStateContextValue = {
-    session,
-    pausedState,
-    timeRemaining,
-    isLoading: syncState.isLoading,
-    refresh: syncState.refresh,
-    clearPausedState,
-  };
-
   return (
     <FocusStateContext.Provider value={value}>
       {children}

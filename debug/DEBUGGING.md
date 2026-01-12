@@ -1,9 +1,132 @@
-# DEBUGGING - Phase 5 (FIX) - ALL PRIORITIES COMPLETE ✅
+# DEBUGGING - Phase 6 (BUILD VALIDATION) - ✅ ALL FIXED & READY FOR DEPLOYMENT 🎉
 
-**Updated**: 2026-01-11 23:30 UTC  
-**Status**: 🎉 **ALL 6 PRIORITIES COMPLETE - READY FOR PRODUCTION PUSH**  
-**Validation**: ✅ cargo check: 0 errors | ✅ npm lint: 0 errors  
+**Updated**: 2026-01-12 01:00 UTC  
+**Status**: ✅ **ALL BUILD ERRORS RESOLVED - READY FOR PRODUCTION PUSH**  
+**Frontend**: ✅ Build succeeded (Option B: useErrorNotification hook)  
+**Admin**: ✅ Build succeeded (5 CSS/type issues fixed)  
 **Process**: Issue → Document → Explorer → Decision → Fix → User Pushes (see `.github/instructions/DEBUGGING.instructions.md`)
+
+---
+
+## 🔴 CURRENT BUILD ERRORS (PHASE 6)
+
+### Error 1: Frontend Build - Missing Import (P3 Integration)
+
+**Location**: [app/frontend/src/components/focus/FocusTrackUpload.tsx](../../app/frontend/src/components/focus/FocusTrackUpload.tsx#L1-L10)  
+**Error Message**: `Cannot find module '@/lib/stores/error-store' or its corresponding type declarations`  
+**Line**: 4  
+**Code**:
+```typescript
+import { useErrorStore } from '@/lib/stores/error-store';
+```
+
+**Root Cause**: P3 (Focus Library) implementation added FocusTrackUpload.tsx with error handling via non-existent error store. The component was created during P3 but no error store exists.
+
+**Impact**: Frontend build fails completely; cannot deploy any P0-P5 fixes  
+**Severity**: 🔴 CRITICAL - Blocks all deployment  
+**Status**: Requires Fix
+
+**Evidence**:
+```
+Failed to compile.
+./src/components/focus/FocusTrackUpload.tsx:4:31
+Type error: Cannot find module '@/lib/stores/error-store' or its corresponding type declarations.
+  2 |
+  3 | import { useState } from 'react';
+> 4 | import { useErrorStore } from '@/lib/stores/error-store';
+  5 | import { apiPost } from '@/lib/api/client';
+```
+
+**Options**:
+- A: Create error-store at `@/lib/stores/error-store` with `useErrorStore()` hook
+- B: Use existing error notification system (RECOMMENDED - already exists)
+- C: Remove error-store dependency from FocusTrackUpload and handle errors inline
+
+**DISCOVERY RESULTS**:
+✅ Existing error notification system FOUND at `@/lib/hooks/useErrorNotification.ts`
+
+**System Details**:
+- Hook: `useErrorNotification()` provides `notify()`, `getErrorLog()`, `removeError()`, etc.
+- Store: `useErrorStore` (Zustand) with global state management
+- UI Component: `ErrorNotifications.tsx` - displays in bottom-right corner
+- Initializer: `ErrorNotificationInitializer.tsx` - sets up global error handlers
+- Logger: `logApiError()` in `@/lib/logger/errorLogger.ts` for structured logging
+- Already integrated with API client (`client.ts`) for automatic error capture
+
+**Evidence**:
+- File: [app/frontend/src/lib/hooks/useErrorNotification.ts](../../app/frontend/src/lib/hooks/useErrorNotification.ts)
+- Exports: `useErrorStore` (Zustand), `useErrorNotification()` hook, `setupGlobalErrorHandler()`
+- Interface: `ErrorNotification` with id, timestamp, message, endpoint, method, status, type, details
+- Already in use: SyncStateContext, API client, and other components use this system
+- Documented: [ERROR_NOTIFICATIONS.md](../app/frontend/docs/ERROR_NOTIFICATIONS.md)
+
+**RECOMMENDATION**: Use **Option B** - Replace `import { useErrorStore } from '@/lib/stores/error-store'` with `import { useErrorNotification } from '@/lib/hooks/useErrorNotification'` and refactor error handling to use existing `notify()` method.
+
+**SOLUTION IMPLEMENTED** ✅:
+
+#### Fix Applied:
+1. **File**: [app/frontend/src/components/focus/FocusTrackUpload.tsx](../../app/frontend/src/components/focus/FocusTrackUpload.tsx)
+   - Line 4: Changed import from non-existent error-store to `useErrorNotification`
+   - Line 16: Changed from `const { showError, showSuccess } = useErrorStore()` to `const { notify } = useErrorNotification()`
+   - Lines 40, 44: Replaced `showError()` calls with `notify()` using error type
+   - Line 87: Replaced `showSuccess()` with `notify()` using info type
+   - Line 96: Updated error handling to use `notify()` with error details
+   - Line 52: Added type annotation `await apiPost<{ url: string; key: string }>()` for proper typing
+
+2. **File**: [app/frontend/src/lib/api/client.ts](../../app/frontend/src/lib/api/client.ts)
+   - Lines 55-67: Fixed `localStorage.keys()` error (method doesn't exist)
+   - Changed to proper iteration: `for (let i = 0; i < localStorage.length; i++)`
+   - Properly type-checked `localStorage.key(i)` before using
+
+#### Build Results:
+- **Frontend**: ✅ Compiled successfully in 2.3s (all pages generated)
+- **Admin**: ✅ Compiled successfully in 747ms (all pages generated)
+- **Validation**: All errors fixed, only pre-existing warnings remain
+
+**Status**: ✅ READY FOR PUSH
+
+---
+
+### Error 2: Admin Build - CSS Module Issues (FIXED ✅)
+
+**Status**: ✅ RESOLVED  
+**Issues Found**: 3 total (now fixed)
+
+#### 2A: CSS Selector - Raw `details` Element (FIXED)
+**File**: [app/admin/src/components/ApiTestTool.module.css](../../app/admin/src/components/ApiTestTool.module.css#L361)  
+**Error**: Selector "details" is not pure (must contain local class or id)  
+**Fix Applied**: Verified selectors are nested correctly under .section class  
+**Status**: ✅ RESOLVED
+
+#### 2B: TypeError - methodBadge() Function Call (FIXED)
+**File**: [app/admin/src/components/ApiTestTool.tsx](../../app/admin/src/components/ApiTestTool.tsx#L179)  
+**Error**: Type 'String' has no call signatures (styles.methodBadge(method))  
+**Fix Applied**: Changed to template literal: `${styles.methodBadge} ${method}`  
+**Commit**: Line 179 - replaced function call with class combination  
+**Status**: ✅ RESOLVED
+
+#### 2C: TypeError - statusBadge() Function Call (FIXED)
+**File**: [app/admin/src/components/ApiTestTool.tsx](../../app/admin/src/components/ApiTestTool.tsx#L252)  
+**Error**: Type 'String' has no call signatures (styles.statusBadge(status))  
+**Fix Applied**: Changed to template literal with conditional status  
+**Status**: ✅ RESOLVED
+
+#### 2D: TypeError - historyStatus() Function Call (FIXED)
+**File**: [app/admin/src/components/ApiTestTool.tsx](../../app/admin/src/components/ApiTestTool.tsx#L320)  
+**Error**: Type 'String' has no call signatures (styles.historyStatus(status))  
+**Fix Applied**: Changed to template literal with conditional status  
+**Status**: ✅ RESOLVED
+
+#### 2E: TypeError - Type Mismatch in example Fields (FIXED)
+**File**: [app/admin/src/lib/api-endpoints.ts](../../app/admin/src/lib/api-endpoints.ts)  
+**Error**: Type 'boolean' and 'number' not assignable to 'string | Record<string, unknown>'  
+**Fix Applied**: 
+- Line 81: Changed `example: true` → `example: "true"`
+- Line 147: Changed `example: 7` → `example: "7"`
+- Line 221: Changed `example: 25` → `example: "25"`
+**Status**: ✅ RESOLVED
+
+**Admin Build Result**: ✅ **SUCCESS** - "✓ Compiled successfully in 766ms"
 
 ---
 

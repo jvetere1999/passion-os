@@ -59,9 +59,13 @@ async function clearAllClientData(): Promise<void> {
   // Clear any localStorage data that might contain session info
   if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
     try {
-      const keysToRemove = Array.from(localStorage.keys()).filter(key =>
-        key.includes('session') || key.includes('auth') || key.includes('token')
-      );
+      const keysToRemove: string[] = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('session') || key.includes('auth') || key.includes('token'))) {
+          keysToRemove.push(key);
+        }
+      }
       keysToRemove.forEach(key => localStorage.removeItem(key));
     } catch (error) {
       console.error('[API] Error clearing localStorage:', error);

@@ -7,7 +7,6 @@ on:
       - 'app/backend/**'
       - 'app/frontend/**'
       - 'app/admin/**'
-      - 'app/database/**'
       - 'app/backend/migrations/**'
       - 'tools/schema-generator/**'
       - 'deploy/cloudflare-admin/**'

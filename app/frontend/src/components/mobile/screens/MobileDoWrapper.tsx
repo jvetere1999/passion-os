@@ -63,7 +63,7 @@ export function MobileDoWrapper({ userId }: MobileDoWrapperProps) {
           const focusActive = !!syncData.focus.active_session;
           
           // Fetch daily plan data separately from sync
-          let planData: any = null;
+          let planData: PlanDataResponse | null = null;
           try {
             const planRes = await fetch(`${API_BASE_URL}/api/daily-plan`, {
               credentials: 'include',
@@ -75,7 +75,7 @@ export function MobileDoWrapper({ userId }: MobileDoWrapperProps) {
           
           // Find next incomplete item
           const incompleteItem = planData?.items?.find(
-            (item: any) => !item.completed
+            (item: { completed?: boolean }) => !item.completed
           );
           
           setData({

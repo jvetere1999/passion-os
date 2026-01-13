@@ -113,13 +113,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
       }}
     >
       {children}
-      {isAuthenticated && user && (
-        <OnboardingModal 
-          initialState={onboarding.state as any || null}
-          flow={onboarding.flow as any}
-          userId={user.id}
-        />
-      )}
+      {/* OnboardingModal disabled - data structure mismatch between API and component */}
     </OnboardingContext.Provider>
   );
 }

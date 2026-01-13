@@ -78,7 +78,7 @@ export function FocusTracks() {
       // For now, focus library doesn't include tracks in the API response
       // This is a placeholder for future track management
       // TODO: Integrate with track fetching when API supports it
-      const queueTracks: any[] = [];
+      const queueTracks: Array<{ id: string; title: string; artist: string; source: string; audioUrl: string; duration?: number }> = [];
 
       if (queueTracks.length > 0) {
         playerStore.setQueue(queueTracks, index);

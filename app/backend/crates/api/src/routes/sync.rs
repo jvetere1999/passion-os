@@ -145,7 +145,7 @@ async fn poll_all(
     let server_time = chrono::Utc::now().to_rfc3339();
     
     // Generate ETag from content hash
-    let etag = generate_etag(&progress, &badges, &focus, &plan);
+    let etag = generate_etag(&progress, &badges, &focus, &plan, &user);
     
     let response = PollResponse {
         progress,
@@ -466,6 +466,7 @@ fn generate_etag(
     badges: &BadgeData,
     focus: &FocusStatusData,
     plan: &PlanStatusData,
+    user: &UserData,
 ) -> String {
     use std::hash::{Hash, Hasher};
     use std::collections::hash_map::DefaultHasher;
@@ -483,6 +484,12 @@ fn generate_etag(
     focus.pause_state.is_some().hash(&mut hasher);
     plan.completed.hash(&mut hasher);
     plan.total.hash(&mut hasher);
+    user.id.hash(&mut hasher);
+    user.email.hash(&mut hasher);
+    user.name.hash(&mut hasher);
+    user.image.hash(&mut hasher);
+    user.theme.hash(&mut hasher);
+    user.tos_accepted.hash(&mut hasher);
     
     format!("{:x}", hasher.finish())
 }

@@ -195,10 +195,11 @@ export function QuestsClient() {
       const data = await response.json() as {
         result?: { xp_awarded?: number; coins_awarded?: number };
       };
-      if (data.result) {
+      const result = data.result;
+      if (result) {
         setWallet((prev) => ({
-          coins: prev.coins + (data.result.coins_awarded || 0),
-          totalXp: prev.totalXp + (data.result.xp_awarded || 0),
+          coins: prev.coins + (result.coins_awarded || 0),
+          totalXp: prev.totalXp + (result.xp_awarded || 0),
         }));
       }
     } catch (e) {

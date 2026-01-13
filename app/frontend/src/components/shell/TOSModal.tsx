@@ -7,7 +7,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { safeFetch } from "@/lib/api";
+import { safeFetch, API_BASE_URL } from "@/lib/api";
 import Link from "next/link";
 import { useSyncState } from "@/lib/sync/SyncStateContext";
 import styles from "./TOSModal.module.css";
@@ -51,10 +51,8 @@ export function TOSModal({ onAccept }: TOSModalProps) {
 
     setIsAccepting(true);
     try {
-      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online';
-      const response = await fetch(`${API_BASE_URL}/auth/accept-tos`, {
+      const response = await safeFetch(`${API_BASE_URL}/auth/accept-tos`, {
         method: "POST",
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -174,4 +172,3 @@ export function TOSModal({ onAccept }: TOSModalProps) {
     </div>
   );
 }
-

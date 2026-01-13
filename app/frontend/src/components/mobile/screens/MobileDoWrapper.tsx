@@ -8,15 +8,13 @@
  */
 
 import { useEffect, useState } from "react";
-import { safeFetch } from "@/lib/api";
+import { safeFetch, API_BASE_URL } from "@/lib/api";
 import { MobileDoClient } from "./MobileDoClient";
 import type { PollResponse } from "@/lib/api/sync";
 
 interface MobileDoWrapperProps {
   userId?: string; // Optional - will use useAuth() if not provided
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online';
 
 interface PlanItem {
   id: string;
@@ -52,9 +50,7 @@ export function MobileDoWrapper({ userId }: MobileDoWrapperProps) {
     async function fetchData() {
       try {
         // Use consolidated sync endpoint instead of 2 parallel calls
-        const syncRes = await fetch(`${API_BASE_URL}/api/sync/poll`, {
-          credentials: 'include',
-        });
+        const syncRes = await safeFetch(`${API_BASE_URL}/api/sync/poll`);
         
         if (syncRes.ok) {
           const syncData = await syncRes.json() as PollResponse;
@@ -65,9 +61,7 @@ export function MobileDoWrapper({ userId }: MobileDoWrapperProps) {
           // Fetch daily plan data separately from sync
           let planData: PlanDataResponse | null = null;
           try {
-            const planRes = await fetch(`${API_BASE_URL}/api/daily-plan`, {
-              credentials: 'include',
-            });
+            const planRes = await safeFetch(`${API_BASE_URL}/api/daily-plan`);
             planData = planRes.ok ? await planRes.json() as PlanDataResponse : null;
           } catch (e) {
             planData = null;

@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * STORAGE RULE: Focus pause state is fetched from D1 via /api/focus/pause API.
+ * STORAGE RULE: Focus pause state is fetched from the backend via /api/focus/pause API.
  * localStorage is DEPRECATED for focus_paused_state (behavior-affecting data).
  * focus_settings (cosmetic only) remains in localStorage.
  */
@@ -12,7 +12,7 @@ import { markMomentumShown } from "@/lib/today/momentum";
 import { activateSoftLanding } from "@/lib/today/softLanding";
 import { isTodaySoftLandingEnabled } from "@/lib/flags";
 import { DISABLE_MASS_LOCAL_PERSISTENCE } from "@/lib/storage/deprecation";
-import { safeFetch } from "@/lib/api";
+import { safeFetch, API_BASE_URL } from "@/lib/api";
 import type { PollResponse, FocusSession as SyncFocusSession } from "@/lib/api/sync";
 import styles from "./page.module.css";
 
@@ -67,8 +67,6 @@ const MODE_LABELS: Record<FocusMode, string> = {
   break: "Break",
   long_break: "Long Break",
 };
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.ecent.online";
 
 // Format seconds to MM:SS
 function formatTime(seconds: number): string {

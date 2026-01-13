@@ -14,7 +14,6 @@
 
 import { createContext, useContext, useEffect, useCallback, useRef, useState, type ReactNode } from "react";
 import { useSyncState } from "@/lib/sync/SyncStateContext";
-import { DISABLE_MASS_LOCAL_PERSISTENCE } from "@/lib/storage/deprecation";
 
 // Types
 interface FocusSession {
@@ -35,7 +34,7 @@ interface PausedState {
 interface FocusStateContextValue {
   /** Current active focus session from server */
   session: FocusSession | null;
-  /** Paused timer state from localStorage */
+  /** Paused timer state from backend */
   pausedState: PausedState | null;
   /** Time remaining in seconds */
   timeRemaining: number;
@@ -48,10 +47,6 @@ interface FocusStateContextValue {
 }
 
 const FocusStateContext = createContext<FocusStateContextValue | null>(null);
-
-const POLL_INTERVAL = 30000; // 30 seconds
-const PAUSED_STATE_KEY = "focus_paused_state";
-const PAUSED_STATE_TTL = 60 * 60 * 1000; // 1 hour
 
 /**
  * FocusStateProvider
@@ -85,6 +80,8 @@ export function FocusStateProvider({ children }: { children: ReactNode }) {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
       const remaining = Math.max(0, activeSession.duration_seconds - elapsed);
       setTimeRemaining(remaining);
+    } else if (syncState.focus?.pause_state?.time_remaining_seconds != null) {
+      setTimeRemaining(syncState.focus.pause_state.time_remaining_seconds);
     } else {
       setTimeRemaining(0);
     }
@@ -117,15 +114,18 @@ export function FocusStateProvider({ children }: { children: ReactNode }) {
     };
   }, [session]);
 
-  // Paused state handling (from localStorage, deprecated)
-  const [pausedState, setPausedState] = useState<PausedState | null>(null);
-  
+  // Paused state handling (from sync state)
+  const pausedState = syncState.focus?.pause_state?.mode
+    ? {
+        mode: syncState.focus.pause_state.mode as PausedState["mode"],
+        timeRemaining: syncState.focus.pause_state.time_remaining_seconds ?? 0,
+        pausedAt: syncState.focus.pause_state.paused_at ?? new Date().toISOString(),
+      }
+    : null;
+
   const clearPausedState = useCallback(() => {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem(PAUSED_STATE_KEY);
-    }
-    setPausedState(null);
-  }, []);
+    syncState.refresh();
+  }, [syncState]);
 
   const value: FocusStateContextValue = {
     session,
@@ -175,4 +175,3 @@ export function useFocusActive(): {
     mode: ctx.session?.mode || ctx.pausedState?.mode || null,
   };
 }
-

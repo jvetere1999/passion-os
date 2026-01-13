@@ -64,8 +64,6 @@ const MODE_LABELS: Record<string, string> = {
   long_break: "Long Break",
 };
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.ecent.online";
-
 // ============================================
 // iTunes-Style Visualizer (Active + Flowing)
 // ============================================

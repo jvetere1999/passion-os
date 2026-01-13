@@ -5,12 +5,12 @@
  * Shows a persistent bottom indicator when a focus session is active
  * Displays timer, mode, and quick actions
  *
- * STORAGE RULE: Focus pause state is fetched from D1 via /api/focus/pause API.
+ * STORAGE RULE: Focus pause state is fetched from the backend via /api/focus/pause API.
  * localStorage is DEPRECATED for focus_paused_state (behavior-affecting data).
  */
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { safeFetch } from "@/lib/api";
+import { safeFetch, API_BASE_URL } from "@/lib/api";
 import Link from "next/link";
 import { usePlayerVisible } from "@/lib/player";
 import { DISABLE_MASS_LOCAL_PERSISTENCE } from "@/lib/storage/deprecation";
@@ -42,8 +42,6 @@ const MODE_COLORS: Record<string, string> = {
   break: "var(--accent-success, #4caf50)",
   long_break: "var(--accent-info, #2196f3)",
 };
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.ecent.online";
 
 function formatTime(seconds: number): string {
   if (seconds < 0) seconds = 0;

@@ -6,6 +6,11 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import {
+  listInboxItems,
+  createInboxItem,
+  deleteInboxItem as deleteInboxItemAPI,
+} from "@/lib/api/inbox";
 import styles from "./Inbox.module.css";
 
 interface InboxItem {
@@ -14,8 +19,6 @@ interface InboxItem {
   createdAt: string;
   type: "note" | "task" | "idea";
 }
-
-const STORAGE_KEY = "passion_inbox_v1";
 
 interface InboxProps {
   isOpen: boolean;
@@ -28,26 +31,32 @@ export function Inbox({ isOpen, onClose }: InboxProps) {
   const [newType, setNewType] = useState<InboxItem["type"]>("note");
   const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load items from localStorage
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setItems(JSON.parse(stored));
-      }
-    } catch (e) {
-      console.error("Failed to load inbox:", e);
-    }
+  const mapInboxItem = useCallback((item: { id: string; title: string; tags?: string[]; created_at: string }) => {
+    const typeTag = item.tags?.find((tag) => tag === "note" || tag === "task" || tag === "idea");
+    return {
+      id: item.id,
+      text: item.title,
+      createdAt: item.created_at,
+      type: (typeTag || "note") as InboxItem["type"],
+    };
   }, []);
 
-  // Save items to localStorage
+  // Load items from backend
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch (e) {
-      console.error("Failed to save inbox:", e);
-    }
-  }, [items]);
+    let isMounted = true;
+    listInboxItems()
+      .then((data) => {
+        if (!isMounted) return;
+        setItems(data.items.map(mapInboxItem));
+      })
+      .catch((e) => {
+        console.error("Failed to load inbox:", e);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [mapInboxItem]);
 
   // Focus input when opened
   useEffect(() => {
@@ -56,11 +65,12 @@ export function Inbox({ isOpen, onClose }: InboxProps) {
     }
   }, [isOpen]);
 
-  const handleSubmit = useCallback(() => {
+  const handleSubmit = useCallback(async () => {
     if (!newText.trim()) return;
 
+    const tempId = `tmp_${Date.now()}`;
     const item: InboxItem = {
-      id: crypto.randomUUID(),
+      id: tempId,
       text: newText.trim(),
       createdAt: new Date().toISOString(),
       type: newType,
@@ -68,7 +78,16 @@ export function Inbox({ isOpen, onClose }: InboxProps) {
 
     setItems((prev) => [item, ...prev]);
     setNewText("");
-  }, [newText, newType]);
+
+    try {
+      const created = await createInboxItem(item.text, undefined, [newType]);
+      const mapped = mapInboxItem(created);
+      setItems((prev) => [mapped, ...prev.filter((existing) => existing.id !== tempId)]);
+    } catch (e) {
+      console.error("Failed to create inbox item:", e);
+      setItems((prev) => prev.filter((existing) => existing.id !== tempId));
+    }
+  }, [newText, newType, mapInboxItem]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -85,13 +104,21 @@ export function Inbox({ isOpen, onClose }: InboxProps) {
 
   const handleDelete = useCallback((id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id));
+    if (id.startsWith("tmp_")) return;
+    deleteInboxItemAPI(id).catch((e) => {
+      console.error("Failed to delete inbox item:", e);
+    });
   }, []);
 
   const handleClear = useCallback(() => {
     if (confirm("Clear all inbox items?")) {
+      const idsToDelete = items.map((item) => item.id).filter((id) => !id.startsWith("tmp_"));
       setItems([]);
+      Promise.all(idsToDelete.map((id) => deleteInboxItemAPI(id))).catch((e) => {
+        console.error("Failed to clear inbox:", e);
+      });
     }
-  }, []);
+  }, [items]);
 
   if (!isOpen) return null;
 
@@ -194,4 +221,3 @@ export function Inbox({ isOpen, onClose }: InboxProps) {
 }
 
 export default Inbox;
-

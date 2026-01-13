@@ -3,10 +3,11 @@
 /**
  * Track Analysis Popup
  * Shows detailed audio analysis for the current track
- * Data is cached globally in D1 for sharing across sessions
+ * Data is cached globally in the backend for sharing across sessions
  */
 
 import { useState, useEffect } from "react";
+import { API_BASE_URL, safeFetch } from "@/lib/api";
 import { formatTime, type QueueTrack } from "@/lib/player";
 import {
   getCachedAnalysis,
@@ -15,8 +16,6 @@ import {
   type CachedAnalysis,
 } from "@/lib/player/analysis-cache";
 import styles from "./TrackAnalysisPopup.module.css";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.ecent.online";
 
 interface TrackAnalysisPopupProps {
   track: QueueTrack;
@@ -88,9 +87,7 @@ export function TrackAnalysisPopup({
 
           // Fetch fresh analysis from backend
           // Backend computes analysis asynchronously if not already cached
-          const analysisRes = await fetch(`${API_BASE_URL}/api/references/${track.id}/analysis`, {
-            credentials: 'include',
-          });
+          const analysisRes = await safeFetch(`${API_BASE_URL}/api/references/${track.id}/analysis`);
           
           if (analysisRes.ok) {
             const analysisData = await analysisRes.json() as CachedAnalysis;
@@ -320,4 +317,3 @@ export function TrackAnalysisPopup({
     </div>
   );
 }
-

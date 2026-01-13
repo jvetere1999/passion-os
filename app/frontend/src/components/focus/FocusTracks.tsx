@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { usePlayerStore } from "@/lib/player";
-import { listFocusLibraries, createFocusLibrary } from "@/lib/api/focus-libraries";
+import { listFocusLibraries, createFocusLibrary, FocusLibrary } from "@/lib/api/focus-libraries";
 import styles from "./FocusTracks.module.css";
 
 // Use focus libraries from backend API
@@ -40,7 +40,7 @@ function formatDuration(ms: number): string {
 }
 
 export function FocusTracks() {
-  const [focusLibrary, setFocusLibrary] = useState<Library | null>(null);
+  const [focusLibrary, setFocusLibrary] = useState<FocusLibrary | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const playerStore = usePlayerStore();
 
@@ -52,8 +52,8 @@ export function FocusTracks() {
         const response = await listFocusLibraries(1, 100);
         // Find the "Focus" library from backend
         // Get the first library as default focus library
-        if (response.items && response.items.length > 0) {
-          const focusLib = response.items.find((lib: Library) => lib.library_type === 'focus') || response.items[0];
+        if (response.libraries && response.libraries.length > 0) {
+          const focusLib = response.libraries.find((lib) => lib.library_type === 'focus') || response.libraries[0];
           setFocusLibrary(focusLib);
         } else {
           // No libraries exist yet - user hasn't created any
@@ -73,18 +73,12 @@ export function FocusTracks() {
   // Play a track
   const handlePlayTrack = useCallback(
     (track: ReferenceTrack, index: number) => {
-      if (!focusLibrary || !track.audioUrl) return;
+      if (!focusLibrary) return;
 
-      const queueTracks = focusLibrary.tracks
-        .filter((t) => t.audioUrl)
-        .map((t) => ({
-          id: t.id,
-          title: t.name,
-          artist: "Focus Library",
-          source: "Focus",
-          audioUrl: t.audioUrl,
-          duration: t.durationMs ? t.durationMs / 1000 : undefined,
-        }));
+      // For now, focus library doesn't include tracks in the API response
+      // This is a placeholder for future track management
+      // TODO: Integrate with track fetching when API supports it
+      const queueTracks: any[] = [];
 
       if (queueTracks.length > 0) {
         playerStore.setQueue(queueTracks, index);
@@ -129,52 +123,18 @@ export function FocusTracks() {
     );
   }
 
-  if (focusLibrary.tracks.length === 0) {
-    return (
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <h3 className={styles.title}>Focus Music</h3>
-          <span className={styles.count}>0 tracks</span>
-        </div>
-        <div className={styles.empty}>
-          <p className={styles.emptyText}>
-            Add tracks to your Focus library in the Reference section.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
+  // For now, focus library tracks are not yet available from API
+  // Return empty state with message about upcoming feature
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h3 className={styles.title}>Focus Music</h3>
-        <span className={styles.count}>{focusLibrary.tracks.length} tracks</span>
+        <span className={styles.count}>0 tracks</span>
       </div>
-
-      <div className={styles.trackList}>
-        {focusLibrary.tracks.map((track, index) => (
-          <button
-            key={track.id}
-            className={styles.trackItem}
-            onClick={() => handlePlayTrack(track, index)}
-            disabled={!track.audioUrl}
-          >
-            <div className={styles.trackInfo}>
-              <span className={styles.trackName}>{track.name}</span>
-              {track.durationMs && (
-                <span className={styles.trackDuration}>
-                  {formatDuration(track.durationMs)}
-                </span>
-              )}
-            </div>
-            <div className={styles.playIcon}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M8 5v14l11-7z" />
-              </svg>
-            </div>
-          </button>
-        ))}
+      <div className={styles.empty}>
+        <p className={styles.emptyText}>
+          Focus library feature coming soon.
+        </p>
       </div>
     </div>
   );

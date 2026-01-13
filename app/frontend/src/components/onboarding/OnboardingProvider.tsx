@@ -57,9 +57,9 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   }, [isLoading, isAuthenticated, checked]);
 
   const handleCompleteStep = useCallback(async () => {
-    if (!onboarding?.flow?.steps) return;
+    if (!onboarding?.flow) return;
     const nextIndex = currentStepIndex + 1;
-    if (nextIndex < onboarding.flow.steps.length) {
+    if (nextIndex < onboarding.flow.total_steps) {
       setCurrentStepIndex(nextIndex);
     } else {
       // All steps completed
@@ -106,14 +106,20 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     <OnboardingContext.Provider
       value={{
         isVisible: true,
-        currentStep: onboarding.flow?.steps[currentStepIndex] || null,
+        currentStep: onboarding.current_step || null,
         currentStepIndex,
         completeStep: handleCompleteStep,
         skipOnboarding: handleSkipOnboarding,
       }}
     >
       {children}
-      <OnboardingModal />
+      {isAuthenticated && user && (
+        <OnboardingModal 
+          initialState={onboarding.state as any || null}
+          flow={onboarding.flow as any}
+          userId={user.id}
+        />
+      )}
     </OnboardingContext.Provider>
   );
 }

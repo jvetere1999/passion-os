@@ -70,7 +70,12 @@ jobs:
           args: --manifest-path app/backend/Cargo.toml
 
   wipe-and-rebuild-neon:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.modified, 'app/backend/migrations/') ||
+      contains(github.event.head_commit.modified, 'app/database/') ||
+      contains(github.event.head_commit.modified, 'schema.json') ||
+      contains(github.event.head_commit.modified, 'tools/schema-generator/')
     needs: pre-deployment-checks
     runs-on: ubuntu-latest
     environment:
@@ -138,8 +143,11 @@ jobs:
           retention-days: 30
 
   build-and-deploy-backend:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
-    needs: wipe-and-rebuild-neon
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.modified, 'app/backend/') ||
+      contains(github.event.head_commit.modified, 'app/database/')
+    needs: [pre-deployment-checks, wipe-and-rebuild-neon]
     env:
       SKIP_MIGRATIONS: 'true'
     runs-on: ubuntu-latest
@@ -192,7 +200,9 @@ jobs:
         run: flyctl logs --app ignition-api --no-tail | tail -50
 
   deploy-frontend:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.modified, 'app/frontend/')
     needs: build-and-deploy-backend
     runs-on: ubuntu-latest
     environment:
@@ -240,7 +250,9 @@ jobs:
           exit 1
 
   deploy-admin:
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.head_commit.modified, 'app/admin/')
     needs: build-and-deploy-backend
     runs-on: ubuntu-latest
     environment:

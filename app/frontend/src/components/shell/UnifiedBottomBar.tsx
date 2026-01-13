@@ -764,6 +764,7 @@ export function UnifiedBottomBar() {
     try {
       await fetch("/api/focus/pause", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "clear" }),
       });

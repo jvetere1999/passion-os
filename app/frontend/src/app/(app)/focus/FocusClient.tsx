@@ -190,7 +190,9 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
   // Fetch stats on mount
   const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch("/api/focus?stats=true&period=day");
+      const response = await fetch("/api/focus?stats=true&period=day", {
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json() as {
           totalSessions?: number;
@@ -212,7 +214,9 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
   // Check for active session on mount
   const checkActiveSession = useCallback(async () => {
     try {
-      const response = await fetch("/api/focus/active");
+      const response = await fetch("/api/focus/active", {
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json() as { active?: { session?: FocusSession | null; pause_state?: { mode: FocusMode; timeRemaining: number; pausedAt: string } | null } };
         if (data.active?.session) {
@@ -243,7 +247,9 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
   const fetchHistory = useCallback(async () => {
     setHistoryLoading(true);
     try {
-      const response = await fetch("/api/focus?pageSize=50");
+      const response = await fetch("/api/focus?pageSize=50", {
+        credentials: "include",
+      });
       if (response.ok) {
         const data = await response.json() as { items?: FocusSession[] };
         const sessions = data.items || [];
@@ -272,7 +278,9 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
     }
 
     // Load paused state from D1 (source of truth)
-    fetch("/api/focus/pause")
+    fetch("/api/focus/pause", {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((data) => {
         const typedData = data as { pauseState?: { mode: FocusMode; timeRemaining: number; pausedAt: string } | null };
@@ -325,6 +333,7 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
       // Sync to D1 for cross-device and refresh persistence
       fetch("/api/focus/pause", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "save",
@@ -341,6 +350,7 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
       // Also clear from D1
       fetch("/api/focus/pause", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "clear" }),
       }).catch((err) => console.error("Failed to clear pause state:", err));
@@ -379,6 +389,8 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
       try {
         await fetch(`/api/focus/${currentSession.id}/complete`, {
           method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
         });
         setCurrentSession(null);
         fetchStats();
@@ -489,6 +501,7 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
     try {
       const response = await fetch("/api/focus", {
         method: "POST",
+        credentials: "include", // Required for session cookie auth
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mode,
@@ -525,6 +538,8 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
       try {
         await fetch(`/api/focus/${currentSession.id}/abandon`, {
           method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
         });
         setCurrentSession(null);
 
@@ -546,6 +561,8 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
       try {
         await fetch(`/api/focus/${currentSession.id}/abandon`, {
           method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
         });
         setCurrentSession(null);
 

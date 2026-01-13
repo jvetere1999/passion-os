@@ -48,7 +48,9 @@ export function StatsClient({ userId: _userId }: StatsClientProps) {
     setIsLoading(true);
     try {
       // Fetch focus stats
-      const focusResponse = await fetch(`/api/focus?stats=true&period=${period}`);
+      const focusResponse = await fetch(`/api/focus?stats=true&period=${period}`, {
+        credentials: "include",
+      });
       if (focusResponse.ok) {
         const focusData = await focusResponse.json() as FocusStatsResponse;
         setStats((prev) => ({

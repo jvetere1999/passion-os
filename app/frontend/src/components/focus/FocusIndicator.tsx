@@ -214,6 +214,8 @@ export function FocusIndicator() {
       try {
         const response = await fetch(`/api/focus/${session.id}/abandon`, {
           method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
         });
         if (response.ok) {
           setSession(null);
@@ -237,6 +239,7 @@ export function FocusIndicator() {
     try {
       await fetch("/api/focus/pause", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "clear" }),
       });

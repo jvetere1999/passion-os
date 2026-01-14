@@ -29,17 +29,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Fetch session on mount and when window gains focus
     const fetchSession = useCallback(async () => {
+      console.log('[AuthProvider] fetchSession called');
+      setIsLoading(true);
       try {
         console.log('[AuthProvider] Fetching session...');
         const session = await getSession();
-        setUser(session.user);
         console.log('[AuthProvider] Session fetch succeeded:', session.user);
+        setUser(session.user);
       } catch (err) {
-        setUser(null);
         console.error('[AuthProvider] Session fetch failed:', err);
+        setUser(null);
       } finally {
+        console.log('[AuthProvider] Setting isLoading to false');
         setIsLoading(false);
-        console.log('[AuthProvider] Loading state set to false');
       }
     }, []);
 

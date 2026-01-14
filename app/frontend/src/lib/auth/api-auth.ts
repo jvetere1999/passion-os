@@ -97,19 +97,31 @@ export async function getProviders(): Promise<AuthProvider[]> {
  */
 export async function getSession(): Promise<SessionResponse> {
   try {
+    console.log('[getSession] Fetching from:', `${API_BASE_URL}/auth/session`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     const response = await fetch(`${API_BASE_URL}/auth/session`, {
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       cache: 'no-store',
+      signal: controller.signal,
     });
+    
+    clearTimeout(timeoutId);
+    
     if (!response.ok) {
+      console.log('[getSession] Response not OK, status:', response.status);
       return { user: null };
     }
+    
     const data = await response.json() as { user: RawAuthUser | null };
+    console.log('[getSession] Got response:', data);
     return {
       user: data.user ? normalizeAuthUser(data.user) : null,
     };
-  } catch {
+  } catch (err) {
+    console.error('[getSession] Error:', err);
     return { user: null };
   }
 }

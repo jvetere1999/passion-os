@@ -102,9 +102,13 @@ export async function getSession(): Promise<SessionResponse> {
     
     // Debug: check if cookies exist
     if (typeof document !== 'undefined') {
-      const hasCookies = document.cookie.length > 0;
-      console.log('[getSession] Document has cookies:', hasCookies);
-      console.log('[getSession] document.cookie:', document.cookie);
+      try {
+        const cookieString = document.cookie;
+        console.log('[getSession] Document has cookies:', cookieString.length > 0);
+        console.log('[getSession] document.cookie:', cookieString);
+      } catch (cookieError) {
+        console.warn('[getSession] Unable to read document.cookie:', cookieError);
+      }
     }
     
     const controller = new AbortController();

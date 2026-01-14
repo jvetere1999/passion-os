@@ -28,25 +28,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch session on mount and when window gains focus
-  const fetchSession = useCallback(async () => {
-    try {
-      const session = await getSession();
-      setUser(session.user);
-    } catch {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    const fetchSession = useCallback(async () => {
+      try {
+        console.log('[AuthProvider] Fetching session...');
+        const session = await getSession();
+        setUser(session.user);
+        console.log('[AuthProvider] Session fetch succeeded:', session.user);
+      } catch (err) {
+        setUser(null);
+        console.error('[AuthProvider] Session fetch failed:', err);
+      } finally {
+        setIsLoading(false);
+        console.log('[AuthProvider] Loading state set to false');
+      }
+    }, []);
 
   useEffect(() => {
-    fetchSession();
+      console.log('[AuthProvider] Mounted');
+      fetchSession();
 
-    // Refetch on focus (user might have logged in/out in another tab)
-    const handleFocus = () => fetchSession();
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [fetchSession]);
+      // Refetch on focus (user might have logged in/out in another tab)
+      const handleFocus = () => {
+        console.log('[AuthProvider] Window focused, refetching session');
+        fetchSession();
+      };
+      window.addEventListener('focus', handleFocus);
+      return () => {
+        console.log('[AuthProvider] Unmounted');
+        window.removeEventListener('focus', handleFocus);
+      };
+    }, [fetchSession]);
 
   // Sign in - redirect to backend OAuth endpoint
   const signIn = useCallback((provider: 'google' | 'azure' = 'google') => {
@@ -74,9 +85,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={value}>
+        {isLoading ? (
+          <div style={{ textAlign: 'center', marginTop: '2rem', color: 'red' }}>
+            <p>Loading session...</p>
+            {/* Show error if session fetch failed */}
+            {!user && !isLoading && (
+              <p style={{ color: 'red' }}>Session fetch failed. Please check your connection or try again.</p>
+            )}
+          </div>
+        ) : children}
+      </AuthContext.Provider>
   );
 }
 

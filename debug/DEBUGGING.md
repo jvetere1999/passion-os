@@ -1,4 +1,128 @@
+---
+### Phase 2C: Findings & Recommended Next Steps (2026-01-13)
+
+**Findings:**
+- The frontend is stuck on the loading screen because the session fetch (AuthProvider) is not resolving—likely due to a backend issue, missing session, or fetch failure.
+- This causes repeated retries and/or remounts, which in turn trigger multiple overlapping polling intervals in SyncStateProvider.
+- Backend logs confirm session lookups every ~0.6–1s, far more frequent than the intended 30s interval.
+- No evidence of duplicate polling loops in code; the issue is emergent from frontend state management and backend response behavior.
+
+**Recommended Next Steps:**
+1. Investigate backend session fetch endpoint for possible errors, timeouts, or missing session data.
+2. Add logging to frontend AuthProvider to confirm retry/remount behavior and capture error states.
+3. Ensure frontend handles session fetch failures gracefully (e.g., shows error, does not infinitely retry/remount).
+4. Validate backend session lookup logic to ensure it returns expected results and does not hang.
+5. Test with a valid session and with an invalid/missing session to observe frontend and backend behavior.
+6. Once root cause is confirmed, update error handling and loading state logic to prevent repeated polling/remounts.
+
+---
 # DEBUGGING - Active Issues & Fixes
+
+---
+
+## P0: Frequent Session/Auth DB Lookups (Discovery Phase)
+
+**Discovery Date**: 2026-01-13
+**Status**: Phase 2: DOCUMENT (Root Cause Analysis)
+
+### Phase 1: ISSUE - Backend Load from Frequent Session Lookups
+
+**User Report (2026-01-13)**:
+Backend logs show frequent session/auth DB lookups, possibly causing unnecessary load. User suspects polling from app shell or UI context providers.
+
+**Symptoms:**
+- High frequency of session lookups in backend logs
+- Each lookup triggers DB access for session and user
+- No obvious user-facing errors, but backend load is elevated
+
+---
+
+### Phase 2A: LOG EVIDENCE - Excessive Session Lookups
+
+**Log Sample (2026-01-13, user jvetere1999@gmail.com):**
+
+```
+23:38:36 Session token extracted from cookie
+23:38:36 Looking up session in database
+23:38:36 Session found in database
+23:38:36 User found
+23:38:37 Received cookie header
+23:38:37 Session token extracted from cookie
+23:38:37 Looking up session in database
+23:38:37 Session found in database
+23:38:37 User found
+... (repeats every ~0.6s to 1s, not 30s)
+```
+
+**Analysis:**
+- Log timestamps show session lookups occurring every 0.6–1.0 seconds, far more frequent than the intended 30s polling interval.
+- This is direct evidence that the backend is receiving many more session validation requests than the code intends.
+- The session token and user are consistent, confirming this is not multiple users or sessions.
+
+**Contradiction:**
+- Code review shows only a single `SyncStateProvider` mount per app shell (desktop and mobile), and only one polling loop per shell.
+- No evidence of accidental multiple mounts or duplicate polling in code.
+- Yet, logs prove the backend is being hit much more frequently.
+
+**Next Steps:**
+
+### Phase 2B: Hypothesis - Frozen Loading Screen & Excessive Session Lookups (2026-01-13)
+
+**Observation:**
+- Frontend is frozen on loading screen.
+- Backend logs show session lookups every ~0.6–1s, much more frequent than intended 30s polling.
+
+**Most Likely Cause:**
+- The frontend session fetch (in AuthProvider) is either failing, hanging, or returning an error/empty response.
+- This causes the app to remain stuck in a loading state, waiting for a session/user object that never arrives.
+- The frontend may repeatedly retry the session fetch, remount providers, and restart polling intervals.
+- Backend logs show frequent session lookups as each retry/remount triggers a new request.
+
+**Supporting Evidence:**
+- Code intends a single 30s polling loop, but logs show much higher frequency.
+- Loading state is tied to session fetch resolution.
+- Frozen loading screen and frequent backend requests are correlated.
+
+**Next Steps:**
+1. Check if session fetch in AuthProvider is stuck in a retry loop or never resolves.
+2. Correlate frontend loading state with backend log timestamps to confirm repeated requests.
+3. Document findings and recommended next steps for the user.
+
+---
+
+### Phase 2: DOCUMENT - Root Cause Analysis
+
+**Architecture Summary:**
+- The frontend wraps all authenticated routes in `SyncStateProvider` (see [app/frontend/src/app/(app)/layout.tsx](app/frontend/src/app/(app)/layout.tsx)).
+- `SyncStateProvider` performs a 30-second polling loop to `/api/sync/poll` (see [app/frontend/src/lib/sync/SyncStateContext.tsx](app/frontend/src/lib/sync/SyncStateContext.tsx)).
+- This polling is memory-only, visibility-aware (pauses when tab is hidden), and deduplicates requests for all consumers.
+- All UI state (progress, badges, focus, plan, user) is fetched in this single poll and distributed via React context.
+- The `FocusStateProvider` and all focus-related UI now consume focus data from this context, not from separate polling.
+- Deprecated components (e.g., `BottomBar`) are not used in production and do not trigger additional polling.
+
+**Backend Flow:**
+- Every `/api/sync/poll` request triggers session validation in backend middleware ([auth.rs](app/backend/crates/api/src/middleware/auth.rs)).
+   - Extracts session token from cookies
+   - Looks up session in DB (`SessionRepo::find_by_token`)
+   - Loads user and RBAC entitlements
+   - Updates session and user last activity (fire-and-forget)
+- No evidence of additional polling or session lookups outside this centralized sync poll in production.
+
+**Key Evidence:**
+- Only one polling loop (from `SyncStateProvider`) is active in production.
+- All focus session state in the UI is derived from the centralized sync poll.
+- Backend session lookup is triggered by each `/api/sync/poll` (every 30s per user/session).
+
+**User Impact and Severity:**
+- **Severity:** MEDIUM (elevated backend load, but not a user-facing error)
+- **User Impact:** No direct errors, but could affect scalability if user count increases
+
+**Next Steps:**
+- Enumerate all code paths that could trigger session lookups (confirmed: only `/api/sync/poll` in production)
+- Prepare root cause analysis and recommendations for frequency/load tuning if needed
+- Document findings and recommendations in this file
+
+---
 
 **Last Updated**: 2026-01-13 10:15 UTC  
 **Current Status**: ✅ COMPILATION ERRORS FIXED - Ready for Production Push  

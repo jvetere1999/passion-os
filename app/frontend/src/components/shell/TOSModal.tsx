@@ -6,7 +6,7 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { safeFetch, API_BASE_URL } from "@/lib/api";
 import Link from "next/link";
 import { useSyncState } from "@/lib/sync/SyncStateContext";

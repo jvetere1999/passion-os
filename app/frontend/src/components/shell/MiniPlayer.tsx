@@ -54,8 +54,8 @@ export function MiniPlayer() {
   const track = useCurrentTrack();
   const isPlayerVisible = usePlayerVisible();
   const isPlaying = useIsPlaying();
-  const _currentTime = useCurrentTime();
-  const _duration = useDuration();
+  useCurrentTime();
+  useDuration();
 
   // Focus state
   const [focusSession, setFocusSession] = useState<FocusSession | null>(null);

@@ -505,7 +505,7 @@ export interface CreateJournalEntryRequest {
   presetReference: string | null;
 }
 
-export interface UpdateJournalEntryRequest extends Partial<CreateJournalEntryRequest> {}
+export type UpdateJournalEntryRequest = Partial<CreateJournalEntryRequest>;
 
 export async function listJournalEntries(): Promise<JournalEntry[]> {
   const response = await apiGet<JournalWrapper>("/api/learn/journal");

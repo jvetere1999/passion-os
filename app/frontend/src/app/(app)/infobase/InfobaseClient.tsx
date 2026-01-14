@@ -219,7 +219,7 @@ export function InfobaseClient() {
           if (data.data?.id) {
             setEntries((prev) =>
               prev.map((entry) =>
-                entry.id === newEntry.id
+                entry.id === newEntry.id && data.data
                   ? {
                       ...entry,
                       id: data.data.id,
@@ -265,7 +265,7 @@ export function InfobaseClient() {
           if (data.data?.updated_at) {
             setEntries((prev) =>
               prev.map((entry) =>
-                entry.id === selectedEntry.id
+                entry.id === selectedEntry.id && data.data
                   ? { ...entry, updatedAt: data.data.updated_at }
                   : entry
               )

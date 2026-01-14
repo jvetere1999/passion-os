@@ -12,7 +12,7 @@
 
 "use client";
 
-import { createContext, useContext, useEffect, useCallback, useRef, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useCallback, useRef, useState, useMemo, type ReactNode } from "react";
 import { useSyncState } from "@/lib/sync/SyncStateContext";
 
 // Types
@@ -61,16 +61,19 @@ export function FocusStateProvider({ children }: { children: ReactNode }) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Convert sync focus data to our session format
-  const session = syncState.focus && syncState.focus.active_session
-    ? {
+  const session = useMemo(() => {
+    if (syncState.focus?.active_session) {
+      return {
         id: syncState.focus.active_session.id,
         started_at: syncState.focus.active_session.started_at,
         planned_duration: syncState.focus.active_session.duration_seconds,
         status: "active" as const,
         mode: syncState.focus.active_session.mode,
         expires_at: syncState.focus.active_session.expires_at,
-      }
-    : null;
+      };
+    }
+    return null;
+  }, [syncState.focus?.active_session]);
 
   // Update time remaining when sync focus data changes
   useEffect(() => {

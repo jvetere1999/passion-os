@@ -8,7 +8,7 @@
  * REFACTOR: Uses shared client (January 2026)
  */
 
-import { apiGet, apiPost, apiPut, apiDelete } from './client';
+import { apiGet, apiPost, apiDelete } from './client';
 
 // ============================================
 // Types

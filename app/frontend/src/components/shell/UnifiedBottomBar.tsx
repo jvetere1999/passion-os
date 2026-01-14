@@ -699,8 +699,7 @@ export function UnifiedBottomBar() {
     fetchFocusSession();
     const pollInterval = setInterval(fetchFocusSession, 30000);
     return () => clearInterval(pollInterval);
-    // Empty dependency array: both callbacks are stable (useCallback with [])
-  }, []);
+  }, [checkPausedState, fetchFocusSession]);
 
   // Focus: Timer countdown
   useEffect(() => {

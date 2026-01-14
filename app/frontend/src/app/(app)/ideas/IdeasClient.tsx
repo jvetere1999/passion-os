@@ -120,12 +120,14 @@ export function IdeasClient({}: IdeasClientProps = {}) {
           tags: idea.mood ? [idea.mood] : [],
         }),
       });
-      if (response.ok) {
-        const data = await response.json() as { data?: { id: string } };
-        if (data.data?.id) {
-          setIdeas(prev => [{ ...idea, id: data.data.id }, ...prev.filter(i => i.id !== idea.id)]);
-        }
+      if (!response.ok) {
+        return;
       }
+      const data = await response.json() as { data?: { id: string } };
+      const savedId = data.data?.id;
+      if (!savedId) return;
+
+      setIdeas(prev => [{ ...idea, id: savedId }, ...prev.filter(i => i.id !== idea.id)]);
     } catch (error) {
       console.error("Failed to save idea:", error);
     }

@@ -133,8 +133,6 @@ describe('Streak System', () => {
 
   describe('Streak Types', () => {
     it('supports multiple streak types', () => {
-      const streakTypes = ['daily', 'focus', 'workout', 'reading'] as const;
-      
       const userStreaks = {
         daily: { current: 5, longest: 10 },
         focus: { current: 3, longest: 7 },

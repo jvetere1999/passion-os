@@ -444,8 +444,8 @@ export async function unlockAchievement(
 export async function checkAchievements(
   db: D1Database,
   userId: string,
-  eventType: string,
-  _metadata?: Record<string, unknown>
+  eventType: string
+  // _meta?: Record<string, unknown> // Removed unused parameter
 ): Promise<AchievementDefinition[]> {
   const unlockedAchievements: AchievementDefinition[] = [];
 

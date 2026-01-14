@@ -202,23 +202,24 @@ export function GoalsClient() {
         return;
       }
       const data = await response.json() as { milestone?: MilestoneApiResponse };
-      if (data.milestone) {
-        setGoals((prev) => {
-          const next = prev.map((g) =>
-            g.id === goalId
-              ? {
-                  ...g,
-                  milestones: [
-                    ...g.milestones,
-                    { id: data.milestone.id, title: data.milestone.title, completed: data.milestone.is_completed },
-                  ],
-                }
-              : g
-          );
-          setMemoryCache(GOALS_CACHE_KEY, { goals: next });
-          return next;
-        });
-      }
+      if (!data.milestone) return;
+
+      const milestone = data.milestone;
+      setGoals((prev) => {
+        const next = prev.map((g) =>
+          g.id === goalId
+            ? {
+                ...g,
+                milestones: [
+                  ...g.milestones,
+                  { id: milestone.id, title: milestone.title, completed: milestone.is_completed },
+                ],
+              }
+            : g
+        );
+        setMemoryCache(GOALS_CACHE_KEY, { goals: next });
+        return next;
+      });
     } catch (e) {
       console.error("Failed to add milestone:", e);
     }

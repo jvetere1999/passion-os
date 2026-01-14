@@ -226,7 +226,7 @@ export function useCommandHistory() {
   // Get top N recently used commands
   const getRecentCommands = useCallback((count: number = 5): string[] => {
     const recent = Object.entries(metadata)
-      .filter(([id, meta]) => meta.lastExecutedAt !== null)
+      .filter(([, meta]) => meta.lastExecutedAt !== null)
       .sort((a, b) => (b[1].lastExecutedAt || 0) - (a[1].lastExecutedAt || 0))
       .slice(0, count)
       .map(([id]) => id);

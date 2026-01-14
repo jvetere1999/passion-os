@@ -92,6 +92,7 @@ export type FlagName =
  * @deprecated Feature flags have been removed. Always returns true.
  */
 export function getFlag(_flagName: FlagName): boolean {
+  void _flagName;
   return true;
 }
 
@@ -123,4 +124,3 @@ export function getActiveTodayFeatures(): string[] {
     "dynamic_ui",
   ];
 }
-

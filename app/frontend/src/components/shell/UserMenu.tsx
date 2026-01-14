@@ -7,6 +7,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { signOut } from "@/lib/auth/api-auth";
 import { useTheme, type Theme } from "@/lib/theme";
 import { isAdminEmail } from "@/lib/admin";
@@ -75,9 +76,9 @@ export function UserMenu({ user }: UserMenuProps) {
         aria-haspopup="true"
       >
         {user.image ? (
-          <img
+          <Image
             src={user.image}
-            alt=""
+            alt="User avatar"
             className={styles.avatar}
             width={32}
             height={32}
@@ -239,4 +240,3 @@ function SystemIcon() {
     </svg>
   );
 }
-

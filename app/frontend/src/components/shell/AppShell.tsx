@@ -9,7 +9,6 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { useRouter, usePathname } from "next/navigation";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { UnifiedBottomBar } from "./UnifiedBottomBar";
@@ -24,9 +23,7 @@ interface AppShellProps {
 }
 
 export function AppShell({ children }: AppShellProps) {
-  const { user, isAuthenticated, isLoading, refresh } = useAuth();
-  const router = useRouter();
-  const pathname = usePathname();
+  const { user, isAuthenticated, refresh } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [omnibarOpen, setOmnibarOpen] = useState(false);
   const [showTOS, setShowTOS] = useState(false);
@@ -113,4 +110,3 @@ export function AppShell({ children }: AppShellProps) {
     </FocusStateProvider>
   );
 }
-

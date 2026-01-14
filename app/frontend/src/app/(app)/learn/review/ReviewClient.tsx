@@ -18,7 +18,7 @@ interface ReviewSession {
 
 function estimateInterval(card: ReviewCard, grade: number) {
   let interval = card.intervalDays;
-  let ease = card.easeFactor;
+  const ease = card.easeFactor;
 
   if (grade === 0) {
     interval = 1;

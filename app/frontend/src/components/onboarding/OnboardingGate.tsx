@@ -26,7 +26,7 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
     return null;
   }
 
-  if (!user.tosAccepted && !user.tos_accepted) {
+  if (!user.tosAccepted) {
     // Show TOS modal, refresh session after acceptance
     return <TOSModal onAccept={refresh} />;
   }

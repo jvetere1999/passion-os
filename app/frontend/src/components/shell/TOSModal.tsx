@@ -1,15 +1,15 @@
 /**
  * TOS Acceptance Modal
  * Shows when user needs to accept Terms of Service
- * Shows loading state while sync data loads
+ * Shows loading state while auth loads
  */
 
 "use client";
 
 import { useState } from "react";
 import { safeFetch, API_BASE_URL } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import Link from "next/link";
-import { useSyncState } from "@/lib/sync/SyncStateContext";
 import styles from "./TOSModal.module.css";
 
 interface TOSModalProps {
@@ -19,10 +19,10 @@ interface TOSModalProps {
 export function TOSModal({ onAccept }: TOSModalProps) {
   const [isAccepting, setIsAccepting] = useState(false);
   const [hasRead, setHasRead] = useState(false);
-  const { user, isLoading: syncLoading } = useSyncState();
+  const { user, isLoading } = useAuth();
 
-  // Show loading bar while sync state initializes
-  if (syncLoading || !user) {
+  // Show loading bar while auth initializes
+  if (isLoading || !user) {
     return (
       <div className={styles.overlay}>
         <div className={styles.modal}>

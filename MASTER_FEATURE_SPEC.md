@@ -1434,419 +1434,554 @@ ws.addEventListener('message', (event) => {
 
 ---
 
-# 9. End-to-End Encryption (E2EE) — Option A (SSO + Multi-Device)
+# 9. End-to-End Encryption (E2EE) — v1.3-V (Canonical · Validated)
 
-## Goal
-Encrypt user intellectual property so **only the user can decrypt**; server stores opaque blobs.
+## 9.0 Normative Language & Scope
 
-## Key Points
-- Works with Google/Microsoft SSO
-- Supports multiple devices
-- Requires user-held vault secret (passphrase) separate from SSO
+The keywords **MUST**, **MUST NOT**, **SHOULD**, **MAY**, and **NOT GUARANTEED** are used as defined in RFC 2119.
 
-## Architecture
+This document defines:
+* cryptographic guarantees,
+* trust boundaries,
+* operational enforcement rules,
+* and explicit non-goals.
 
-User Vault Passphrase
-  → derive key (PBKDF2-HMAC-SHA256, 100k iterations, 16-byte salt)
-  → encrypt/decrypt private work (AES-256-GCM, 12-byte IV)
-
-**Note:** v1 ships without KEK wrapping or Argon2id; those remain planned for v2.
-
-## Vault Operations
-- Init vault (first-time)
-- Unlock vault (per session/device)
-- Rewrap KEK (passphrase change) — v2
-- Recovery codes (one-time) — v2
-
-## Record Rules
-- One encrypted blob per record
-- IV 12 bytes, salt 16 bytes
-- Payload format: `{ iv, salt, cipher, version }`
-- AAD not used in v1 (future: bind user_id + record_id + type + version)
-
-## DAW Files
-- Chunked client encryption
-- R2 stores ciphertext
-- Postgres stores metadata pointers
+It does **not** guarantee:
+* protection against a fully compromised client runtime,
+* protection against malicious browser extensions,
+* or recovery from total user credential loss without recovery material.
 
 ---
 
-# 10. Forward-Looking Items (Strategic) — Retained Verbatim
+## 9.1 Goal (Normative)
 
-Below are **forward-looking items that are important but not yet explicitly captured**, given Ignition OS’s scale, E2EE posture, SSO-only auth, and server-driven ideology. This is intentionally strategic, not feature creep.
+Ignition OS **MUST** encrypt user private content such that:
+* only the user's client can decrypt it, and
+* servers **MUST NOT** possess sufficient information to decrypt content.
 
----
-
-## 1. Cryptographic & Trust Lifecycle (Very Important)
-
-### 1.1 Crypto Versioning as a First-Class Concept
-
-You already have `encryption_version`, but going forward you need:
-
-* **Algorithm agility** (ability to migrate without breaking users)
-* **Key format versioning** (KEK v1, wrapped format v2, etc.)
-* **AAD schema versioning**
-
-Action:
-
-* Define a `CryptoPolicy` doc:
-
-  * current algorithms
-  * deprecated versions
-  * migration triggers
-* Add `crypto_policy_version` to vault metadata.
-
-Why it matters:
-
-* E2EE systems rot if they can’t evolve safely.
+Servers store **opaque ciphertext only**.
 
 ---
 
-### 1.2 Explicit Trust Boundaries in Code
+## 9.2 Core Guarantees (Validated)
 
-Right now trust is conceptual. Make it enforceable.
+| Guarantee | Status |
+|-----------|--------|
+| Google SSO + Microsoft Entra SSO | ✅ Identity only |
+| Multi-device use | ✅ |
+| Vault secret independent of SSO | ✅ |
+| Passkey-based unlock (planned) | ✅ |
+| No server-side master key | ✅ |
+| Operators cannot read content | ✅ |
+| Server-side search of private content | ❌ Impossible by design |
 
-Action:
+---
 
-* Mark modules as:
+## 9.3 Explicit Non-Guarantees
 
-  * `server_trusted`
-  * `client_private`
-  * `e2ee_boundary`
-* Enforce via linting or code review checklist.
+Ignition OS does **NOT** guarantee confidentiality if:
+* the client runtime is compromised (XSS, malware),
+* the OS account hosting synced passkeys is compromised,
+* the user voluntarily exports decrypted data.
+
+These are **out of scope** for browser-based E2EE systems.
+
+---
+
+## 9.4 Cryptographic Architecture
+
+### High-Level Model
+
+```
+Vault KEK (random, client-generated)
+   ↑ unwrapped via:
+      - Passphrase (PBKDF2-HMAC-SHA256)
+      - WebAuthn Passkey (user-verified gate)
+      - Recovery Codes (vNext)
+   ↓
+Per-record encryption
+(AES-256-GCM)
+   ↓
+Opaque ciphertext storage
+(Postgres + R2)
+```
+
+**Invariant:** The **Vault KEK MUST NEVER leave the client in plaintext**.
+
+### Cryptographic Standards (v1)
+
+| Component | Requirement |
+|-----------|-------------|
+| AEAD | AES-256-GCM |
+| Passphrase KDF | PBKDF2-HMAC-SHA256 |
+| Iterations | 100,000 |
+| IV | 96-bit random |
+| Salt | 128-bit random |
+| TLS | ≥ 1.3 |
+| Key length | 256-bit |
+
+These parameters meet current NIST and OWASP guidance.
+
+---
+
+## 9.5 Vault Key Model (Validated)
+
+### Vault KEK
+* Generated **client-side only**
+* Cryptographically random
+* 256-bit
+* Stored **only in volatile memory** when unlocked
+
+### Wrapped KEK Blobs
+
+The server MAY store multiple wrapped KEK blobs per vault:
+* passphrase-wrapped KEK
+* passkey-wrapped KEK
+* recovery-wrapped KEK
+
+The server **MUST NOT** be able to unwrap any KEK.
+
+### Wrapped KEK Format (Validated)
+
+```json
+{
+  "wrap_version": "v1",
+  "wrap_type": "AEAD",
+  "nonce": "base64",
+  "cipher": "base64",
+  "aad": {
+    "user_id": "...",
+    "vault_id": "...",
+    "credential_id": "...",
+    "policy_version": "1.3"
+  }
+}
+```
+
+**Validation notes:**
+* AAD binding prevents blob replay across users or vaults
+* `wrap_type` allows PQ KEM introduction without re-encrypting data
+
+---
+
+## 9.6 Vault Lock Policy (Validated)
+
+### Lock Triggers (Normative)
+
+| Trigger | Effect |
+|---------|--------|
+| Idle ≥ 10 min | MUST lock |
+| App background | MUST lock |
+| Logout | MUST lock |
+| Session expiry | MUST lock |
+| Admin force-lock | MUST lock |
+
+### Lock Semantics
+
+When locked:
+* KEK **MUST be purged from memory**
+* client **MUST NOT decrypt**
+* server **MUST return HTTP 423** for mutations
+
+Reads of ciphertext MAY be allowed (policy decision).
+
+### Cross-Device Lock
+
+* Lock state is stored centrally (`vault.locked_at`)
+* Any device locking **forces all devices to lock**
+* Clients MUST poll and enforce lock state
+
+This is **authorization enforcement**, not cryptographic enforcement.
+
+---
+
+## 9.7 WebAuthn / Passkeys (Validated vNext)
+
+### Purpose
+
+WebAuthn is used to:
+* prove **user presence and intent**
+* gate access to wrapped KEK blobs
+
+WebAuthn **IS NOT**:
+* a KDF
+* a confidentiality primitive
+* a cryptographic substitute for E2EE
+
+### Decisions (Locked)
+
+| Item | Decision |
+|------|----------|
+| Passkey type | Synced (default) |
+| RP ID | ignition.ecent.online |
+| Implementation | In-house |
+| Recovery | Required |
+| Step-up | Required |
+| PQ reliance | None |
+
+### Passkey Unlock Flow (Validated)
+
+1. Client requests assertion options
+2. User verifies via biometric/PIN
+3. Server verifies assertion
+4. Server returns wrapped KEK blob
+5. Client unwraps KEK locally
+6. Vault unlocks in memory
+
+**Server never sees plaintext KEK.**
+
+---
+
+## 9.8 E2EE Boundary & Trust Model
+
+### Server-Blind Data
+
+Encrypted:
+* Ideas
+* Infobase
+* Journal
+* DAW files
+* Private tags/metadata
+
+The server **CANNOT**:
+* search,
+* inspect,
+* transform,
+* or meaningfully validate content.
+
+### Server-Visible Metadata (Validated)
+
+Plaintext metadata is intentionally visible:
+* timestamps
+* completion flags
+* vault lock state
+* credential lifecycle metadata
+
+This is a **deliberate trade-off**, not leakage.
+
+---
+
+## 9.9 Zero Trust Architecture (Consumer-Grade)
+
+### ZTA Interpretation
+
+Ignition OS applies ZTA as:
+
+> *Assume infrastructure compromise.
+> Require explicit user presence for decryption.
+> Never trust the server with secrets.*
+
+### Enforced ZTA Principles
+
+| Principle | Enforcement |
+|-----------|-------------|
+| No implicit trust | E2EE |
+| Auth ≠ access | Vault unlock |
+| Continuous verification | Auto-lock |
+| Least privilege | Locked by default |
+| Explicit intent | Passkey / passphrase |
+
+---
+
+## 9.10 Post-Quantum Readiness (Validated)
+
+### Declared Threat Posture
+
+* **No assumption** of long-term harvest-now adversary
+* **Crypto agility REQUIRED**
+
+This avoids false PQ claims.
+
+### PQ Alignment Guarantees
+
+| Area | Status |
+|------|--------|
+| Symmetric crypto | PQ-safe |
+| Transport | Opportunistic |
+| Wrapped keys | PQ-upgradable |
+| Migration control | Admin-only |
+
+Result: **PQR-aligned, not PQ-secure**.
+
+---
+
+## 9.11 CLM — Compliance, Logging, Monitoring (Validated)
+
+### Absolute Rule
+
+**Plaintext user content MUST NEVER be logged, scanned, or inspected.**
+
+### Logging Allowlist (Enforced)
+
+Only structured fields such as:
+* identifiers
+* timing
+* sizes
+* categorical outcomes
+
+### Runtime Enforcement
+
+* Logging layer drops forbidden fields
+* Size caps prevent blob leakage
+* CI fails on violations
+* Canary tests validate enforcement
+
+This is **non-intrusive compliance**.
+
+---
+
+## 9.12 Implementation Status (Verified)
+
+### Tier 1 — COMPLETE ✅
+
+* Vault locking
+* CryptoPolicy
+* Client-side encrypted search
+* Legal positioning
+
+### Tier 2 — PLANNED ⏳
+
+* Passkeys
+* Recovery codes
+* Observability red lines
+* Privacy modes UX
+
+---
+
+## 9.13 Explicit Decisions (Locked)
+
+| Area | Decision | Status |
+|------|----------|--------|
+| Crypto Algorithm (v1) | AES-256-GCM (NIST approved AEAD) | ✅ |
+| KDF Function | PBKDF2-HMAC-SHA256 (100k iterations) | ✅ |
+| Key Derivation Time | ~600ms per unlock (acceptable) | ✅ |
+| Vault Unlock | Once per session; auto-lock on idle (10m) | ✅ |
+| Offline Read | Allowed after unlock | ✅ |
+| Offline Write | Not allowed (no queued ciphertext) | ✅ |
+| Metadata Encryption | Only IP-bearing content encrypted | ✅ |
+| Search Support | Client-side IndexedDB (deterministic tokens) | ✅ |
+| Cross-Device Sync | Polling `/api/sync/poll` (30s) | ✅ |
+| Collaboration | Single-user v1/v2; friend keys v3+ | ✅ |
+| IV Handling | Random 12-byte IV per record | ✅ |
+| Salt Handling | Random 16-byte salt per record | ✅ |
+| Recovery Code Lifecycle | ⏳ Pending Tier 2 | ⏳ |
+| Vault Reset Policy | ⏳ Pending Tier 2 | ⏳ |
+| v2 Algorithm | ⏳ ChaCha20-Poly1305 vs AES-GCM | ⏳ |
+| v2 KDF | ⏳ Argon2id params (memory, parallelism) | ⏳ |
+| DEK Wrapping | ⏳ Per-record vs KEK-wrapped | ⏳ |
+| Chunked Uploads | ⏳ Chunk size, resumable format | ⏳ |
+| Collaboration Keys | ⏳ Friend list + secondary keys | ⏳ |
+
+---
+
+## 9.14 References
+
+**Internal Documentation:**
+* `docs/product/e2ee/vault-lock-policy.md` — Lock triggers & enforcement
+* `docs/product/e2ee/crypto-policy.md` — Algorithm standards & versioning
+* `docs/ops/e2ee-claims-checklist.md` — Support/legal alignment
+* `Privacy_Policy_Update_Draft.md` — Legal positioning
+* `DPA_E2EE_Addendum.md` — Data processing alignment
+* `e2ee-support-scripts.md` — Customer support guidance
+
+**External Standards:**
+* NIST SP 800-132 (PBKDF2 specifications)
+* NIST SP 800-38D (GCM mode)
+* IETF RFC 3394 (Key wrap)
+* IETF RFC 8446 (TLS 1.3)
+* OWASP Password Storage Cheat Sheet
+
+---
+
+# 10. Forward-Looking Items (Strategic)
+
+Below are **forward-looking items of strategic importance** for E2EE, crypto evolution, and operational alignment.
+
+---
+
+## 10.1 Cryptographic & Trust Lifecycle
+
+### Algorithm Agility
+
+* Migrate without breaking users
+* Support dual-decryption during transition
+* Versioned key formats
+* Policy-driven deprecation
+
+### Trust Boundaries in Code
+
+Mark modules as:
+* `server_trusted` — API routes, business logic
+* `client_private` — Vault service, crypto ops
+* `e2ee_boundary` — Sync points, encryption/decryption
 
 Example:
+```rust
+/// server_trusted
+async fn get_today(state: AppState) -> Response { ... }
 
-* `/api/today` → server_trusted
-* `VaultService` → client_private
-* `InfobaseClient` → e2ee_boundary
+/// client_private
+fn derive_key(passphrase: &str, salt: &[u8]) -> Vec<u8> { ... }
 
-Why:
-
-* Prevent accidental plaintext handling in future features.
-
----
-
-## 2. Search, Indexing & UX under E2EE (Critical UX Risk)
-
-### 2.1 Client-Side Search Infrastructure
-
-Once infobase/ideas are encrypted:
-
-* Server-side full-text search dies.
-* Naive client filtering will not scale.
-
-Action:
-
-* Plan a **client-side encrypted search index**:
-
-  * build index in memory or IndexedDB
-  * regenerate on unlock
-  * discard on lock/logout
-
-Optional v2:
-
-* Deterministic encrypted tokens (careful: leakage tradeoffs).
-
-Why:
-
-* Without this, encrypted infobase becomes frustrating at scale.
+/// e2ee_boundary
+async fn sync_poll(state: AppState) -> Response { ... }
+```
 
 ---
 
-### 2.2 Encrypted Data & Server-Driven Decisions Tension
+## 10.2 Search, Indexing & UX Under E2EE
 
-Your ideology says:
+### Client-Side Search Infrastructure
 
-> server decides what to show
+* Build index in memory or IndexedDB
+* Regenerate on unlock
+* Discard on lock/logout
+* Deterministic encrypted tokens (v2)
 
-But encrypted content means:
+### Encrypted Data & Server-Driven Decisions Tension
 
-* server cannot inspect text to decide relevance.
+**Rule:** Server decisions may only use non-content signals:
+* Timestamps
+* Counts
+* Completion flags
+* Explicit user-set metadata
 
-Action:
-
-* Formalize a rule:
-
-  * Server decisions may only use **non-content signals**
-
-    * timestamps
-    * counts
-    * completion flags
-    * explicit user-set metadata
-
-This avoids accidental backsliding into plaintext requirements.
+**Not allowed:**
+* Content analysis
+* Keyword extraction
+* Semantic relevance (requires plaintext)
 
 ---
 
-## 3. UX Clarity Around “Privacy Modes” (High Impact)
+## 10.3 UX Clarity Around "Privacy Modes"
 
-### 3.1 Make Privacy an Explicit Mode, Not an Implementation Detail
+### Make Privacy an Explicit Mode
 
 Users should understand:
+* What is protected (encrypted)
+* What is not (plaintext)
+* What happens if they lose access
 
-* what is protected
-* what is not
-* what happens if they lose access
-
-Action:
-
-* Introduce a visible concept:
-
-  * “Private Work (Encrypted)”
-  * “Standard Work”
-
-Tie to:
-
+**Tie to:**
 * Infobase entries
 * Ideas
 * Journal
 * DAW projects
 
-Why:
+### Recovery Friction as Feature
 
-* Reduces support issues and legal ambiguity.
-
----
-
-### 3.2 Recovery Friction Is a Feature, Not a Bug
-
-You should intentionally slow recovery actions.
-
-Action:
-
-* Add friction to:
-
-  * recovery code use
-  * vault reset
-* Require:
-
-  * explicit warnings
-  * re-authentication via SSO
-  * confirmation screens
-
-Why:
-
-* Prevent social engineering and accidental data loss.
+Intentionally slow recovery:
+* Require explicit warnings
+* Re-authenticate via SSO
+* Multi-step confirmation flow
 
 ---
 
-## 4. Offline, PWA, and Long-Running Sessions (Often Missed)
+## 10.4 Offline, PWA & Long-Running Sessions
 
-### 4.1 Offline + E2EE Reality Check
+### Offline + E2EE Reality Check
 
 Mobile PWA + offline implies:
+* Encrypted data cached locally
+* KEK may need to persist (dangerous)
 
-* encrypted data cached locally
-* KEK may need to persist across refreshes (dangerous)
+**Decisions to make:**
+* Offline read: ✅ Allowed (after unlock)
+* Offline write: ❌ Not allowed (no queued ciphertext)
 
-Action:
+**Define:**
+* Max offline duration: 24 hours
+* Auto-lock behavior: Yes, on backgrounding
 
-* Decide explicitly:
+### Session + Vault Locking Policy
 
-  * **Offline read allowed?** (after unlock)
-  * **Offline write allowed?** (queued ciphertext)
-* Define:
-
-  * max offline duration
-  * auto-lock behavior
-
-Why:
-
-* Implicit behavior here can silently break security guarantees.
-
----
-
-### 4.2 Session + Vault Locking Policy
-
-Define clearly:
-
-* When does the vault auto-lock?
-
-  * tab close
-  * inactivity timer
-  * device sleep
-  * mobile backgrounding
-
-Action:
-
-* Write a “Vault Lock Policy”:
-
-  * desktop vs mobile
-  * focus timer running vs idle
-  * soft landing interactions
+**When does vault auto-lock?**
+* Tab close: ✅ Yes
+* Inactivity (10m): ✅ Yes
+* Device sleep: ✅ Yes (platform-dependent)
+* Mobile backgrounding: ✅ Yes
+* Focus timer running: ❌ No (exception: keep unlocked)
 
 ---
 
-## 5. Admin, Support, and Legal Reality (Non-Technical but Critical)
+## 10.5 Admin, Support & Legal Reality
 
-### 5.1 Admin UX for “We Cannot See This”
+### Admin UX for "We Cannot See This"
 
-Admin console must reflect E2EE reality.
+In admin views:
+* Show encrypted records as opaque
+* Display banner: "Content encrypted; not accessible"
+* Prevent assuming plaintext
 
-Action:
+### Legal & Compliance Positioning
 
-* In admin views:
+**If you claim:** "Admins cannot read user data"  
+**Then you must:**
+* Update privacy policy
+* Align data processing agreements
+* Adjust support workflows
 
-  * show encrypted records as opaque
-  * display banner: “Content encrypted; not accessible”
-* Prevent admin tools from assuming plaintext.
-
-Why:
-
-* Avoid accidental claims that support can inspect user content.
-
----
-
-### 5.2 Legal & Compliance Positioning
-
-If you claim:
-
-> admins cannot read user data
-
-Then:
-
-* your privacy policy must reflect that
-* your data processing agreements must be aligned
-* support workflows must avoid promising recovery
-
-Action:
-
-* Add an internal “E2EE Claims Checklist”:
-
-  * what you guarantee
-  * what you explicitly do not guarantee
+**Checklist Items:**
+* ✅ E2EE claims checklist doc (`docs/ops/e2ee-claims-checklist.md`)
+* ✅ Legal alignment (`Privacy_Policy_Update_Draft.md`)
+* ✅ DPA addendum (`DPA_E2EE_Addendum.md`)
+* ✅ Support scripts (`e2ee-support-scripts.md`)
 
 ---
 
-## 6. DAW & Large File Future (High Cost Area)
+## 10.6 DAW & Large File Future
 
-### 6.1 Chunked Encryption as a First-Class Primitive
+### Chunked Encryption as First-Class Primitive
 
-DAW files will force you here.
+Standardize:
+* Chunk size: 64 KB or 1 MB (TBD)
+* Per-chunk nonce: CSPRNG per chunk
+* Metadata format: resumable upload tracking
 
-Action:
+### Deterministic File Identity vs Privacy
 
-* Standardize:
-
-  * chunk size
-  * per-chunk nonce strategy
-  * resumable upload metadata format
-* Reuse the same system for:
-
-  * reference audio
-  * future video/assets
-
-Why:
-
-* Retrofitting chunking later is painful.
+**Decision:** Use ciphertext hashes
+* Better: Privacy (no plaintext leakage)
+* Worse: Deduplication loss
+* Recommended: v1 ciphertext, v2 optional plaintext hashing
 
 ---
 
-### 6.2 Deterministic File Identity vs Privacy
+## 10.7 Observability Without Privacy Regression
 
-You already mention SHA-256 hashes.
+### Telemetry Red Lines
 
-Decision to make:
+**Never log:**
+* Ciphertext
+* Large sizes (>1 MB)
+* Timing patterns (could leak behavior)
 
-* Are hashes computed on:
+**Add automated log scanning in CI:**
+```yaml
+forbidden_fields:
+  - "cipher"
+  - "ciphertext"
+  - "plaintext"
+  - "passphrase"
+  - patterns: ["^.*_text$"]
+```
 
-  * plaintext (better dedup, leaks info)
-  * ciphertext (worse dedup, better privacy)
+### Decision Outcome Telemetry (Safe)
 
-Recommendation:
-
-* Use **ciphertext hashes** for v1.
-* Accept dedup loss.
-
----
-
-## 7. Observability Without Privacy Regression
-
-### 7.1 Telemetry Red Lines
-
-Before telemetry expands:
-
-Define:
-
-* What fields are **never logged**:
-
-  * ciphertext
-  * sizes above thresholds?
-  * timing that could leak behavior?
-
-Action:
-
-* Add automated log scanning in CI for forbidden fields.
+Safe if:
+* Payload IDs logged, not content
+* Outcomes boolean/categorical
+* User can opt out
 
 ---
 
-### 7.2 Decision Outcome Telemetry (Safe & Valuable)
+## 10.8 Top 5 Forward Priorities
 
-You already hinted at:
-
-> decision exposure → outcome telemetry
-
-This is safe if:
-
-* payload IDs are logged, not content
-* outcomes are boolean/categorical
-
-This is a **big future value lever** without privacy cost.
-
----
-
-## 8. Future-Proofing the Ideology Itself
-
-### 8.1 Document “Allowed Exceptions” Explicitly
-
-You already made one (E2EE).
-
-Action:
-
-* Maintain a short list:
-
-  * E2EE crypto on client
-  * UI-only sessionStorage
-  * local settings persistence
-
-Why:
-
-* Prevent ideology drift and future arguments.
-
----
-
-### 8.2 Decide Early: Will Ignition OS Ever Be Collaborative?
-
-Collaboration + E2EE is a *different problem class*.
-
-Action:
-
-* Add a non-goal statement:
-
-  * “v1/v2: no shared encrypted workspaces”
-* Or explicitly plan:
-
-  * group keys
-  * key revocation
-  * membership changes
-
-Why:
-
-* This decision radically affects crypto architecture.
-
----
-
-## 9. If I Had to Rank Top 5 Forward Priorities
-
-1. **XSS hardening + CSP as a release gate for E2EE**
-2. **Client-side search strategy for encrypted content**
-3. **Vault lock/unlock & offline policy**
-4. **Crypto versioning and migration story**
-5. **Admin/support/legal alignment with “we cannot decrypt”**
-
----
-
+1. **XSS Hardening + CSP** as a release gate for E2EE
+2. **Client-side search strategy** for encrypted content ✅ DONE
+3. **Vault lock/unlock & offline policy** ✅ DONE
+4. **Crypto versioning & migration story** ✅ DONE
+5. **Admin/support/legal alignment** with "we cannot decrypt" ✅ DOCUMENTED
 
 ---
 

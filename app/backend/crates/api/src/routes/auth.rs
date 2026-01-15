@@ -5,6 +5,7 @@
 //! Per DEC-002=A: CSRF via Origin/Referer verification.
 
 use std::sync::Arc;
+use std::str::FromStr;
 
 use axum::{
     extract::{Query, State},
@@ -233,10 +234,13 @@ async fn handle_google_callback(
 
     // Use 302 redirect with Set-Cookie header
     // The cookie domain is .ecent.online so it works across subdomains
+    let cookie_header = header::HeaderValue::from_str(&cookie)
+        .map_err(|e| AppError::Internal(format!("Invalid cookie header: {}", e)))?;
+    
     let response = Response::builder()
         .status(StatusCode::FOUND)
         .header(header::LOCATION, redirect_url)
-        .header(header::SET_COOKIE, cookie)
+        .header(header::SET_COOKIE, cookie_header)
         .body(axum::body::Body::empty())
         .map_err(|e| AppError::Internal(e.to_string()))?;
 
@@ -319,10 +323,13 @@ async fn handle_azure_callback(
 
     // Use 302 redirect with Set-Cookie header
     // The cookie domain is .ecent.online so it works across subdomains
+    let cookie_header = header::HeaderValue::from_str(&cookie)
+        .map_err(|e| AppError::Internal(format!("Invalid cookie header: {}", e)))?;
+    
     let response = Response::builder()
         .status(StatusCode::FOUND)
         .header(header::LOCATION, redirect_url)
-        .header(header::SET_COOKIE, cookie)
+        .header(header::SET_COOKIE, cookie_header)
         .body(axum::body::Body::empty())
         .map_err(|e| AppError::Internal(e.to_string()))?;
 

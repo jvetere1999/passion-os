@@ -39,7 +39,7 @@ export function TOSModal({ onAccept }: TOSModalProps) {
   }
 
   // Don't show modal if TOS already accepted
-  if (user.tos_accepted) {
+  if (user.tosAccepted) {
     return null;
   }
 

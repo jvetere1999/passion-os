@@ -100,6 +100,16 @@ export class WaveSurferAdapter implements VisualizerAdapter {
 
   async mount(context: VisualizerContext): Promise<void> {
     const { audioEl, containerEl } = context;
+    
+    // Defensive null checks
+    if (!audioEl || !containerEl) {
+      console.warn("WaveSurferAdapter: Missing required audio element or container", {
+        hasAudioEl: !!audioEl,
+        hasContainerEl: !!containerEl,
+      });
+      throw new Error("WaveSurferAdapter: Missing required audio element or container element");
+    }
+    
     this.containerEl = containerEl;
 
     // Clear container

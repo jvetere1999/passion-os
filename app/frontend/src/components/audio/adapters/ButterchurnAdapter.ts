@@ -50,6 +50,17 @@ export class ButterchurnAdapter implements VisualizerAdapter {
 
   async mount(context: VisualizerContext): Promise<void> {
     const { audioCtx, analyserNode, containerEl } = context;
+    
+    // Defensive null checks
+    if (!audioCtx || !analyserNode || !containerEl) {
+      console.warn("ButterchurnAdapter: Missing required audio context or container", {
+        hasAudioCtx: !!audioCtx,
+        hasAnalyserNode: !!analyserNode,
+        hasContainerEl: !!containerEl,
+      });
+      throw new Error("ButterchurnAdapter: Missing required audio context, analyser node, or container element");
+    }
+    
     this.containerEl = containerEl;
 
     // Clear container

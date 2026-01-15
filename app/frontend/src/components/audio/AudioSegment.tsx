@@ -297,6 +297,12 @@ export function AudioSegment({
     // Clear container
     visualContainerRef.current.innerHTML = "";
 
+    // Validate audio context before mounting visualizer
+    if (!audioCtxRef.current || !analyserRef.current) {
+      console.warn("Audio context or analyser not initialized, skipping visualizer mount");
+      return;
+    }
+
     // Create new adapter
     let adapter: VisualizerAdapter;
 

@@ -47,6 +47,17 @@ export class AudioMotionAdapter implements VisualizerAdapter {
 
   async mount(context: VisualizerContext): Promise<void> {
     const { audioCtx, analyserNode, containerEl } = context;
+    
+    // Defensive null checks
+    if (!audioCtx || !analyserNode || !containerEl) {
+      console.warn("AudioMotionAdapter: Missing required audio context or container", {
+        hasAudioCtx: !!audioCtx,
+        hasAnalyserNode: !!analyserNode,
+        hasContainerEl: !!containerEl,
+      });
+      throw new Error("AudioMotionAdapter: Missing required audio context, analyser node, or container element");
+    }
+    
     this.containerEl = containerEl;
 
     // Clear container

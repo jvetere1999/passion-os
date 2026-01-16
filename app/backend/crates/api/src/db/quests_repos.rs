@@ -11,12 +11,6 @@ use super::gamification_repos::GamificationRepo;
 use super::quests_models::*;
 use crate::error::AppError;
 
-// Column list for user_quests table - matches Quest struct field order exactly
-const QUEST_COLUMNS: &str = r#"id, user_id, source_quest_id, title, description, category, difficulty,
-    xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
-    repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
-    last_completed_date, streak_count, created_at, updated_at"#;
-
 // ============================================================================
 // QUESTS REPOSITORY
 // ============================================================================
@@ -44,16 +38,16 @@ impl QuestsRepo {
         let coins = req.coin_reward.unwrap_or(default_coins);
         let target = req.target.unwrap_or(1);
 
-        let query = format!(
+        let quest = sqlx::query_as::<_, Quest>(
             r#"INSERT INTO user_quests
                (user_id, title, description, category, difficulty, xp_reward, coin_reward,
                 target, is_repeatable, repeat_frequency, status, is_active, progress, streak_count)
                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'active', true, 0, 0)
-               RETURNING {}"#,
-            QUEST_COLUMNS
-        );
-
-        let quest = sqlx::query_as::<_, Quest>(&query)
+               RETURNING id, user_id, source_quest_id, title, description, category, difficulty,
+                         xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
+                         repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
+                         last_completed_date, streak_count, created_at, updated_at"#
+        )
             .bind(user_id)
             .bind(&req.title)
             .bind(&req.description)
@@ -76,12 +70,13 @@ impl QuestsRepo {
         quest_id: Uuid,
         user_id: Uuid,
     ) -> Result<Option<Quest>, AppError> {
-        let query = format!(
-            r#"SELECT {} FROM user_quests WHERE id = $1 AND user_id = $2"#,
-            QUEST_COLUMNS
-        );
-
-        let quest = sqlx::query_as::<_, Quest>(&query)
+        let quest = sqlx::query_as::<_, Quest>(
+            r#"SELECT id, user_id, source_quest_id, title, description, category, difficulty,
+                      xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
+                      repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
+                      last_completed_date, streak_count, created_at, updated_at
+               FROM user_quests WHERE id = $1 AND user_id = $2"#
+        )
             .bind(quest_id)
             .bind(user_id)
             .fetch_optional(pool)
@@ -97,25 +92,29 @@ impl QuestsRepo {
         status_filter: Option<&str>,
     ) -> Result<QuestsListResponse, AppError> {
         let quests = if let Some(status) = status_filter {
-            let query = format!(
-                r#"SELECT {} FROM user_quests
+            sqlx::query_as::<_, Quest>(
+                r#"SELECT id, user_id, source_quest_id, title, description, category, difficulty,
+                         xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
+                         repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
+                         last_completed_date, streak_count, created_at, updated_at
+                   FROM user_quests
                    WHERE user_id = $1 AND status = $2 AND is_active = true
-                   ORDER BY created_at DESC"#,
-                QUEST_COLUMNS
-            );
-            sqlx::query_as::<_, Quest>(&query)
+                   ORDER BY created_at DESC"#
+            )
                 .bind(user_id)
                 .bind(status)
                 .fetch_all(pool)
                 .await?
         } else {
-            let query = format!(
-                r#"SELECT {} FROM user_quests
+            sqlx::query_as::<_, Quest>(
+                r#"SELECT id, user_id, source_quest_id, title, description, category, difficulty,
+                         xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
+                         repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
+                         last_completed_date, streak_count, created_at, updated_at
+                   FROM user_quests
                    WHERE user_id = $1 AND is_active = true
-                   ORDER BY created_at DESC"#,
-                QUEST_COLUMNS
-            );
-            sqlx::query_as::<_, Quest>(&query)
+                   ORDER BY created_at DESC"#
+            )
                 .bind(user_id)
                 .fetch_all(pool)
                 .await?
@@ -145,15 +144,15 @@ impl QuestsRepo {
             )));
         }
 
-        let query = format!(
+        let updated = sqlx::query_as::<_, Quest>(
             r#"UPDATE user_quests
                SET status = 'accepted'
                WHERE id = $1 AND user_id = $2
-               RETURNING {}"#,
-            QUEST_COLUMNS
-        );
-
-        let updated = sqlx::query_as::<_, Quest>(&query)
+               RETURNING id, user_id, source_quest_id, title, description, category, difficulty,
+                         xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
+                         repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
+                         last_completed_date, streak_count, created_at, updated_at"#
+        )
             .bind(quest_id)
             .bind(user_id)
             .fetch_one(pool)
@@ -194,17 +193,17 @@ impl QuestsRepo {
         };
 
         // Update quest
-        let query = format!(
+        let updated = sqlx::query_as::<_, Quest>(
             r#"UPDATE user_quests
                SET status = 'completed', completed_at = NOW(),
                    last_completed_date = $1::date, streak_count = $2,
                    progress = target
                WHERE id = $3 AND user_id = $4
-               RETURNING {}"#,
-            QUEST_COLUMNS
-        );
-
-        let updated = sqlx::query_as::<_, Quest>(&query)
+               RETURNING id, user_id, source_quest_id, title, description, category, difficulty,
+                         xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
+                         repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
+                         last_completed_date, streak_count, created_at, updated_at"#
+        )
             .bind(today)
             .bind(new_streak)
             .bind(quest_id)
@@ -263,15 +262,15 @@ impl QuestsRepo {
             quest.status.as_str()
         };
 
-        let query = format!(
+        let updated = sqlx::query_as::<_, Quest>(
             r#"UPDATE user_quests
                SET progress = $1, status = $2
                WHERE id = $3 AND user_id = $4
-               RETURNING {}"#,
-            QUEST_COLUMNS
-        );
-
-        let updated = sqlx::query_as::<_, Quest>(&query)
+               RETURNING id, user_id, source_quest_id, title, description, category, difficulty,
+                         xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
+                         repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
+                         last_completed_date, streak_count, created_at, updated_at"#
+        )
             .bind(clamped_progress)
             .bind(next_status)
             .bind(quest_id)
@@ -298,15 +297,15 @@ impl QuestsRepo {
             )));
         }
 
-        let query = format!(
+        let updated = sqlx::query_as::<_, Quest>(
             r#"UPDATE user_quests
                SET status = 'abandoned'
                WHERE id = $1 AND user_id = $2
-               RETURNING {}"#,
-            QUEST_COLUMNS
-        );
-
-        let updated = sqlx::query_as::<_, Quest>(&query)
+               RETURNING id, user_id, source_quest_id, title, description, category, difficulty,
+                         xp_reward, coin_reward, status, progress, target, is_active, is_repeatable,
+                         repeat_frequency, accepted_at, completed_at, claimed_at, expires_at,
+                         last_completed_date, streak_count, created_at, updated_at"#
+        )
             .bind(quest_id)
             .bind(user_id)
             .fetch_one(pool)

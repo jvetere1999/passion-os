@@ -573,8 +573,8 @@ export function FocusClient({ initialStats, initialSession }: FocusClientProps) 
       });
 
       if (response.ok) {
-        const data = await response.json() as { session?: FocusSession };
-        if (data.session) {
+        const { data } = await response.json() as { data: { session?: FocusSession } };
+        if (data?.session) {
           setCurrentSession(data.session);
         }
       }

@@ -56,12 +56,25 @@ impl VaultRepo {
         Ok(result.map(|r| r.is_locked.unwrap_or(false)).unwrap_or(false))
     }
 
-    /// Lock vault with reason
+    /// Lock vault with reason (wrapped in transaction with advisory lock)
     pub async fn lock_vault(
         pool: &PgPool,
         user_id: Uuid,
         reason: LockReason,
     ) -> Result<(), sqlx::Error> {
+        // Use advisory lock to prevent concurrent mutations
+        // Advisory lock key: hash of user_id to ensure unique lock per vault
+        let lock_key = (user_id.as_u128() % i64::MAX as u128) as i64;
+        
+        let mut tx = pool.begin().await?;
+        
+        // Acquire exclusive advisory lock
+        sqlx::query("SELECT pg_advisory_xact_lock($1)")
+            .bind(lock_key)
+            .execute(&mut *tx)
+            .await?;
+        
+        // Update vault state within transaction
         sqlx::query(
             "UPDATE vaults SET locked_at = $1, lock_reason = $2, updated_at = NOW() 
              WHERE user_id = $3"
@@ -69,22 +82,55 @@ impl VaultRepo {
         .bind(Utc::now())
         .bind(reason.as_str())
         .bind(user_id)
-        .execute(pool)
+        .execute(&mut *tx)
         .await?;
-
+        
+        // Log lock event
+        sqlx::query(
+            "INSERT INTO vault_lock_events (id, vault_id, locked_at, lock_reason, created_at)
+             SELECT gen_random_uuid(), id, NOW(), $2, NOW() FROM vaults WHERE user_id = $1"
+        )
+        .bind(user_id)
+        .bind(reason.as_str())
+        .execute(&mut *tx)
+        .await?;
+        
+        tx.commit().await?;
         Ok(())
     }
 
-    /// Unlock vault
+    /// Unlock vault (wrapped in transaction with advisory lock)
     pub async fn unlock_vault(pool: &PgPool, user_id: Uuid) -> Result<(), sqlx::Error> {
+        // Use advisory lock to prevent concurrent mutations
+        let lock_key = (user_id.as_u128() % i64::MAX as u128) as i64;
+        
+        let mut tx = pool.begin().await?;
+        
+        // Acquire exclusive advisory lock
+        sqlx::query("SELECT pg_advisory_xact_lock($1)")
+            .bind(lock_key)
+            .execute(&mut *tx)
+            .await?;
+        
+        // Update vault state within transaction
         sqlx::query(
             "UPDATE vaults SET locked_at = NULL, lock_reason = NULL, updated_at = NOW() 
              WHERE user_id = $1"
         )
         .bind(user_id)
-        .execute(pool)
+        .execute(&mut *tx)
         .await?;
-
+        
+        // Log unlock event
+        sqlx::query(
+            "INSERT INTO vault_lock_events (id, vault_id, locked_at, lock_reason, created_at)
+             SELECT gen_random_uuid(), id, NULL, 'unlocked', NOW() FROM vaults WHERE user_id = $1"
+        )
+        .bind(user_id)
+        .execute(&mut *tx)
+        .await?;
+        
+        tx.commit().await?;
         Ok(())
     }
 

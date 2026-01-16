@@ -197,8 +197,8 @@ export function QuestsClient() {
         setWallet(previousWallet);
         return;
       }
-      const response_data = await response.json() as { data: { result?: { xp_awarded?: number; coins_awarded?: number } } };
-      const result = response_data.data?.result;
+      const { data } = await response.json() as { data: { result?: { xp_awarded?: number; coins_awarded?: number } } };
+      const result = data?.result;
       if (result) {
         setWallet((prev) => ({
           coins: prev.coins + (result.coins_awarded || 0),
@@ -257,8 +257,8 @@ export function QuestsClient() {
     try {
       const response = await safeFetch(`${API_BASE_URL}/api/quests`);
       if (response.ok) {
-        const response_data = await response.json() as { data: { quests?: Record<string, unknown>[] } };
-        const apiQuests: Quest[] = (response_data.data?.quests || []).map((q: Record<string, unknown>) => ({
+        const { data } = await response.json() as { data: { quests?: Record<string, unknown>[] } };
+        const apiQuests: Quest[] = (data?.quests || []).map((q: Record<string, unknown>) => ({
           id: String(q.id || ""),
           title: String(q.title || ""),
           description: String(q.description || ""),
@@ -305,8 +305,8 @@ export function QuestsClient() {
         return;
       }
 
-      const response_data = await response.json() as { data: { quest?: Record<string, unknown> } };
-      const q = response_data.data?.quest || {};
+      const { data } = await response.json() as { data: { quest?: Record<string, unknown> } };
+      const q = data?.quest || {};
       const quest: Quest = {
         id: String(q.id || ""),
         title: String(q.title || ""),

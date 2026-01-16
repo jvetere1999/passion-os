@@ -123,19 +123,19 @@ export function AdminClient({ userEmail }: AdminClientProps = {}) {
     try {
       const response = await safeFetch(`${API_BASE_URL}/api/admin/${activeTab}`);
       if (response.ok) {
-        const data = await response.json() as { users?: User[]; quests?: Quest[]; feedback?: Feedback[]; skills?: SkillDefinition[] };
+        const { data } = await response.json() as { data: { users?: User[]; quests?: Quest[]; feedback?: Feedback[]; skills?: SkillDefinition[] } };
         switch (activeTab) {
           case "users":
-            setUsers(data.users || []);
+            setUsers(data?.users || []);
             break;
           case "quests":
-            setQuests(data.quests || []);
+            setQuests(data?.quests || []);
             break;
           case "feedback":
-            setFeedback(data.feedback || []);
+            setFeedback(data?.feedback || []);
             break;
           case "skills":
-            setSkills(data.skills || []);
+            setSkills(data?.skills || []);
             break;
         }
       }
@@ -216,7 +216,8 @@ export function AdminClient({ userEmail }: AdminClientProps = {}) {
         body: JSON.stringify({ approved }),
       });
       if (response.ok) {
-        const updated = await response.json() as User;
+        const { data } = await response.json() as { data: User };
+        const updated = data;
         setUsers((prev) =>
           prev.map((user) => (user.id === userId ? { ...user, approved: updated.approved } : user))
         );

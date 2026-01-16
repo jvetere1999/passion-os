@@ -167,8 +167,8 @@ export function PlannerClient({ initialEvents = [] }: PlannerClientProps) {
       setIsLoading(true);
       const response = await safeFetch(`${API_BASE_URL}/api/calendar`);
       if (response.ok) {
-        const response_data = await response.json() as { data: { events?: APICalendarEvent[] } };
-        const localEvents = (response_data.data?.events || []).map(apiEventToLocal);
+        const { data } = await response.json() as { data: { events?: APICalendarEvent[] } };
+        const localEvents = (data?.events || []).map(apiEventToLocal);
         setEvents(localEvents);
         setMemoryCache(PLANNER_CACHE_KEY, { events: localEvents });
       } else {
@@ -333,8 +333,8 @@ export function PlannerClient({ initialEvents = [] }: PlannerClientProps) {
           throw new Error(errorData.error || `Failed to update event: ${response.status}`);
         }
 
-        const response_data = await response.json() as { data: { event?: APICalendarEvent } };
-        const updatedEvent = apiEventToLocal(response_data.data?.event as APICalendarEvent);
+        const { data } = await response.json() as { data: { event?: APICalendarEvent } };
+        const updatedEvent = apiEventToLocal(data?.event as APICalendarEvent);
         setEvents(events.map((e) => (e.id === editingEvent.id ? updatedEvent : e)));
       } else {
         // Create new event
@@ -350,8 +350,8 @@ export function PlannerClient({ initialEvents = [] }: PlannerClientProps) {
           throw new Error(errorData.error || `Failed to create event: ${response.status}`);
         }
 
-        const response_data = await response.json() as { data: { event?: APICalendarEvent } };
-        const newEvent = apiEventToLocal(response_data.data?.event as APICalendarEvent);
+        const { data } = await response.json() as { data: { event?: APICalendarEvent } };
+        const newEvent = apiEventToLocal(data?.event as APICalendarEvent);
         setEvents([...events, newEvent]);
       }
 

@@ -63,7 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Sign in - redirect to backend OAuth endpoint
   const signIn = useCallback((provider: 'google' | 'azure' = 'google') => {
-    window.location.href = getSignInUrl(provider);
+    // Get current pathname to redirect back after auth
+    const redirectPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+    const redirectUrl = getSignInUrl(provider, redirectPath);
+    console.log('[AuthProvider] Redirecting to:', redirectUrl);
+    // Use window.location.href for full page redirect (only way to properly redirect to external OAuth)
+    window.location.href = redirectUrl;
   }, []);
 
   // Sign out - call backend and redirect

@@ -3297,6 +3297,63 @@ Users cannot access recovery codes in UI. Backend endpoints exist but no UI comp
 
 ---
 
+---
+
+### FRONT-001: Invalid Session Leads to Deadpage
+
+**Status**: Phase 2: DOCUMENT (Root Cause Analysis)
+
+**Severity**: HIGH (8/10 - Blocks All Users with Invalid Sessions)
+
+**Effort**: 0.5 hours
+
+**Impact**: Users with invalid session cookies see blank page instead of login redirect
+
+**Discovery**: 2026-01-16 (User Report: https://ignition.ecent.online/today with invalid session)
+
+**Phase 1: ISSUE** ✅
+
+User navigates to `/today` with an expired/invalid session cookie. Expected: Redirect to login. Actual: Blank/dead page.
+
+**Phase 2: DOCUMENT - Root Cause Analysis** ✅
+
+**Current Flow**:
+```
+1. User has invalid session cookie in browser
+2. Browser navigates to https://ignition.ecent.online/today
+3. (app)/layout.tsx loads:
+   - Calls useAuth() which calls AuthProvider
+   - AuthProvider.fetchSession() calls getSession()
+4. getSession() at /auth/session:
+   - Backend returns 401 or { user: null }
+   - clearSessionCookie() is called
+   - Returns { user: null }
+5. AuthProvider sets user=null, isLoading=false, isAuthenticated=false
+6. (app)/layout.tsx useEffect triggers:
+   - Calls signIn() which sets window.location.href to OAuth URL
+7. Expected: Browser redirects to Google/Azure OAuth
+8. Actual: Shows blank/dead page
+```
+
+**Root Cause Hypothesis**:
+- signIn() is called but redirect doesn't occur before component unmounts
+- Possible race condition: layout returns `null` before location.href takes effect
+- Browser might be catching navigation early and rendering nothing
+- Or: OAuth redirect URL is invalid/malformed
+
+**Code Locations**:
+- [app/frontend/src/lib/auth/AuthProvider.tsx:79-82](app/frontend/src/lib/auth/AuthProvider.tsx#L79-L82) - signIn() implementation
+- [app/frontend/src/lib/auth/api-auth.ts:173-188](app/frontend/src/lib/auth/api-auth.ts#L173-L188) - getSignInUrl() implementation
+- [app/frontend/src/app/(app)/layout.tsx:25-40](app/frontend/src/app/(app)/layout.tsx#L25-L40) - Session guard logic
+
+**Phase 3: EXPLORER** - Next step needed
+
+**Phase 4: DECISION** - Will determine based on Phase 3 findings
+
+**Phase 5: FIX** - Pending
+
+---
+
 ## NOTES
 
 - All priorities based on security risk + user impact + implementation effort
@@ -3311,4 +3368,5 @@ Users cannot access recovery codes in UI. Backend endpoints exist but no UI comp
 - Common thread: All failures prevent data saving or are 500 errors on creation endpoints
 - **BACK-016 STATUS (2026-01-16)**: Phase 5: FIX ✅ COMPLETE - Backend recovery code system fully implemented and validated (461 lines, 0 errors)
 - **BACK-017 STATUS (2026-01-16)**: Phase 5: FIX ✅ COMPLETE - Frontend recovery code UI fully implemented and validated (759 lines, 0 errors)
+- **FRONT-001 STATUS (2026-01-16)**: Phase 2: DOCUMENT - Invalid session deadpage root cause being analyzed
 - **Current Progress**: 23/145 tasks complete (15.9%) - BACK-016 & BACK-017 both ready for production integration

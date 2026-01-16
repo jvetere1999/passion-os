@@ -186,6 +186,68 @@ impl BookRepo {
 
         Ok(result.rows_affected() > 0)
     }
+
+    /// Update reading progress on a book
+    pub async fn update_progress(
+        pool: &PgPool,
+        book_id: Uuid,
+        user_id: Uuid,
+        current_page: i32,
+    ) -> Result<Book, AppError> {
+        let book = Self::get_by_id(pool, book_id, user_id).await?;
+        let book = book.ok_or_else(|| AppError::NotFound("Book not found".to_string()))?;
+
+        // Validate page number
+        if current_page < 0 {
+            return Err(AppError::BadRequest("Page number cannot be negative".to_string()));
+        }
+
+        if let Some(total) = book.total_pages {
+            if current_page > total {
+                return Err(AppError::BadRequest(format!(
+                    "Current page ({}) cannot exceed total pages ({})",
+                    current_page, total
+                )));
+            }
+        }
+
+        // Check if book should be marked as completed
+        let new_status = if let Some(total) = book.total_pages {
+            if current_page >= total && book.status != "completed" {
+                "completed"
+            } else if book.status == "want_to_read" && current_page > 0 {
+                "reading"
+            } else {
+                book.status.as_str()
+            }
+        } else if book.status == "want_to_read" && current_page > 0 {
+            "reading"
+        } else {
+            book.status.as_str()
+        };
+
+        // Update progress
+        let updated = sqlx::query_as::<_, Book>(
+            r#"UPDATE books
+               SET current_page = $1,
+                   status = $2,
+                   started_at = CASE WHEN started_at IS NULL AND $1 > 0 THEN NOW() ELSE started_at END,
+                   completed_at = CASE WHEN $2 = 'completed' AND completed_at IS NULL THEN NOW() ELSE completed_at END,
+                   updated_at = NOW()
+               WHERE id = $3 AND user_id = $4
+               RETURNING id, user_id, title, author, total_pages, current_page,
+                         status, started_at, completed_at, rating, notes,
+                         cover_blob_id, created_at, updated_at"#,
+        )
+        .bind(current_page)
+        .bind(new_status)
+        .bind(book_id)
+        .bind(user_id)
+        .fetch_one(pool)
+        .await?;
+
+        Ok(updated)
+    }
 }
 
 // ============================================================================
@@ -359,68 +421,6 @@ impl ReadingSessionRepo {
             total_pages_read: stats.total_pages_read.unwrap_or(0),
             total_reading_time_minutes: reading_time.total.unwrap_or(0),
         })
-    }
-
-    /// Update reading progress on a book
-    pub async fn update_progress(
-        pool: &PgPool,
-        book_id: Uuid,
-        user_id: Uuid,
-        current_page: i32,
-    ) -> Result<Book, AppError> {
-        let book = Self::get_by_id(pool, book_id, user_id).await?;
-        let book = book.ok_or_else(|| AppError::NotFound("Book not found".to_string()))?;
-
-        // Validate page number
-        if current_page < 0 {
-            return Err(AppError::BadRequest("Page number cannot be negative".to_string()));
-        }
-
-        if let Some(total) = book.total_pages {
-            if current_page > total {
-                return Err(AppError::BadRequest(format!(
-                    "Current page ({}) cannot exceed total pages ({})",
-                    current_page, total
-                )));
-            }
-        }
-
-        // Check if book should be marked as completed
-        let new_status = if let Some(total) = book.total_pages {
-            if current_page >= total && book.status != "completed" {
-                "completed"
-            } else if book.status == "want_to_read" && current_page > 0 {
-                "reading"
-            } else {
-                book.status.as_str()
-            }
-        } else if book.status == "want_to_read" && current_page > 0 {
-            "reading"
-        } else {
-            book.status.as_str()
-        };
-
-        // Update progress
-        let updated = sqlx::query_as::<_, Book>(
-            r#"UPDATE books
-               SET current_page = $1,
-                   status = $2,
-                   started_at = CASE WHEN started_at IS NULL AND $1 > 0 THEN NOW() ELSE started_at END,
-                   completed_at = CASE WHEN $2 = 'completed' AND completed_at IS NULL THEN NOW() ELSE completed_at END,
-                   updated_at = NOW()
-               WHERE id = $3 AND user_id = $4
-               RETURNING id, user_id, title, author, total_pages, current_page,
-                         status, started_at, completed_at, rating, notes,
-                         cover_blob_id, created_at, updated_at"#,
-        )
-        .bind(current_page)
-        .bind(new_status)
-        .bind(book_id)
-        .bind(user_id)
-        .fetch_one(pool)
-        .await?;
-
-        Ok(updated)
     }
 }
 

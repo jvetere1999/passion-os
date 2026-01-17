@@ -10,6 +10,7 @@ use axum::{
     Router,
 };
 use std::sync::Arc;
+use std::str::FromStr;
 
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
@@ -29,16 +30,23 @@ async fn lock_vault(
         return Err(AppError::BadRequest("Lock reason cannot be empty".to_string()));
     }
 
+    // Parse lock reason using strum's FromStr derive
     let reason = LockReason::from_str(&req.reason)
-        .ok_or(AppError::BadRequest("Invalid lock reason".to_string()))?;
+        .map_err(|_| {
+            AppError::BadRequest(
+                format!("Invalid lock reason. Valid reasons: idle, backgrounded, logout, force, rotation, admin")
+            )
+        })?;
 
     VaultRepo::lock_vault(&state.db, auth.user_id, reason).await
-        .map_err(|e| AppError::Internal(format!("Failed to lock vault: {}", e)))?;
+        .map_err(|e| {
+            tracing::error!("Failed to lock vault: {}", e);
+            AppError::Internal("Failed to lock vault".to_string())
+        })?;
 
     Ok((
         StatusCode::OK,
         Json(serde_json::json!({
-            "success": true,
             "message": "Vault locked"
         })),
     ))
@@ -51,28 +59,55 @@ async fn unlock_vault(
     Extension(auth): Extension<AuthContext>,
     Json(req): Json<UnlockVaultRequest>,
 ) -> Result<(StatusCode, Json<UnlockVaultResponse>), AppError> {
-    let vault = VaultRepo::get_by_user_id(&state.db, auth.user_id).await
-        .map_err(|e| AppError::Internal(format!("Failed to fetch vault: {}", e)))?
-        .ok_or(AppError::Unauthorized("Vault not found".to_string()))?;
-
-    // Verify passphrase against vault.passphrase_hash
-    // Using bcrypt with cost 12 (as per E2EE spec)
+    // Validate passphrase input
     if req.passphrase.is_empty() {
         return Err(AppError::BadRequest("Passphrase cannot be empty".to_string()));
     }
-    
-    // Passphrase verification is implemented in crypto service layer
-    // This ensures vault unlock is properly guarded by passphrase check
-    
-    // Unlock vault within transaction (atomic operation with advisory lock)
+
+    // Fetch vault
+    let vault = VaultRepo::get_by_user_id(&state.db, auth.user_id).await
+        .map_err(|e| {
+            tracing::error!("Failed to fetch vault: {}", e);
+            AppError::Internal("Failed to fetch vault".to_string())
+        })?
+        .ok_or(AppError::Unauthorized("Vault not found".to_string()))?;
+
+    // Verify passphrase using bcrypt (CLEANUP-1: security-critical)
+    // The vault stores passphrase_hash created with bcrypt cost 12
+    let passphrase_valid = bcrypt::verify(&req.passphrase, &vault.passphrase_hash)
+        .map_err(|e| {
+            tracing::error!("Passphrase verification failed: {}", e);
+            AppError::Internal("Passphrase verification failed".to_string())
+        })?;
+
+    if !passphrase_valid {
+        // Don't reveal whether vault exists, just return generic unauthorized
+        return Err(AppError::Unauthorized("Invalid passphrase".to_string()));
+    }
+
+    // Passphrase verified - unlock vault within transaction (atomic operation with advisory lock)
     VaultRepo::unlock_vault(&state.db, auth.user_id).await
-        .map_err(|e| AppError::Internal(format!("Failed to unlock vault: {}", e)))?;
+        .map_err(|e| {
+            tracing::error!("Failed to unlock vault: {}", e);
+            AppError::Internal("Failed to unlock vault".to_string())
+        })?;
+
+    // Fetch updated lock state to return in response
+    let lock_state = VaultRepo::get_vault_state_full(&state.db, auth.user_id).await
+        .map_err(|e| {
+            tracing::error!("Failed to fetch vault state: {}", e);
+            AppError::Internal("Failed to fetch vault state".to_string())
+        })?
+        .unwrap_or_else(|| crate::db::vault_models::VaultLockState {
+            locked_at: None,
+            lock_reason: None,
+        });
 
     Ok((
         StatusCode::OK,
         Json(UnlockVaultResponse {
-            success: true,
-            message: "Vault unlocked successfully".to_string(),
+            locked_at: lock_state.locked_at,
+            lock_reason: lock_state.lock_reason,
         }),
     ))
 }

@@ -95,110 +95,74 @@ pub struct ErrorResponse {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
+        // Log error with consistent format
+        self.log_error();
+
         let (status, error_type, message) = match &self {
-            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, "not_found", msg.clone()),
+            AppError::NotFound(msg) => (StatusCode::NOT_FOUND, error_types::NOT_FOUND, msg.clone()),
             AppError::Unauthorized(msg) => (
                 StatusCode::UNAUTHORIZED,
-                "unauthorized",
+                error_types::UNAUTHORIZED,
                 msg.clone(),
             ),
-            AppError::Forbidden => (StatusCode::FORBIDDEN, "forbidden", "Forbidden".to_string()),
+            AppError::Forbidden => (StatusCode::FORBIDDEN, error_types::FORBIDDEN, "forbidden".to_string()),
             AppError::CsrfViolation => (
                 StatusCode::FORBIDDEN,
-                "csrf_violation",
+                error_types::CSRF_VIOLATION,
                 "CSRF validation failed".to_string(),
             ),
             AppError::InvalidOrigin => (
                 StatusCode::FORBIDDEN,
-                "invalid_origin",
-                "Invalid origin".to_string(),
+                error_types::INVALID_ORIGIN,
+                "invalid origin".to_string(),
             ),
-            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, "bad_request", msg.clone()),
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, error_types::BAD_REQUEST, msg.clone()),
             AppError::Validation(msg) => (
                 StatusCode::UNPROCESSABLE_ENTITY,
-                "validation_error",
+                error_types::VALIDATION_ERROR,
                 msg.clone(),
             ),
-            AppError::OAuthError(msg) => {
-                tracing::error!("OAuth error: {}", msg);
-                (StatusCode::BAD_REQUEST, "oauth_error", msg.clone())
-            }
+            AppError::OAuthError(msg) => (
+                StatusCode::BAD_REQUEST,
+                error_types::OAUTH_ERROR,
+                msg.clone(),
+            ),
             AppError::SessionExpired => (
                 StatusCode::UNAUTHORIZED,
-                "session_expired",
-                "Session has expired".to_string(),
+                error_types::SESSION_EXPIRED,
+                "session has expired".to_string(),
             ),
-            AppError::Database(e) => {
-                tracing::error!(
-                    error.type = "database",
-                    error.message = %e,
-                    "Database error (legacy)"
-                );
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "database_error",
-                    "Database error".to_string(),
-                )
-            }
+            AppError::Database(e) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                error_types::DATABASE_ERROR,
+                "database error".to_string(),
+            ),
             AppError::DatabaseWithContext {
                 operation,
                 table,
-                message,
-                user_id,
-                entity_id,
-            } => {
-                // Structured error logging for observability
-                tracing::error!(
-                    error.type = "database",
-                    db.operation = %operation,
-                    db.table = %table,
-                    db.user_id = ?user_id,
-                    db.entity_id = ?entity_id,
-                    error.message = %message,
-                    "Database query failed"
-                );
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "database_error",
-                    format!("Database error in {} on {}", operation, table),
-                )
-            }
-            AppError::Internal(e) => {
-                tracing::error!(
-                    error.type = "internal",
-                    error.message = %e,
-                    "Internal error"
-                );
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "internal_error",
-                    "Internal server error".to_string(),
-                )
-            }
-            AppError::Config(msg) => {
-                tracing::error!(
-                    error.type = "config",
-                    error.message = %msg,
-                    "Configuration error"
-                );
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "config_error",
-                    "Configuration error".to_string(),
-                )
-            }
-            AppError::Storage(e) => {
-                tracing::error!(
-                    error.type = "storage",
-                    error.message = %e,
-                    "Storage error"
-                );
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "storage_error",
-                    "Storage error".to_string(),
-                )
-            }
+                message: _,
+                user_id: _,
+                entity_id: _,
+            } => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                error_types::DATABASE_ERROR,
+                format!("database error in {} on {}", operation, table),
+            ),
+            AppError::Internal(_e) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                error_types::INTERNAL_ERROR,
+                "internal server error".to_string(),
+            ),
+            AppError::Config(_msg) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                error_types::CONFIG_ERROR,
+                "configuration error".to_string(),
+            ),
+            AppError::Storage(_e) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                error_types::STORAGE_ERROR,
+                "storage error".to_string(),
+            )
         };
 
         let body = ErrorResponse {
@@ -334,5 +298,118 @@ impl AppError {
     /// Create Storage error
     pub fn storage(msg: impl Into<String>) -> Self {
         AppError::Storage(msg.into())
+    }
+
+    /// Log error with consistent structured format
+    fn log_error(&self) {
+        match self {
+            // Client errors: warn level (user action caused them)
+            AppError::NotFound(msg) => {
+                tracing::warn!(
+                    error.type = error_types::NOT_FOUND,
+                    error.message = %msg,
+                    "Resource not found"
+                );
+            }
+            AppError::Unauthorized(msg) => {
+                tracing::warn!(
+                    error.type = error_types::UNAUTHORIZED,
+                    error.message = %msg,
+                    "Unauthorized access attempt"
+                );
+            }
+            AppError::Forbidden => {
+                tracing::warn!(
+                    error.type = error_types::FORBIDDEN,
+                    "Forbidden access attempt"
+                );
+            }
+            AppError::CsrfViolation => {
+                tracing::warn!(
+                    error.type = error_types::CSRF_VIOLATION,
+                    "CSRF validation failed"
+                );
+            }
+            AppError::InvalidOrigin => {
+                tracing::warn!(
+                    error.type = error_types::INVALID_ORIGIN,
+                    "Invalid origin in request"
+                );
+            }
+            AppError::BadRequest(msg) => {
+                tracing::warn!(
+                    error.type = error_types::BAD_REQUEST,
+                    error.message = %msg,
+                    "Bad request"
+                );
+            }
+            AppError::Validation(msg) => {
+                tracing::warn!(
+                    error.type = error_types::VALIDATION_ERROR,
+                    error.message = %msg,
+                    "Validation failed"
+                );
+            }
+            AppError::SessionExpired => {
+                tracing::warn!(
+                    error.type = error_types::SESSION_EXPIRED,
+                    "Session has expired"
+                );
+            }
+
+            // Server errors: error level (system issue)
+            AppError::OAuthError(msg) => {
+                tracing::error!(
+                    error.type = error_types::OAUTH_ERROR,
+                    error.message = %msg,
+                    "OAuth error"
+                );
+            }
+            AppError::Database(e) => {
+                tracing::error!(
+                    error.type = error_types::DATABASE_ERROR,
+                    error.message = %e,
+                    "Database error (legacy)"
+                );
+            }
+            AppError::DatabaseWithContext {
+                operation,
+                table,
+                message,
+                user_id,
+                entity_id,
+            } => {
+                tracing::error!(
+                    error.type = error_types::DATABASE_ERROR,
+                    db.operation = %operation,
+                    db.table = %table,
+                    db.user_id = ?user_id,
+                    db.entity_id = ?entity_id,
+                    error.message = %message,
+                    "Database query failed"
+                );
+            }
+            AppError::Internal(e) => {
+                tracing::error!(
+                    error.type = error_types::INTERNAL_ERROR,
+                    error.message = %e,
+                    "Internal error"
+                );
+            }
+            AppError::Config(msg) => {
+                tracing::error!(
+                    error.type = error_types::CONFIG_ERROR,
+                    error.message = %msg,
+                    "Configuration error"
+                );
+            }
+            AppError::Storage(e) => {
+                tracing::error!(
+                    error.type = error_types::STORAGE_ERROR,
+                    error.message = %e,
+                    "Storage error"
+                );
+            }
+        }
     }
 }

@@ -6,57 +6,46 @@ use uuid::Uuid;
 /// Default enforcement tier for new vaults (0 = no tier enforcement)
 const DEFAULT_ENFORCE_TIER: i32 = 0;
 
+/// Vault table column list (single source of truth for schema queries)
+const VAULT_COLUMNS: &str = 
+    "id, user_id, passphrase_salt, passphrase_hash, key_derivation_params, \
+     crypto_policy_version, locked_at, lock_reason, enforce_tier, last_rotated_at, \
+     next_rotation_due, created_at, updated_at";
+
 pub struct VaultRepo;
 
 impl VaultRepo {
     /// Get vault by user_id
     pub async fn get_by_user_id(pool: &PgPool, user_id: Uuid) -> Result<Option<Vault>, sqlx::Error> {
         sqlx::query_as::<_, Vault>(
-            "SELECT id, user_id, passphrase_salt, passphrase_hash, key_derivation_params, 
-                    crypto_policy_version, locked_at, lock_reason, enforce_tier, created_at, updated_at
-             FROM vaults WHERE user_id = $1"
+            &format!("SELECT {} FROM vaults WHERE user_id = $1", VAULT_COLUMNS)
         )
         .bind(user_id)
         .fetch_optional(pool)
         .await
     }
 
-    /// Get vault lock state (only locked_at and lock_reason)
-    pub async fn get_lock_state(pool: &PgPool, user_id: Uuid) -> Result<Option<VaultLockState>, sqlx::Error> {
-        #[derive(sqlx::FromRow)]
-        struct LockStateRow {
-            locked_at: Option<chrono::DateTime<chrono::Utc>>,
-            lock_reason: Option<String>,
-        }
-        
-        let row = sqlx::query_as::<_, LockStateRow>(
+    /// Get complete vault lock state (unified query, replaces separate get_lock_state + is_locked)
+    /// Returns lock status with all relevant context for sync operations
+    pub async fn get_vault_state_full(pool: &PgPool, user_id: Uuid) -> Result<Option<VaultLockState>, sqlx::Error> {
+        sqlx::query_as::<_, VaultLockState>(
             "SELECT locked_at, lock_reason FROM vaults WHERE user_id = $1"
         )
         .bind(user_id)
         .fetch_optional(pool)
-        .await?;
-
-        Ok(row.map(|r| VaultLockState {
-            locked_at: r.locked_at,
-            lock_reason: r.lock_reason,
-        }))
+        .await
     }
 
-    /// Check if vault is locked
+    /// Check if vault is locked (convenience method using get_vault_state_full)
     pub async fn is_locked(pool: &PgPool, user_id: Uuid) -> Result<bool, sqlx::Error> {
-        #[derive(sqlx::FromRow)]
-        struct IsLockedRow {
-            is_locked: Option<bool>,
-        }
-        
-        let result = sqlx::query_as::<_, IsLockedRow>(
-            "SELECT (locked_at IS NOT NULL) as is_locked FROM vaults WHERE user_id = $1"
-        )
-        .bind(user_id)
-        .fetch_optional(pool)
-        .await?;
+        let state = Self::get_vault_state_full(pool, user_id).await?;
+        Ok(state.as_ref().map(|s| s.locked_at.is_some()).unwrap_or(false))
+    }
 
-        Ok(result.map(|r| r.is_locked.unwrap_or(false)).unwrap_or(false))
+    /// Get vault lock state (deprecated: use get_vault_state_full instead)
+    #[deprecated(since = "0.2.0", note = "Use get_vault_state_full for unified query")]
+    pub async fn get_lock_state(pool: &PgPool, user_id: Uuid) -> Result<Option<VaultLockState>, sqlx::Error> {
+        Self::get_vault_state_full(pool, user_id).await
     }
 
     /// Lock vault with reason (wrapped in transaction with advisory lock)
@@ -78,15 +67,20 @@ impl VaultRepo {
             .await?;
         
         // Update vault state within transaction
-        sqlx::query(
+        let result = sqlx::query(
             "UPDATE vaults SET locked_at = $1, lock_reason = $2, updated_at = NOW() 
              WHERE user_id = $3"
         )
         .bind(Utc::now())
-        .bind(reason.as_str())
+        .bind(reason.as_ref())
         .bind(user_id)
         .execute(&mut *tx)
         .await?;
+        
+        // Validate vault was found and updated (CLEANUP-4: prevent silent failures)
+        if result.rows_affected() == 0 {
+            return Err(sqlx::Error::RowNotFound);
+        }
         
         // Log lock event
         sqlx::query(
@@ -94,7 +88,7 @@ impl VaultRepo {
              SELECT gen_random_uuid(), id, NOW(), $2, NOW() FROM vaults WHERE user_id = $1"
         )
         .bind(user_id)
-        .bind(reason.as_str())
+        .bind(reason.as_ref())
         .execute(&mut *tx)
         .await?;
         
@@ -201,7 +195,7 @@ impl VaultRepo {
              VALUES (gen_random_uuid(), $1, NOW(), $2, $3, NOW())"
         )
         .bind(vault_id)
-        .bind(reason.as_str())
+        .bind(reason.as_ref())
         .bind(device_id)
         .execute(pool)
         .await?;

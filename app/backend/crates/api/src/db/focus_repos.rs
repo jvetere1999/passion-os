@@ -12,6 +12,37 @@ use super::gamification_repos::GamificationRepo;
 use crate::error::AppError;
 
 // ============================================================================
+// REWARD CALCULATION CONSTANTS
+// ============================================================================
+
+/// Minimum XP earned for completing a focus session
+const FOCUS_XP_MIN: i32 = 5;
+
+/// XP earned per minute of focus time
+/// Formula: max(FOCUS_XP_MIN, session_minutes)
+const FOCUS_XP_PER_MINUTE: i32 = 1;
+
+/// Minimum coins earned for completing a focus session
+const FOCUS_COINS_MIN: i32 = 2;
+
+/// Coins earned per 5 minutes (300 seconds) of focus
+/// Formula: max(FOCUS_COINS_MIN, session_seconds / 300)
+const FOCUS_COINS_PER_5MINUTES: i32 = 1;
+
+/// XP earned for completing a short break (5 minutes)
+const BREAK_XP: i32 = 2;
+
+/// XP earned for completing a long break (15 minutes)
+const LONG_BREAK_XP: i32 = 3;
+
+/// Coins earned for completing a long break
+const LONG_BREAK_COINS: i32 = 1;
+
+/// Session expiry safety buffer (2x duration)
+/// Allows for user delays without immediate expiry
+const SESSION_EXPIRY_BUFFER_MULTIPLIER: i32 = 2;
+
+// ============================================================================
 // FOCUS STREAK HELPER
 // ============================================================================
 
@@ -214,7 +245,7 @@ impl FocusSessionRepo {
             .await?;
 
         // Calculate expiry (2x duration as buffer)
-        let expires_at = Utc::now() + Duration::seconds((req.duration_seconds * 2) as i64);
+        let expires_at = Utc::now() + Duration::seconds((req.duration_seconds * SESSION_EXPIRY_BUFFER_MULTIPLIER) as i64);
 
         // Create new session
         let session = sqlx::query_as::<_, FocusSession>(
@@ -330,12 +361,12 @@ impl FocusSessionRepo {
         // Calculate rewards based on mode and duration
         let (xp, coins) = match session.mode.as_str() {
             "focus" => {
-                let xp = std::cmp::max(5, session.duration_seconds / 60);
-                let coins = std::cmp::max(2, session.duration_seconds / 300);
+                let xp = std::cmp::max(FOCUS_XP_MIN, session.duration_seconds / 60);
+                let coins = std::cmp::max(FOCUS_COINS_MIN, session.duration_seconds / 300);
                 (xp, coins)
             }
-            "break" => (2, 0),
-            "long_break" => (3, 1),
+            "break" => (BREAK_XP, 0),
+            "long_break" => (LONG_BREAK_XP, LONG_BREAK_COINS),
             _ => (0, 0),
         };
 
@@ -578,9 +609,39 @@ impl FocusPauseRepo {
 
     /// Pause active session
     /// 
-    /// Records remaining time using the absolute expires_at timestamp.
-    /// This allows resume_session() to recalculate accurately without time drift
+    /// Freezes remaining session time for user pause/resume cycles.
+    /// 
+    /// # Time Drift Prevention
+    /// Records remaining time using the absolute `expires_at` timestamp as the source of truth.
+    /// This allows `resume_session()` to recalculate remaining time accurately without time drift
     /// even after multiple pause/resume cycles.
+    ///
+    /// **Why This Matters**: If we relied on `paused_remaining_seconds` directly, multiple
+    /// pause/resume cycles would accumulate timing errors because `paused_remaining_seconds`
+    /// becomes stale the moment the user resumes and time passes.
+    ///
+    /// **Example of Time Drift (WRONG approach)**:
+    /// ```
+    /// 1. Start session: expires_at = 10:25 (25 minutes)
+    /// 2. Pause at 10:05: paused_remaining_seconds = 20 min ✓
+    /// 3. Resume at 10:10: new expires_at = 10:30 (20 min from now) ✓
+    /// 4. User works, pauses again at 10:30: paused_remaining_seconds = 0 min ✓
+    /// 5. Resume at 10:35: Uses stale paused_remaining_seconds (0 min, WRONG!)
+    /// ```
+    ///
+    /// **Example of No Drift (CORRECT approach - this implementation)**:
+    /// ```
+    /// 1. Start: expires_at = 10:25
+    /// 2. Pause at 10:05: Recalculate from expires_at = 20 min remaining ✓
+    /// 3. Resume at 10:10: Recalculate from expires_at = 15 min remaining ✓
+    /// 4. Pause at 10:30: Recalculate from expires_at = 0 min remaining ✓
+    /// 5. Resume at 10:35: Recalculate from expires_at = 0 min (already expired) ✓
+    /// ```
+    /// 
+    /// # Side Effects
+    /// - Updates focus_sessions: status='paused', paused_remaining_seconds calculated
+    /// - Upserts focus_pause_state: stores copy for quick pause state lookup
+    /// - Does NOT change expires_at (crucial for preventing time drift on resume)
     pub async fn pause_session(pool: &PgPool, user_id: Uuid) -> Result<FocusPauseState, AppError> {
         // Get active session
         let session = FocusSessionRepo::get_active_session(pool, user_id).await?;
@@ -635,8 +696,36 @@ impl FocusPauseRepo {
 
     /// Resume paused session
     /// 
-    /// Fixes time drift by recalculating remaining time from session data
-    /// instead of relying on potentially stale pause_state values
+    /// Unfreezes and continues a paused focus session.
+    /// 
+    /// # Time Drift Prevention (Paired with pause_session)
+    /// Recalculates remaining time from the original session's `expires_at` timestamp,
+    /// NOT from potentially stale `pause_state` values. This ensures accuracy across
+    /// multiple pause/resume cycles without accumulated timing errors.
+    ///
+    /// **Why Not Use pause_state.time_remaining_seconds?**
+    /// - If user pauses, resumes, does more work, then pauses again:
+    ///   - First pause: paused_remaining_seconds = 20 min ✓
+    ///   - First resume + work: 10 minutes pass
+    ///   - Second pause: paused_remaining_seconds = 10 min (different from first pause)
+    /// - Without recalculating from expires_at, we'd use stale data: 20 min instead of 10 min
+    /// - This implementation always recalculates: (expires_at - now) = accurate remaining time
+    ///
+    /// # Behavior
+    /// 1. Get pause_state (must exist)
+    /// 2. Fetch original focus_sessions record to get absolute expires_at
+    /// 3. Recalculate: remaining = (expires_at - now) in seconds
+    /// 4. Set new expires_at: now + remaining seconds
+    /// 5. Update focus_sessions: status='active', clear paused_at
+    /// 6. Delete focus_pause_state (cleanup)
+    ///
+    /// # Side Effects
+    /// - Updates focus_sessions: status='active', expires_at=recalculated, paused_at=NULL
+    /// - Deletes focus_pause_state record
+    /// - Session continues with accurate remaining time
+    ///
+    /// # Returns
+    /// Updated FocusSession with new expires_at and active status
     pub async fn resume_session(pool: &PgPool, user_id: Uuid) -> Result<FocusSession, AppError> {
         let pause_state = Self::get_pause_state(pool, user_id).await?;
         let pause_state = pause_state

@@ -14,6 +14,11 @@
 //! 2. Fast queries - indexed lookups, no joins where possible
 //! 3. Cache-friendly - includes ETag/Last-Modified for conditional requests
 //! 4. Single endpoint - one request to get all poll data
+//!
+//! DEPRECATION NOTICE:
+//! Individual endpoints (/progress, /badges, /focus-status, /plan-status, /session) are 
+//! DEPRECATED as of v1.5. Use /api/sync/poll instead to get all data in a single request.
+//! These endpoints will be removed in v2.0. They are maintained for backward compatibility only.
 
 use std::sync::Arc;
 
@@ -179,10 +184,13 @@ async fn poll_all(
 }
 
 // ============================================
-// Individual Endpoints
+// Individual Endpoints (DEPRECATED)
 // ============================================
 
 /// GET /api/sync/progress
+/// 
+/// ⚠️ **DEPRECATED** as of v1.5. Use `/api/sync/poll` instead to get all data in a single request.
+/// This endpoint will be removed in v2.0.
 async fn get_progress(
     State(state): State<Arc<AppState>>,
     Extension(auth): Extension<AuthContext>,
@@ -192,6 +200,9 @@ async fn get_progress(
 }
 
 /// GET /api/sync/badges
+/// 
+/// ⚠️ **DEPRECATED** as of v1.5. Use `/api/sync/poll` instead to get all data in a single request.
+/// This endpoint will be removed in v2.0.
 async fn get_badges(
     State(state): State<Arc<AppState>>,
     Extension(auth): Extension<AuthContext>,
@@ -201,6 +212,9 @@ async fn get_badges(
 }
 
 /// GET /api/sync/focus-status
+/// 
+/// ⚠️ **DEPRECATED** as of v1.5. Use `/api/sync/poll` instead to get all data in a single request.
+/// This endpoint will be removed in v2.0.
 async fn get_focus_status(
     State(state): State<Arc<AppState>>,
     Extension(auth): Extension<AuthContext>,
@@ -210,6 +224,9 @@ async fn get_focus_status(
 }
 
 /// GET /api/sync/plan-status
+/// 
+/// ⚠️ **DEPRECATED** as of v1.5. Use `/api/sync/poll` instead to get all data in a single request.
+/// This endpoint will be removed in v2.0.
 async fn get_plan_status(
     State(state): State<Arc<AppState>>,
     Extension(auth): Extension<AuthContext>,
@@ -697,7 +714,7 @@ async fn fetch_unread_inbox_count(pool: &PgPool, user_id: Uuid) -> Result<i32, A
     .bind(INBOX_FILTER_UNPROCESSED)
     .fetch_one(pool)
     .await
-    .map_err(|e| AppError::Database(format!("fetch_unread_inbox_count: {}", e)))?;
+    .map_err(|e| AppError::Database(format!("fetch_unread_inbox_count: failed to count unprocessed items: {}", e)))?;
     
     Ok(count as i32)
 }
@@ -729,7 +746,7 @@ async fn fetch_active_quests_count(pool: &PgPool, user_id: Uuid) -> Result<i32, 
     .bind(QUEST_STATUS_ACCEPTED)
     .fetch_one(pool)
     .await
-    .map_err(|e| AppError::Database(format!("fetch_active_quests_count: {}", e)))?;
+    .map_err(|e| AppError::Database(format!("fetch_active_quests_count: failed to count accepted quests: {}", e)))?;
     
     Ok(count as i32)
 }
@@ -1015,6 +1032,11 @@ fn generate_etag(
 
 /// GET /sync/session
 /// Get current user session state
+///
+/// ⚠️ **DEPRECATED** as of v1.5. This endpoint returns minimal session info (user_id, authenticated flag).
+/// Use `/api/sync/poll` instead to get comprehensive user profile data (name, email, theme, image, etc.)
+/// and other sync state information in a single request.
+/// This endpoint will be removed in v2.0.
 async fn get_session(
     Extension(user): Extension<crate::middleware::auth::AuthContext>,
 ) -> Json<serde_json::Value> {

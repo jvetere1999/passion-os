@@ -28,6 +28,10 @@ rust-s3.workspace = true
 # HTTP client
 reqwest.workspace = true
 
+# Enum serialization (strum)
+strum.workspace = true
+strum_macros = "0.26"
+
 # OAuth
 oauth2.workspace = true
 url.workspace = true

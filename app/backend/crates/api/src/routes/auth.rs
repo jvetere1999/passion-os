@@ -211,9 +211,18 @@ async fn signin_azure(
 }
 
 /// OAuth callback query parameters
+/// Handles both success and error cases per OAuth 2.0 spec (RFC 6749)
 #[derive(Deserialize)]
 struct OAuthCallback {
-    code: String,
+    // Success case parameters
+    code: Option<String>,
+    
+    // Error case parameters (RFC 6749 Section 4.1.2.1)
+    error: Option<String>,
+    error_description: Option<String>,
+    error_uri: Option<String>,
+    
+    // Always present in both cases
     state: String,
 }
 
@@ -240,6 +249,55 @@ async fn handle_google_callback(
     state: &Arc<AppState>,
     params: OAuthCallback,
 ) -> AppResult<Response> {
+    // RFC 6749 Section 4.1.2.1: Handle OAuth error response
+    if let Some(error) = params.error {
+        let error_desc = params.error_description
+            .as_deref()
+            .unwrap_or(&error);
+        
+        tracing::warn!(
+            oauth_error = %error,
+            oauth_error_description = %error_desc,
+            provider = "Google",
+            "OAuth authorization failed at provider"
+        );
+        
+        // Map specific OAuth errors to user-friendly messages
+        let (error_code, message) = match error.as_str() {
+            "access_denied" => (
+                "OAuthDenied",
+                "You denied the sign-in request. Please try again if you'd like to proceed.",
+            ),
+            "server_error" => (
+                "OAuthServerError",
+                "Google encountered an error. Please try again in a moment.",
+            ),
+            "temporarily_unavailable" => (
+                "OAuthUnavailable",
+                "Google is temporarily unavailable. Please try again later.",
+            ),
+            _ => (
+                "OAuthError",
+                "Sign-in failed. Please try again.",
+            ),
+        };
+        
+        let error_url = format!(
+            "{}/auth/error?error={}&provider=Google&details={}",
+            state.config.server.frontend_url,
+            error_code,
+            urlencoding::encode(message)
+        );
+        
+        return Ok(Redirect::temporary(&error_url).into_response());
+    }
+    
+    // Success path: code must be present
+    let code = params.code.ok_or_else(|| {
+        tracing::warn!(state_key = %params.state, "OAuth callback missing both code and error");
+        AppError::OAuthError("Invalid OAuth response: missing authorization code".to_string())
+    })?;
+
     tracing::debug!(state_key = %params.state, "Looking up OAuth state from database");
     
     // Validate state and get stored OAuth state from database
@@ -260,7 +318,7 @@ async fn handle_google_callback(
 
     // Exchange code for tokens
     let token_info = google
-        .exchange_code(&params.code, &oauth_state_row.pkce_verifier)
+        .exchange_code(&code, &oauth_state_row.pkce_verifier)
         .await?;
 
     // Get user info
@@ -333,6 +391,55 @@ async fn handle_azure_callback(
     state: &Arc<AppState>,
     params: OAuthCallback,
 ) -> AppResult<Response> {
+    // RFC 6749 Section 4.1.2.1: Handle OAuth error response
+    if let Some(error) = params.error {
+        let error_desc = params.error_description
+            .as_deref()
+            .unwrap_or(&error);
+        
+        tracing::warn!(
+            oauth_error = %error,
+            oauth_error_description = %error_desc,
+            provider = "Azure",
+            "OAuth authorization failed at provider"
+        );
+        
+        // Map specific OAuth errors to user-friendly messages
+        let (error_code, message) = match error.as_str() {
+            "access_denied" => (
+                "OAuthDenied",
+                "You denied the sign-in request. Please try again if you'd like to proceed.",
+            ),
+            "server_error" => (
+                "OAuthServerError",
+                "Azure encountered an error. Please try again in a moment.",
+            ),
+            "temporarily_unavailable" => (
+                "OAuthUnavailable",
+                "Azure is temporarily unavailable. Please try again later.",
+            ),
+            _ => (
+                "OAuthError",
+                "Sign-in failed. Please try again.",
+            ),
+        };
+        
+        let error_url = format!(
+            "{}/auth/error?error={}&provider=Azure&details={}",
+            state.config.server.frontend_url,
+            error_code,
+            urlencoding::encode(message)
+        );
+        
+        return Ok(Redirect::temporary(&error_url).into_response());
+    }
+    
+    // Success path: code must be present
+    let code = params.code.ok_or_else(|| {
+        tracing::warn!(state_key = %params.state, "OAuth callback missing both code and error");
+        AppError::OAuthError("Invalid OAuth response: missing authorization code".to_string())
+    })?;
+
     tracing::debug!(state_key = %params.state, "Looking up OAuth state from database");
     
     // Validate state and get stored OAuth state from database
@@ -353,7 +460,7 @@ async fn handle_azure_callback(
 
     // Exchange code for tokens
     let token_info = azure
-        .exchange_code(&params.code, &oauth_state_row.pkce_verifier)
+        .exchange_code(&code, &oauth_state_row.pkce_verifier)
         .await?;
 
     // Get user info
@@ -366,6 +473,37 @@ async fn handle_azure_callback(
     .await?;
 
     // Create session cookie
+    let cookie = create_session_cookie(
+        &session.token,
+        &state.config.auth.cookie_domain,
+        state.config.auth.session_ttl_seconds,
+    );
+
+    // Redirect to stored redirect_uri or default to /today
+    let redirect_url = oauth_state_row.redirect_uri
+        .unwrap_or_else(|| format!("{}/today", state.config.server.frontend_url));
+    
+    tracing::info!(
+        user_id = %user.id,
+        email = %user.email,
+        redirect_url = %redirect_url,
+        provider = "Azure",
+        "User authenticated via Azure OAuth, redirecting with cookie"
+    );
+
+    // Use 302 redirect with Set-Cookie header
+    let cookie_header = header::HeaderValue::from_str(&cookie)
+        .map_err(|e| AppError::Internal(format!("Invalid cookie header: {}", e)))?;
+    
+    let response = Response::builder()
+        .status(StatusCode::FOUND)
+        .header(header::LOCATION, redirect_url)
+        .header(header::SET_COOKIE, cookie_header)
+        .body(axum::body::Body::empty())
+        .map_err(|e| AppError::Internal(e.to_string()))?;
+
+    Ok(response)
+}    // Create session cookie
     let cookie = create_session_cookie(
         &session.token,
         &state.config.auth.cookie_domain,

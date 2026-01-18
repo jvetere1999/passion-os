@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useAuth } from './AuthProvider';
+import { useAuth } from '../auth/AuthProvider';
 import { useCallback, useRef } from 'react';
 
 export interface ApiClientOptions extends RequestInit {

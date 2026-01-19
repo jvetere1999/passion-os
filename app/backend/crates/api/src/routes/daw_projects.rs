@@ -17,12 +17,12 @@ use crate::AppState;
 pub fn router() -> Router<Arc<AppState>> {
     Router::new()
         .route("/", get(list_projects).post(initiate_upload))
-        .route("/:project_id", get(get_project))
-        .route("/:project_id/versions", get(list_versions))
-        .route("/:project_id/versions/:version_id/restore", post(restore_version))
-        .route("/upload/:session_id/chunk", post(upload_chunk))
-        .route("/upload/:session_id/complete", post(complete_upload))
-        .route("/download/:project_id/:version_id", get(download_project))
+        .route("/{project_id}", get(get_project))
+        .route("/{project_id}/versions", get(list_versions))
+        .route("/{project_id}/versions/{version_id}/restore", post(restore_version))
+        .route("/upload/{session_id}/chunk", post(upload_chunk))
+        .route("/upload/{session_id}/complete", post(complete_upload))
+        .route("/download/{project_id}/{version_id}", get(download_project))
 }
 
 /// GET /api/daw/projects - List all DAW projects for user

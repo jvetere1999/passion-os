@@ -51,13 +51,17 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm
 
+      - name: Install watcher dependencies
+        working-directory: app/watcher
+        run: npm install
+
       - name: Install frontend dependencies
         working-directory: app/watcher/src-frontend
         run: pnpm install
 
       - name: Build Tauri app
         working-directory: app/watcher
-        run: cargo tauri build --target ${{ matrix.target }}
+        run: npm run tauri build -- --target ${{ matrix.target }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

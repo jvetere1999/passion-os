@@ -5,6 +5,7 @@ use reqwest::Client;
 use std::path::Path;
 use tracing::info;
 
+#[allow(dead_code)]
 pub struct ApiClient {
     client: Client,
     base_url: String,

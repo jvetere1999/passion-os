@@ -9,6 +9,7 @@ use tracing::{info, warn};
 use notify::EventHandler;
 
 /// File watcher instance
+#[allow(dead_code)]
 pub struct FileWatcher {
     watcher: Box<dyn Watcher>,
     rx: mpsc::Receiver<FileChange>,
@@ -118,6 +119,7 @@ impl FileWatcher {
 }
 
 /// Project directory scanner
+#[allow(dead_code)]
 pub struct ProjectScanner;
 
 impl ProjectScanner {

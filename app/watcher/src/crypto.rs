@@ -8,6 +8,7 @@ use rand::Rng;
 use sha2::{Digest, Sha256};
 
 /// Encryption configuration
+#[allow(dead_code)]
 pub struct EncryptionConfig {
     /// Master encryption key (256 bits)
     key: [u8; 32],

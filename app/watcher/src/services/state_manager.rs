@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 use tracing::{debug, info};
 
 /// Directories for persistent state
+#[allow(dead_code)]
 pub struct StateManager {
     config_dir: PathBuf,
     projects_file: PathBuf,

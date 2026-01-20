@@ -62,6 +62,7 @@ pub enum SyncStatus {
 }
 
 /// Detected file change
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileChange {
     pub path: String,
@@ -71,6 +72,7 @@ pub struct FileChange {
 }
 
 /// Type of file change detected
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum FileChangeType {
@@ -81,6 +83,7 @@ pub enum FileChangeType {
 }
 
 /// Sync operation result
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SyncResult {
     pub project_id: String,
@@ -143,6 +146,7 @@ impl Default for SyncStats {
 }
 
 /// Upload progress for frontend
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UploadProgress {
     pub session_id: String,
@@ -152,6 +156,7 @@ pub struct UploadProgress {
     pub status: UploadStatus,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum UploadStatus {

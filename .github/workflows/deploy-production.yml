@@ -461,7 +461,7 @@ jobs:
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact: DAW Watcher.msi
-            artifact_path: app/watcher/target/x86_64-pc-windows-msvc/release/bundle/msi/*_x64.msi
+            artifact_path: app/watcher/target/x86_64-pc-windows-msvc/release/bundle/msi/*_x64*.msi
 
     steps:
       - uses: actions/checkout@v4

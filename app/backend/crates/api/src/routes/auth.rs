@@ -410,10 +410,9 @@ async fn handle_google_callback(
         state.config.auth.session_ttl_seconds,
     );
 
-    // Redirect to stored redirect_uri or default to /today
-    let redirect_url = oauth_state_row
-        .redirect_uri
-        .unwrap_or_else(|| format!("{}/today", state.config.server.frontend_url));
+    // Redirect to frontend callback handler (cookies set, frontend determines final destination)
+    // Always go through /auth/callback so the frontend can handle session establishment
+    let redirect_url = format!("{}/auth/callback", state.config.server.frontend_url);
 
     tracing::info!(
         auth.user_id = %user.id,
@@ -587,10 +586,9 @@ async fn handle_azure_callback(
         state.config.auth.session_ttl_seconds,
     );
 
-    // Redirect to stored redirect_uri or default to /today
-    let redirect_url = oauth_state_row
-        .redirect_uri
-        .unwrap_or_else(|| format!("{}/today", state.config.server.frontend_url));
+    // Redirect to frontend callback handler (cookies set, frontend determines final destination)
+    // Always go through /auth/callback so the frontend can handle session establishment
+    let redirect_url = format!("{}/auth/callback", state.config.server.frontend_url);
 
     tracing::info!(
         auth.user_id = %user.id,

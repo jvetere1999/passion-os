@@ -453,15 +453,15 @@ jobs:
           - os: macos-latest
             target: aarch64-apple-darwin
             artifact: DAW Watcher.dmg
-            artifact_path: app/watcher/target/aarch64-apple-darwin/release/bundle/dmg/DAW\ Watcher_*_aarch64.dmg
+            artifact_path: app/watcher/target/aarch64-apple-darwin/release/bundle/dmg/*_aarch64.dmg
           - os: macos-latest
             target: x86_64-apple-darwin
             artifact: DAW Watcher Intel.dmg
-            artifact_path: app/watcher/target/x86_64-apple-darwin/release/bundle/dmg/DAW\ Watcher_*_x64.dmg
+            artifact_path: app/watcher/target/x86_64-apple-darwin/release/bundle/dmg/*_x64.dmg
           - os: windows-latest
             target: x86_64-pc-windows-msvc
             artifact: DAW Watcher.msi
-            artifact_path: app/watcher/target/x86_64-pc-windows-msvc/release/bundle/msi/DAW\ Watcher_*_x64.msi
+            artifact_path: app/watcher/target/x86_64-pc-windows-msvc/release/bundle/msi/*_x64.msi
 
     steps:
       - uses: actions/checkout@v4

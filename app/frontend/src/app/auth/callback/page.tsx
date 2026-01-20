@@ -36,7 +36,7 @@ export default function CallbackPage() {
           return;
         }
 
-        const data = await sessionResponse.json();
+        const data = (await sessionResponse.json()) as any;
         
         if (data.user) {
           // Session established - redirect to next step

@@ -9,9 +9,7 @@ import { useState } from "react";
 import { safeFetch, API_BASE_URL } from "@/lib/api";
 import { signOut } from "@/lib/auth/api-auth";
 import { ThemeSelector } from "@/components/settings/ThemeSelector";
-import { VaultRecoveryModal } from "@/components/vault/VaultRecoveryModal";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { useVaultRecovery } from "@/contexts/VaultRecoveryContext";
 import styles from "./page.module.css";
 
 interface SettingsClientProps {
@@ -26,7 +24,6 @@ interface SettingsClientProps {
 export function SettingsClient({ user: propUser }: SettingsClientProps = {}) {
   const { user: authUser } = useAuth();
   const user = propUser || authUser;
-  const { isModalOpen, openModal, closeModal, codes, modalMode } = useVaultRecovery();
   
   const [isDeleting, setIsDeleting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -185,27 +182,6 @@ export function SettingsClient({ user: propUser }: SettingsClientProps = {}) {
         </div>
       </section>
 
-      {/* Security & Recovery */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Security & Recovery</h2>
-        <div className={styles.sectionContent}>
-          <div className={styles.dangerItem}>
-            <div>
-              <span className={styles.fieldLabel}>Recovery Codes</span>
-              <p className={styles.fieldDescription}>
-                Generate backup recovery codes to regain access if you lose your passphrase
-              </p>
-            </div>
-            <button
-              className={styles.secondaryButton}
-              onClick={() => openModal('generate')}
-            >
-              Generate Recovery Codes
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Data Management */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Data Management</h2>
@@ -281,15 +257,6 @@ export function SettingsClient({ user: propUser }: SettingsClientProps = {}) {
           </div>
         </div>
       </section>
-
-      {/* Recovery Code Modal */}
-      <VaultRecoveryModal
-        isOpen={isModalOpen}
-        onClose={closeModal}
-        onAcknowledge={closeModal}
-        codes={codes}
-        mode={modalMode}
-      />
     </div>
   );
 }

@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PasskeySignIn } from "./PasskeySignIn";
+import { SignInButtons } from "./SignInButtons";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "Sign In",
-  description: "Sign in to Ignition with your passkey. Fast, secure, passwordless authentication.",
+  title: "Sign Up",
+  description: "Create your Ignition account with Google or Microsoft. No passwords required.",
 };
 
-export default function SignInPage() {
+export default function SignUpPage() {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
@@ -19,35 +19,36 @@ export default function SignInPage() {
         </div>
 
         <div className={styles.card}>
-          <h1 className={styles.title}>Sign In to Ignition</h1>
+          <h1 className={styles.title}>Create Your Ignition Account</h1>
           <p className={styles.subtitle}>
-            Use your passkey to sign in securely. No passwords, just biometrics or PIN.
+            Sign up with Google or Microsoft to get started. No passwords needed.
           </p>
 
-          <PasskeySignIn />
+          <SignInButtons isSignUp={true} />
 
           <div className={styles.divider}>
-            <span>new here?</span>
+            <span>or</span>
           </div>
 
           <p className={styles.linkText}>
-            <Link href="/auth/signup" className={styles.link}>
-              Create an account
+            Already have an account?{" "}
+            <Link href="/auth/signin" className={styles.link}>
+              Sign in instead
             </Link>
           </p>
 
           <div className={styles.requirements}>
-            <h3>About Passkeys</h3>
+            <h3>Before You Sign Up</h3>
             <ul>
-              <li>Faster than passwords - use biometric or PIN</li>
-              <li>More secure - no passwords to steal</li>
-              <li>Works across your devices</li>
-              <li>Set up your passkey during account creation</li>
+              <li>You must be 16 years or older</li>
+              <li>You must accept our Terms of Service</li>
+              <li>Your email is used only for authentication</li>
+              <li>After signup, you'll set up a passkey for secure access</li>
             </ul>
           </div>
 
           <p className={styles.terms}>
-            By signing in, you agree to our{" "}
+            By signing up, you agree to our{" "}
             <Link href="/terms">Terms of Service</Link> and{" "}
             <Link href="/privacy">Privacy Policy</Link>.
           </p>

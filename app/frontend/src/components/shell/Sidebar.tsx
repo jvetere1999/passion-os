@@ -328,6 +328,24 @@ const navSections: NavSection[] = [
       },
     ],
   },
+  // WATCHER - "DAW project sync & monitoring"
+  {
+    id: "watcher",
+    label: "Watcher",
+    defaultOpen: false,
+    items: [
+      {
+        href: "/daw-projects",
+        label: "DAW Projects",
+        icon: (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10-4.477-10-10-10z" />
+            <path d="M12 6v6l4 2" />
+          </svg>
+        ),
+      },
+    ],
+  },
 ];
 
 function SidebarComponent({ isOpen, onClose, userEmail }: SidebarProps) {

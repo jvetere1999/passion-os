@@ -16,7 +16,7 @@ export default function HomePage() {
           </p>
 
           <div className={styles.actions}>
-            <Link href="/auth/signin" className={styles.primaryButton}>
+            <Link href="/auth/signup" className={styles.primaryButton}>
               Start Ignition
             </Link>
             <Link href="/about" className={styles.secondaryButton}>

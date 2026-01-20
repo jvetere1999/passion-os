@@ -74,7 +74,6 @@ export default function StorageUsage({ used, total }: StorageUsageProps) {
 
           {/* Info */}
           <div className="pt-2 border-t border-slate-800 text-xs text-slate-500 space-y-1">
-            <p>✓ Encrypted end-to-end</p>
             <p>✓ Versioning enabled</p>
             <p>✓ Automatic backups</p>
           </div>

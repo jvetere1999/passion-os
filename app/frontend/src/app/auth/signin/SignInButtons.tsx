@@ -7,8 +7,9 @@ import styles from "./SignInButtons.module.css";
 /**
  * Sign in buttons component
  * Client component for handling OAuth sign-in via backend
+ * Supports both sign-in and sign-up modes
  */
-export function SignInButtons() {
+export function SignInButtons({ isSignUp = false }: { isSignUp?: boolean }) {
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [callbackUrl, setCallbackUrl] = useState<string | null>(null);
 
@@ -23,8 +24,9 @@ export function SignInButtons() {
 
   const handleSignIn = (provider: 'google' | 'azure') => {
     setIsLoading(provider);
-    // Redirect to backend OAuth endpoint with callback URL
-    window.location.href = getSignInUrl(provider, callbackUrl);
+    // Redirect to backend OAuth endpoint with callback URL and mode
+    const mode = isSignUp ? 'signup' : 'signin';
+    window.location.href = getSignInUrl(provider, callbackUrl, mode);
   };
 
   return (
@@ -40,7 +42,11 @@ export function SignInButtons() {
       >
         <GoogleIcon />
         <span>
-          {isLoading === "google" ? "Signing in..." : "Sign in with Google"}
+          {isLoading === "google"
+            ? "Signing in..."
+            : isSignUp
+            ? "Sign up with Google"
+            : "Sign in with Google"}
         </span>
       </button>
 
@@ -57,6 +63,8 @@ export function SignInButtons() {
         <span>
           {isLoading === "azure"
             ? "Signing in..."
+            : isSignUp
+            ? "Sign up with Microsoft"
             : "Sign in with Microsoft"}
         </span>
       </button>

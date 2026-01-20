@@ -30,7 +30,7 @@ import {
   type CreateRegionInput,
   ApiClientError,
 } from "@/lib/api/reference-tracks";
-import { encryptBytes } from "@/lib/e2ee/crypto";
+import { useVault } from "@/lib/auth/VaultProvider";
 import styles from "./ReferenceLibrary.module.css";
 
 // ============================================
@@ -55,14 +55,13 @@ export function ReferenceLibraryV2() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [passphrase, setPassphrase] = useState("");
-  const [vaultUnlocked, setVaultUnlocked] = useState(false);
   const [isQuickMode, setIsQuickMode] = useState(false);
   const [showAnnotationForm, setShowAnnotationForm] = useState(false);
   const [showRegionForm, setShowRegionForm] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const playerStore = usePlayerStore();
+  const { isLocked: isVaultLocked } = useVault();
 
   // Detect quick mode from URL
   useEffect(() => {
@@ -126,13 +125,9 @@ export function ReferenceLibraryV2() {
           file.size
         );
 
-        // Upload file directly to R2 via signed URL (encrypt if passphrase)
+        // Upload file directly to R2 via signed URL
         setUploadProgress(`Uploading ${file.name} to storage...`);
-        const uploadBlob = vaultUnlocked && passphrase
-          ? new Blob([ (await encryptBytes(await file.arrayBuffer(), passphrase)).cipher ], { type: "application/octet-stream" })
-          : file;
-        const uploadType = vaultUnlocked && passphrase ? "application/octet-stream" : file.type;
-        await referenceTracksApi.uploadFile(signedUrl, uploadBlob, uploadType);
+        await referenceTracksApi.uploadFile(signedUrl, file, file.type);
 
         // Create track metadata in backend
         setUploadProgress(`Creating track record for ${file.name}...`);
@@ -374,30 +369,14 @@ export function ReferenceLibraryV2() {
       {isQuickMode && <QuickModeHeader title="Quick Start - Reference Library" />}
 
       <div className={styles.container} data-testid="reference-library">
-        <div className={styles.vaultBanner}>
-          <div>
-            <p className={styles.vaultTitle}>Encrypt uploads (E2EE)</p>
-            <p className={styles.vaultSubtitle}>
-              Add a passphrase to encrypt reference tracks client-side before upload. Only you can decrypt them.
+        {/* Vault Status Banner */}
+        {isVaultLocked && (
+          <div className={styles.vaultLockedBanner} role="status" aria-live="polite">
+            <p className={styles.vaultLockedText}>
+              🔒 Reference tracks are encrypted. Unlock vault to upload or modify tracks.
             </p>
           </div>
-          <div className={styles.vaultControls}>
-            <input
-              type="password"
-              placeholder="Passphrase"
-              value={passphrase}
-              onChange={(e) => setPassphrase(e.target.value)}
-              className={styles.vaultInput}
-            />
-            <button
-              className={styles.vaultButton}
-              onClick={() => setVaultUnlocked(Boolean(passphrase.trim()))}
-              type="button"
-            >
-              {vaultUnlocked ? "Lock" : "Unlock"}
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* Error Banner */}
         {error && (
@@ -430,8 +409,9 @@ export function ReferenceLibraryV2() {
             <button
               className={styles.addButton}
               onClick={() => fileInputRef.current?.click()}
-              disabled={isUploading}
+              disabled={isUploading || isVaultLocked}
               type="button"
+              title={isVaultLocked ? "Unlock vault to upload tracks" : ""}
             >
               {isUploading ? "Uploading..." : "+ Upload"}
             </button>

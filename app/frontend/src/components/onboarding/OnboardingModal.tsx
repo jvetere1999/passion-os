@@ -77,6 +77,14 @@ const NUDGE_OPTIONS = [
   { key: "energetic", label: "Energetic", description: "More frequent nudges" },
 ];
 
+// WebAuthn setup status tracking
+interface WebAuthnStatus {
+  isRegistering: boolean;
+  isSupported: boolean;
+  error: string | null;
+  success: boolean;
+}
+
 // Focus duration options
 const FOCUS_DURATIONS = [
   { minutes: 5, label: "5 min", description: "Quick start" },
@@ -98,6 +106,12 @@ export function OnboardingModal({ initialState, flow, userId }: OnboardingModalP
   const [selectedNudge, setSelectedNudge] = useState<string>("standard");
   const [selectedFocusDuration, setSelectedFocusDuration] = useState<number>(25);
   const [gamificationVisible, setGamificationVisible] = useState<boolean>(true);
+  const [webauthnStatus, setWebauthnStatus] = useState<WebAuthnStatus>({
+    isRegistering: false,
+    isSupported: typeof window !== "undefined" && !!window.PublicKeyCredential,
+    error: null,
+    success: false,
+  });
 
   const startOnboarding = useCallback(async () => {
     try {
@@ -202,6 +216,73 @@ export function OnboardingModal({ initialState, flow, userId }: OnboardingModalP
       setCurrentStepIndex(currentStepIndex - 1);
     }
   }, [currentStepIndex]);
+
+  // Handle WebAuthn passkey registration
+  const registerPasskey = useCallback(async () => {
+    if (!webauthnStatus.isSupported) {
+      setWebauthnStatus(prev => ({
+        ...prev,
+        error: "WebAuthn is not supported on your device"
+      }));
+      return;
+    }
+
+    setWebauthnStatus(prev => ({ ...prev, isRegistering: true, error: null }));
+
+    try {
+      // Get registration options from backend
+      const optionsResponse = await safeFetch(`${API_BASE_URL}/api/auth/webauthn/register-options`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!optionsResponse.ok) {
+        throw new Error("Failed to get registration options");
+      }
+
+      const { options } = await optionsResponse.json();
+
+      // Create credential
+      const credential = await navigator.credentials.create(options);
+
+      if (!credential) {
+        throw new Error("Passkey creation cancelled");
+      }
+
+      // Send credential to backend for verification and storage
+      const verifyResponse = await safeFetch(`${API_BASE_URL}/api/auth/webauthn/register-verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential }),
+      });
+
+      if (!verifyResponse.ok) {
+        const error = await verifyResponse.json().catch(() => ({}));
+        throw new Error(error.message || "Failed to register passkey");
+      }
+
+      setWebauthnStatus(prev => ({
+        ...prev,
+        isRegistering: false,
+        success: true,
+        error: null,
+      }));
+
+      // Complete the step after successful registration
+      setTimeout(() => {
+        completeStep({ passkey_registered: true });
+      }, 1500);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to register passkey";
+      console.error("[WebAuthn] Registration error:", error);
+      setWebauthnStatus(prev => ({
+        ...prev,
+        isRegistering: false,
+        error: message,
+        success: false,
+      }));
+    }
+  }, [webauthnStatus.isSupported, completeStep]);
 
   // Handle interest selection
   const toggleInterest = (key: string) => {
@@ -373,6 +454,54 @@ export function OnboardingModal({ initialState, flow, userId }: OnboardingModalP
         );
 
       case "action":
+        // Check if this is a WebAuthn action
+        if (currentStep.id.includes("webauthn") || currentStep.id.includes("passkey")) {
+          return (
+            <div className={styles.actionStep}>
+              <div className={styles.stepIcon}>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 1v6m0 6v6" />
+                  <rect x="2" y="4" width="20" height="16" rx="2" />
+                  <path d="M7 14h10" />
+                </svg>
+              </div>
+              <p className={styles.stepDescription}>
+                {currentStep.description || "Set up a passkey to secure your account and enable fast login"}
+              </p>
+              {!webauthnStatus.isSupported && (
+                <div className={styles.errorMessage}>
+                  WebAuthn is not supported on your device. You can set this up later.
+                </div>
+              )}
+              {webauthnStatus.error && (
+                <div className={styles.errorMessage}>
+                  {webauthnStatus.error}
+                </div>
+              )}
+              {webauthnStatus.success && (
+                <div className={styles.successMessage}>
+                  ✓ Passkey registered successfully!
+                </div>
+              )}
+              <div className={styles.actionButtons}>
+                <button
+                  className={styles.actionPrimary}
+                  onClick={registerPasskey}
+                  disabled={webauthnStatus.isRegistering || !webauthnStatus.isSupported || webauthnStatus.success}
+                >
+                  {webauthnStatus.isRegistering ? "Setting up..." : "Create Passkey"}
+                </button>
+                <button
+                  className={styles.actionSecondary}
+                  onClick={() => completeStep({ passkey_skipped: true })}
+                  disabled={webauthnStatus.isRegistering}
+                >
+                  Skip for now
+                </button>
+              </div>
+            </div>
+          );
+        }
         return (
           <div className={styles.actionStep}>
             <p className={styles.stepDescription}>{currentStep.description}</p>

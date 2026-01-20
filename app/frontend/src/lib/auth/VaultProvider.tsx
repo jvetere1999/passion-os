@@ -67,6 +67,25 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
     if (!isLocked) {
       inactivityTimerRef.current = setTimeout(async () => {
         try {
+          // Check if user is authenticated before locking vault
+          const sessionResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online'}/auth/session`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          });
+
+          // If no session, don't try to lock vault
+          if (!sessionResponse.ok) {
+            console.log('No active session, skipping vault lock on inactivity');
+            return;
+          }
+
+          const sessionData = await sessionResponse.json() as { user: unknown };
+          if (!sessionData.user) {
+            console.log('No authenticated user, skipping vault lock on inactivity');
+            return;
+          }
+
           await lockVault('idle');
           setIsLocked(true);
           setLockReason('idle');
@@ -109,8 +128,27 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
 
     visibilityHandlerRef.current = async () => {
       if (document.hidden) {
-        // App backgrounded
+        // App backgrounded - check auth before locking
         try {
+          // Check if user is authenticated before locking vault
+          const sessionResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online'}/auth/session`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          });
+
+          // If no session, don't try to lock vault
+          if (!sessionResponse.ok) {
+            console.log('No active session, skipping vault lock on background');
+            return;
+          }
+
+          const sessionData = await sessionResponse.json() as { user: unknown };
+          if (!sessionData.user) {
+            console.log('No authenticated user, skipping vault lock on background');
+            return;
+          }
+
           await lockVault('backgrounded');
           setIsLocked(true);
           setLockReason('backgrounded');

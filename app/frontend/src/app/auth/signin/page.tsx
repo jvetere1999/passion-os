@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PasskeySignIn } from "./PasskeySignIn";
+import { RecoveryCodeSignIn } from "./RecoveryCodeSignIn";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -27,6 +28,12 @@ export default function SignInPage() {
           <PasskeySignIn />
 
           <div className={styles.divider}>
+            <span>recovery option</span>
+          </div>
+
+          <RecoveryCodeSignIn />
+
+          <div className={styles.divider}>
             <span>new here?</span>
           </div>
 
@@ -43,6 +50,7 @@ export default function SignInPage() {
               <li>More secure - no passwords to steal</li>
               <li>Works across your devices</li>
               <li>Set up your passkey during account creation</li>
+              <li>Keep recovery codes somewhere safe, just in case</li>
             </ul>
           </div>
 

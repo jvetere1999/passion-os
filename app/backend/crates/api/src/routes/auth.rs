@@ -17,11 +17,12 @@ use axum::{
 use serde::{Deserialize, Serialize};
 
 use crate::db::oauth_repos::OAuthStateRepo;
+use crate::db::recovery_codes_repos::RecoveryCodesRepo;
 use crate::db::repos::{UserRepo, SessionRepo, generate_session_token};
 use crate::db::models::CreateSessionInput;
 use crate::error::{AppError, AppResult};
 use crate::middleware::auth::{create_logout_cookie, create_session_cookie, AuthContext};
-use crate::services::{AuthService, OAuthService, WebAuthnService};
+use crate::services::{AuthService, OAuthService, RecoveryValidator, WebAuthnService};
 use crate::state::AppState;
 
 /// Allowed redirect URIs - must match frontend deployment URLs
@@ -112,6 +113,7 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/webauthn/register-verify", post(webauthn_register_verify))
         .route("/webauthn/signin-options", get(webauthn_signin_options))
         .route("/webauthn/signin-verify", post(webauthn_signin_verify))
+        .route("/recovery/signin", post(recovery_signin))
         // Session endpoints
         .route("/session", get(get_session))
         .route("/signout", post(signout))
@@ -771,6 +773,86 @@ async fn accept_tos(
     Ok(Response::builder()
         .status(StatusCode::OK)
         .body(axum::body::Body::empty())
+        .map_err(|e| AppError::Internal(e.to_string()))?)
+}
+
+// ============================================================================
+// RECOVERY CODE SIGNIN
+// ============================================================================
+
+#[derive(Deserialize)]
+pub struct RecoverySigninRequest {
+    pub code: String,
+}
+
+fn normalize_recovery_code(code: &str) -> String {
+    let raw: String = code
+        .chars()
+        .filter(|c| c.is_ascii_alphanumeric())
+        .collect::<String>()
+        .to_uppercase();
+
+    if raw.len() == 12 {
+        format!("{}-{}-{}", &raw[0..4], &raw[4..8], &raw[8..12])
+    } else {
+        code.trim().to_uppercase()
+    }
+}
+
+async fn recovery_signin(
+    State(state): State<Arc<AppState>>,
+    Json(payload): Json<RecoverySigninRequest>,
+) -> AppResult<Response> {
+    let normalized = normalize_recovery_code(&payload.code);
+    RecoveryValidator::validate_code_format(&normalized)?;
+
+    let recovery_code = RecoveryCodesRepo::validate_and_use_code(&state.db, &normalized)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to validate recovery code: {:?}", e);
+            AppError::Internal("Failed to validate recovery code".to_string())
+        })?
+        .ok_or_else(|| AppError::BadRequest("Invalid or already used recovery code".to_string()))?;
+
+    let user = UserRepo::find_by_id(&state.db, recovery_code.created_by)
+        .await?
+        .ok_or_else(|| AppError::NotFound("User not found".to_string()))?;
+
+    let session = SessionRepo::create(
+        &state.db,
+        CreateSessionInput {
+            user_id: user.id,
+            user_agent: None,
+            ip_address: Some("0.0.0.0".to_string()),
+        },
+        (state.config.auth.session_ttl_seconds / 86400) as i64,
+    )
+    .await?;
+
+    let cookie = create_session_cookie(
+        &session.token,
+        &state.config.auth.cookie_domain,
+        state.config.auth.session_ttl_seconds,
+    );
+
+    tracing::info!(
+        user_id = %user.id,
+        operation = "recovery_signin",
+        "User signed in via recovery code"
+    );
+
+    let response = serde_json::json!({
+        "user_id": user.id.to_string(),
+        "success": true,
+    });
+
+    Ok(Response::builder()
+        .status(StatusCode::OK)
+        .header(header::SET_COOKIE, cookie)
+        .header(header::CONTENT_TYPE, "application/json")
+        .body(axum::body::Body::new(
+            serde_json::to_string(&response).map_err(|e| AppError::Internal(e.to_string()))?,
+        ))
         .map_err(|e| AppError::Internal(e.to_string()))?)
 }
 

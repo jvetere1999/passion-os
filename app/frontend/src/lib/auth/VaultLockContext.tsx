@@ -68,8 +68,28 @@ export const VaultLockProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     
     if (!isLocked) {
       idleTimerRef.current = setTimeout(async () => {
-        // Trigger lock after timeout
+        // Only lock vault if user is authenticated (has session)
         try {
+          // First check if user has an active session
+          const sessionResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online'}/auth/session`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+          });
+
+          // If no session (401/404), don't try to lock vault
+          if (!sessionResponse.ok) {
+            console.log('No active session, skipping vault lock');
+            return;
+          }
+
+          const sessionData = await sessionResponse.json() as { user: unknown };
+          if (!sessionData.user) {
+            console.log('No authenticated user, skipping vault lock');
+            return;
+          }
+
+          // User is authenticated, proceed with lock
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online'}/api/vault/lock`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

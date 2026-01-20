@@ -114,8 +114,8 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     >
       {children}
       <OnboardingModal
-        initialState={onboarding.state || null}
-        flow={onboarding.flow || null}
+        initialState={onboarding.state as any || null}
+        flow={onboarding.flow as any || null}
         userId={user.id}
       />
     </OnboardingContext.Provider>

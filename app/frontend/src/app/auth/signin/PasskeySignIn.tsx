@@ -47,7 +47,7 @@ export function PasskeySignIn() {
         throw new Error("Failed to get authentication options");
       }
 
-      const data = await optionsResponse.json();
+      const data = (await optionsResponse.json()) as any;
       const options = data.options || data;
 
       // Get assertion (user verifies with biometric/PIN)
@@ -68,9 +68,9 @@ export function PasskeySignIn() {
       );
 
       if (!verifyResponse.ok) {
-        const errorData = await verifyResponse
+        const errorData = (await verifyResponse
           .json()
-          .catch(() => ({}));
+          .catch(() => ({}))) as any;
         throw new Error(
           errorData.message || "Authentication failed"
         );

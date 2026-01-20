@@ -240,7 +240,7 @@ export function OnboardingModal({ initialState, flow, userId }: OnboardingModalP
         throw new Error("Failed to get registration options");
       }
 
-      const { options } = await optionsResponse.json();
+      const { options } = (await optionsResponse.json()) as any;
 
       // Create credential
       const credential = await navigator.credentials.create(options);
@@ -257,7 +257,7 @@ export function OnboardingModal({ initialState, flow, userId }: OnboardingModalP
       });
 
       if (!verifyResponse.ok) {
-        const error = await verifyResponse.json().catch(() => ({}));
+        const error = (await verifyResponse.json().catch(() => ({}))) as any;
         throw new Error(error.message || "Failed to register passkey");
       }
 

@@ -1,6 +1,6 @@
 {
   "name": "daw-watcher",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "DAW file watcher and uploader with automatic encryption",
   "type": "module",
   "scripts": {

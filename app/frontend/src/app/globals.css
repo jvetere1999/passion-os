@@ -63,13 +63,16 @@
   --badge-text: #ffffff;
 
   /* Mapped color aliases for backward compat */
+  --color-bg: var(--bg-primary);
   --color-bg-primary: var(--bg-primary);
   --color-bg-secondary: var(--bg-secondary);
   --color-bg-tertiary: var(--bg-tertiary);
   --color-bg-elevated: var(--bg-elevated);
+  --color-text: var(--text-primary);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-muted: var(--text-muted);
+  --color-border: var(--border-default);
   --color-border-primary: var(--border-default);
   --color-border-secondary: var(--border-subtle);
   --color-border-focus: var(--focus-ring);

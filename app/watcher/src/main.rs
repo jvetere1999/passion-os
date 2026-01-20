@@ -29,22 +29,13 @@ async fn main() {
 
     // System tray menu
     let tray_menu = SystemTrayMenu::new()
-        .add_item(SystemTrayMenuItem::new("Open", tauri::CustomMenuItem::new("open".to_string(), "Open Watcher")))
+        .add_item(tauri::CustomMenuItem::new("open".to_string(), "Open Watcher"))
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(SystemTrayMenuItem::new(
-            "status",
-            tauri::CustomMenuItem::new("status".to_string(), "Sync Status"),
-        ))
+        .add_item(tauri::CustomMenuItem::new("status".to_string(), "Sync Status"))
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(SystemTrayMenuItem::new(
-            "settings",
-            tauri::CustomMenuItem::new("settings".to_string(), "Settings"),
-        ))
+        .add_item(tauri::CustomMenuItem::new("settings".to_string(), "Settings"))
         .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(SystemTrayMenuItem::new(
-            "quit",
-            tauri::CustomMenuItem::new("quit".to_string(), "Quit"),
-        ));
+        .add_item(tauri::CustomMenuItem::new("quit".to_string(), "Quit"));
 
     let tray = SystemTray::new().with_menu(tray_menu);
 
@@ -77,9 +68,10 @@ async fn main() {
                 }
             }
             SystemTrayEvent::LeftClick { .. } => {
-                if let Some(window) = window {
-                    let _ = window.show();
-                    let _ = window.set_focus();
+                let window = app.get_window("main");
+                if let Some(w) = window {
+                    let _ = w.show();
+                    let _ = w.set_focus();
                 }
             }
             _ => {}

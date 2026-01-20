@@ -3,7 +3,7 @@
 use crate::models::{WatchedProject, WatcherSettings, SyncStats};
 use std::fs;
 use std::path::{Path, PathBuf};
-use tracing::{debug, error, info};
+use tracing::{debug, info};
 
 /// Directories for persistent state
 pub struct StateManager {
@@ -208,14 +208,14 @@ impl StateManager {
             self.save_projects(&projects)?;
         }
 
-        if let Some(settings) = data.get("settings").as_object() {
-            if let Ok(settings) = serde_json::from_value(serde_json::Value::Object(settings.clone())) {
+        if let Some(settings_value) = data.get("settings") {
+            if let Ok(settings) = serde_json::from_value(settings_value.clone()) {
                 self.save_settings(&settings)?;
             }
         }
 
-        if let Some(stats) = data.get("stats").as_object() {
-            if let Ok(stats) = serde_json::from_value(serde_json::Value::Object(stats.clone())) {
+        if let Some(stats_value) = data.get("stats") {
+            if let Ok(stats) = serde_json::from_value(stats_value.clone()) {
                 self.save_stats(&stats)?;
             }
         }

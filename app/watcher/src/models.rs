@@ -1,7 +1,6 @@
 /// Data models for DAW Watcher
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 /// A watched DAW project directory
 #[derive(Debug, Clone, Serialize, Deserialize)]

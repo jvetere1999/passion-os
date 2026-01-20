@@ -1,12 +1,12 @@
 /// File system watcher for DAW projects
 /// Monitors directories for file changes and triggers sync
 use crate::models::{DawType, FileChange, FileChangeType};
-use notify::{RecursiveMode, Watcher};
-use notify::watcher;
+use notify::{RecursiveMode, Watcher, RecommendedWatcher};
 use std::path::{Path, PathBuf};
 use std::sync::mpsc;
 use std::time::Duration;
 use tracing::{info, warn};
+use notify::EventHandler;
 
 /// File watcher instance
 pub struct FileWatcher {
@@ -21,24 +21,33 @@ impl FileWatcher {
 
         let extensions = daw_type.extensions();
         let watch_path = PathBuf::from(path);
+        let tx_clone = tx.clone();
 
-        // Create watcher with callback
-        let watcher_result = watcher(
-            move |res: Result<notify::DebouncedEvent, _>| {
-                match res {
+        struct FileChangeHandler {
+            tx: mpsc::Sender<FileChange>,
+            extensions: Vec<String>,
+        }
+
+        impl EventHandler for FileChangeHandler {
+            fn handle_event(&mut self, event: notify::Result<notify::Event>) {
+                match event {
                     Ok(event) => {
-                        // Parse file changes
-                        if let Some(change) = Self::parse_event(event, &extensions) {
-                            let _ = tx.send(change);
+                        if let Some(change) = FileWatcher::parse_event_new(&event, &self.extensions) {
+                            let _ = self.tx.send(change);
                         }
                     }
                     Err(e) => warn!("Watch error: {}", e),
                 }
-            },
-            Duration::from_secs(2), // 2 second debounce
-        );
+            }
+        }
 
-        let mut watcher = watcher_result.map_err(|e| format!("Failed to create watcher: {}", e))?;
+        let handler = FileChangeHandler {
+            tx: tx_clone,
+            extensions: extensions.iter().map(|s| s.to_string()).collect(),
+        };
+
+        let mut watcher: RecommendedWatcher = RecommendedWatcher::new(handler, Default::default())
+            .map_err(|e| format!("Failed to create watcher: {}", e))?;
 
         // Start watching
         watcher
@@ -68,24 +77,27 @@ impl FileWatcher {
     }
 
     /// Filters and parses filesystem events
-    fn parse_event(
-        event: notify::DebouncedEvent,
-        extensions: &[&str],
+    fn parse_event_new(
+        event: &notify::Event,
+        extensions: &[String],
     ) -> Option<FileChange> {
-        use notify::DebouncedEvent::*;
+        use notify::EventKind;
 
-        let (path, change_type) = match event {
-            Create(p) => (p, FileChangeType::Created),
-            Write(p) => (p, FileChangeType::Modified),
-            Remove(p) => (p, FileChangeType::Deleted),
-            Rename(old, _new) => (old, FileChangeType::Renamed),
+        let change_type = match event.kind {
+            EventKind::Create(_) => FileChangeType::Created,
+            EventKind::Modify(_) => FileChangeType::Modified,
+            EventKind::Remove(_) => FileChangeType::Deleted,
+            EventKind::Access(_) => return None,
+            EventKind::Any => return None,
             _ => return None,
         };
 
+        let path = event.paths.first()?.clone();
+
         // Filter by extension
-        if let Some(ext) = path.extension() {
-            let ext_str = format!(".{}", ext.to_string_lossy());
-            if !extensions.contains(&ext_str.as_str()) {
+        if let Some(ext_os) = path.extension() {
+            let ext_str = format!(".{}", ext_os.to_string_lossy());
+            if !extensions.contains(&ext_str) {
                 return None;
             }
         } else {

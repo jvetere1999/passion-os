@@ -1,9 +1,9 @@
 /// Backend API client for DAW Watcher
 /// Handles authentication, file uploads, and project management
-use crate::models::{WatcherSettings, UploadProgress};
+use crate::models::WatcherSettings;
 use reqwest::Client;
 use std::path::Path;
-use tracing::{error, info};
+use tracing::info;
 
 pub struct ApiClient {
     client: Client,
@@ -175,7 +175,7 @@ impl ApiClient {
             form = form.text("chunk_number", chunk_num.to_string());
             form = form.text("total_chunks", total_chunks.to_string());
 
-            let response = self
+            let response: reqwest::Response = self
                 .client
                 .post(&url)
                 .bearer_auth(self.auth_token.as_ref().unwrap_or(&String::new()))

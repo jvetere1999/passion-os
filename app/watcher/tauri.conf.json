@@ -1,29 +1,15 @@
 {
   "build": {
-    "beforeBuildCommand": "cd src-frontend && npm run build && cd ..",
+    "beforeBuildCommand": "cd src-frontend && npm run build && cd .. && mkdir -p ../dist && cp -r src-frontend/out/* ../dist/",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:3000"
+    "devPath": "http://localhost:3000",
+    "withGlobalTauri": false
   },
   "package": {
     "productName": "DAW Watcher",
     "version": "0.1.0"
   },
   "tauri": {
-    "windows": [
-      {
-        "title": "DAW Watcher",
-        "width": 900,
-        "height": 700,
-        "minWidth": 600,
-        "minHeight": 500,
-        "resizable": true,
-        "fullscreen": false,
-        "focus": true
-      }
-    ],
-    "security": {
-      "csp": null
-    },
     "allowlist": {
       "all": false,
       "fs": {
@@ -62,10 +48,6 @@
         "all": true
       }
     },
-    "systemTray": {
-      "iconPath": "icons/tray_icon.png",
-      "iconAsTemplate": true
-    },
     "bundle": {
       "active": true,
       "targets": ["dmg", "app"],
@@ -78,7 +60,25 @@
         "icons/icon.ico"
       ],
       "resources": []
+    },
+    "security": {
+      "csp": null
+    },
+    "windows": [
+      {
+        "title": "DAW Watcher",
+        "width": 900,
+        "height": 700,
+        "minWidth": 600,
+        "minHeight": 500,
+        "resizable": true,
+        "fullscreen": false,
+        "focus": true
+      }
+    ],
+    "systemTray": {
+      "iconPath": "icons/tray_icon.png",
+      "iconAsTemplate": true
     }
   }
 }
-// Pipeline trigger 1768867987

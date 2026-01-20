@@ -121,6 +121,7 @@ jobs:
       - name: Verify admin builds
         working-directory: ./app/admin
         run: |
+          npm cache clean --force
           npm ci
           npm run build:worker --no-telemetry || {
             echo "✗ Admin build failed"

@@ -1,4 +1,16 @@
 {
+  "name": "ignition",
+  "version": "1.0.0-beta.1",
+  "description": "Ignition - Secure journal and goal tracking application",
+  "private": true,
+  "scripts": {
+    "release:patch": "node infrastructure/scripts/release.js patch",
+    "release:minor": "node infrastructure/scripts/release.js minor",
+    "release:major": "node infrastructure/scripts/release.js major",
+    "release:beta": "node infrastructure/scripts/release.js beta",
+    "release:rc": "node infrastructure/scripts/release.js rc",
+    "release": "npm run release:patch"
+  },
   "dependencies": {
     "@playwright/test": "^1.57.0"
   }

@@ -409,7 +409,7 @@ jobs:
           
           4. **Fix migrations locally:**
              ```bash
-             ./scripts/validate-schema-locally.sh
+             ./infrastructure/scripts/validate-schema-locally.sh
              ```
           
           5. **Retry:**

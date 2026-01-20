@@ -1,0 +1,53 @@
+{
+  "productName": "Ignition",
+  "currentVersion": "1.0.0-beta.1",
+  "releaseChannel": "beta",
+  "lastReleaseDate": "2026-01-20",
+  "versionHistory": [
+    {
+      "version": "1.0.0-beta.1",
+      "releaseDate": "2026-01-20",
+      "channel": "beta",
+      "notes": "Initial beta release",
+      "highlights": [
+        "Core authentication system with OAuth and WebAuthn passkeys",
+        "Vault lock/unlock with inactivity timeout",
+        "Goal tracking system",
+        "Journal entries with E2E encryption",
+        "Service worker with browser caching",
+        "Cross-device synchronization",
+        "Tauri desktop DAW watcher application",
+        "Admin dashboard for user management"
+      ]
+    }
+  ],
+  "components": {
+    "frontend": {
+      "version": "1.1.0",
+      "path": "app/frontend",
+      "synced": false,
+      "notes": "Next.js frontend - will sync to 1.0.0-beta.1 on release"
+    },
+    "backend": {
+      "version": "1.0.0",
+      "path": "app/backend",
+      "synced": true
+    },
+    "admin": {
+      "version": "1.0.0",
+      "path": "app/admin",
+      "synced": true
+    },
+    "watcher": {
+      "version": "0.1.2",
+      "path": "app/watcher",
+      "synced": false,
+      "notes": "Tauri app - will sync to 1.0.0-beta.1 on release"
+    },
+    "database": {
+      "version": "1.0.0",
+      "path": "app/database",
+      "synced": true
+    }
+  }
+}

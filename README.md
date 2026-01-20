@@ -15,6 +15,18 @@ Passion OS is a full-stack application featuring:
 - **Reference library**: Audio track analysis with waveform visualization, frequency spectrum analysis, BPM detection, and annotation support
 - **Knowledge base**: Personal notes organized by category
 
+## 📚 Documentation
+
+**Complete documentation hub:** [📖 Read the Docs](docs/_index.md)
+
+### Quick Links
+- **[Versioning & Release Strategy](docs/guides/versioning.md)** - How releases work
+- **[Code Standards](docs/standards/)** - Backend, frontend, logging conventions
+- **[API Documentation](docs/api/openapi/openapi.yaml)** - Complete REST API spec
+- **[Architecture](docs/architecture/)** - System design and database schema
+- **[Deployment](infrastructure/deploy/README.md)** - How to deploy to production
+- **[Project Status](management/current-state.md)** - Current implementation status
+
 ## Architecture
 
 ```

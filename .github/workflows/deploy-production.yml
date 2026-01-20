@@ -648,7 +648,7 @@ jobs:
           
           2. If Neon migration failed:
              - Database is in partial state
-             - Run: ./scripts/deploy-and-migrate.sh
+             - Run: ./infrastructure/scripts/deploy-and-migrate.sh
              - Manually wipe Neon and restart
           
           3. If Fly deployment failed:

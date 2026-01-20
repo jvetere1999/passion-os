@@ -18,8 +18,8 @@ jobs:
       
       - name: Run Trust Boundary Linter
         run: |
-          chmod +x scripts/trust-boundary-linter.sh
-          scripts/trust-boundary-linter.sh
+          chmod +x infrastructure/scripts/trust-boundary-linter.sh
+          infrastructure/scripts/trust-boundary-linter.sh
         working-directory: ${{ github.workspace }}
       
       - name: Comment on PR if failed

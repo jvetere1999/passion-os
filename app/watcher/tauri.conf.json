@@ -1,6 +1,6 @@
 {
   "build": {
-    "beforeBuildCommand": "cd src-frontend && npm run build && cd .. && mkdir -p ../dist && cp -r src-frontend/out/* ../dist/",
+    "beforeBuildCommand": "npm run build:dist",
     "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:3000",
     "withGlobalTauri": false

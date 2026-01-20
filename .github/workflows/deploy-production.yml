@@ -512,7 +512,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: watcher-${{ matrix.target }}-build
-          path: app/watcher/${{ matrix.artifact_path }}
+          path: ${{ matrix.artifact_path }}
           if-no-files-found: error
 
   create-watcher-release:

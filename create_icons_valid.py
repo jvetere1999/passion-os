@@ -37,7 +37,7 @@ for size, filename in sizes_with_names:
     
     filepath = os.path.join(icons_dir, filename)
     img.save(filepath, "PNG")
-    print(f"✓ Created {filepath} ({size}x{size} RGBA)")
+    print(f"[OK] Created {filepath} ({size}x{size} RGBA)")
 
-print("\n✓ All PNG icons created with brand colors in RGBA format")
-print("✓ Note: icon.icns and icon.ico must be generated separately on their respective platforms")
+print("\n[OK] All PNG icons created with brand colors in RGBA format")
+print("[NOTE] icon.icns and icon.ico must be generated separately on their respective platforms")

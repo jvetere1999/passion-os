@@ -147,10 +147,6 @@ jobs:
           path: .next-frontend.tar.gz
           retention-days: 1
           compression-level: 0
-          name: frontend-build
-          path: .next-frontend.tar.gz
-          retention-days: 1
-          compression-level: 0
       
       - name: Upload admin build artifact
         uses: actions/upload-artifact@v4

@@ -46,6 +46,26 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
   useEffect(() => {
     const initVaultState = async () => {
       try {
+        // Check if user is authenticated before fetching vault state
+        const sessionResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.ecent.online'}/auth/session`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        });
+
+        // If no session, skip vault state fetch
+        if (!sessionResponse.ok) {
+          console.log('No active session, skipping vault state initialization');
+          return;
+        }
+
+        const sessionData = await sessionResponse.json() as { user: unknown };
+        if (!sessionData.user) {
+          console.log('No authenticated user, skipping vault state initialization');
+          return;
+        }
+
+        // User is authenticated, fetch vault state
         const state = await getVaultLockState();
         setIsLocked(state.locked_at !== null);
         setLockReason(state.lock_reason);

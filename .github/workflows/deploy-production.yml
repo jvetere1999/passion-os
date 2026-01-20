@@ -60,6 +60,33 @@ jobs:
           fi
           echo "✓ Migration files present"
       
+      - name: Setup Rust with cargo cache
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-registry-
+      
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-git-
+      
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: app/backend/target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-build-
+      
       - name: Verify Rust compiles
         uses: actions-rs/cargo@v1
         with:
@@ -72,17 +99,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Node.js
+      - name: Setup Node.js with npm cache
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            app/frontend/package-lock.json
+            app/admin/package-lock.json
       
       - name: Verify frontend builds
         working-directory: ./app/frontend
         run: |
-          rm -rf node_modules package-lock.json
-          npm cache clean --force
-          npm install
+          npm ci
           npm run build:worker --no-telemetry || {
             echo "✗ Frontend build failed"
             exit 1
@@ -92,20 +121,46 @@ jobs:
       - name: Verify admin builds
         working-directory: ./app/admin
         run: |
-          rm -rf node_modules package-lock.json
-          npm cache clean --force
-          npm install
+          npm ci
           npm run build:worker --no-telemetry || {
             echo "✗ Admin build failed"
             exit 1
           }
           echo "✓ Admin builds successfully"
+      
+      - name: Compress frontend build artifact
+        run: |
+          cd app/frontend
+          tar -czf ../.next-frontend.tar.gz .next
+          echo "Frontend artifact size: $(du -h ../.next-frontend.tar.gz | cut -f1)"
+      
+      - name: Compress admin build artifact
+        run: |
+          cd app/admin
+          tar -czf ../.next-admin.tar.gz .next
+          echo "Admin artifact size: $(du -h ../.next-admin.tar.gz | cut -f1)"
+      
+      - name: Upload frontend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: .next-frontend.tar.gz
+          retention-days: 1
+          compression-level: 0
+      
+      - name: Upload admin build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-build
+          path: .next-admin.tar.gz
+          retention-days: 1
+          compression-level: 0
 
   wipe-and-rebuild-neon:
     if: |
       github.event_name == 'workflow_dispatch' ||
       github.event_name == 'push'
-    needs: [pre-deployment-checks, build-checks]
+    needs: pre-deployment-checks
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -224,7 +279,7 @@ jobs:
 
   deploy-frontend:
     if: always() && needs.build-and-deploy-backend.result == 'success'
-    needs: build-and-deploy-backend
+    needs: [build-checks, build-and-deploy-backend]
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -238,18 +293,21 @@ jobs:
         with:
           node-version: '22'
       
-      - name: Install dependencies
+      - name: Download frontend build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: .
+      
+      - name: Decompress frontend build
+        run: |
+          tar -xzf .next-frontend.tar.gz -C app/frontend
+          rm .next-frontend.tar.gz
+      
+      - name: Install frontend dependencies for deploy only
         working-directory: ./app/frontend
         run: |
-          rm -rf node_modules package-lock.json
-          npm cache clean --force
-          npm install
-      
-      - name: Build frontend for Workers
-        working-directory: ./app/frontend
-        env:
-          NEXT_PUBLIC_API_URL: https://api.ecent.online
-        run: npm run build:worker
+          npm ci --only=prod
       
       - name: Deploy to Cloudflare Workers
         working-directory: ./app/frontend
@@ -272,7 +330,7 @@ jobs:
 
   deploy-admin:
     if: always() && needs.build-and-deploy-backend.result == 'success'
-    needs: build-and-deploy-backend
+    needs: [build-checks, build-and-deploy-backend]
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -286,18 +344,21 @@ jobs:
         with:
           node-version: '22'
       
-      - name: Install dependencies
+      - name: Download admin build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: admin-build
+          path: .
+      
+      - name: Decompress admin build
+        run: |
+          tar -xzf .next-admin.tar.gz -C app/admin
+          rm .next-admin.tar.gz
+      
+      - name: Install admin dependencies for deploy only
         working-directory: ./app/admin
         run: |
-          rm -rf node_modules package-lock.json
-          npm cache clean --force
-          npm install
-      
-      - name: Build admin for Workers
-        working-directory: ./app/admin
-        env:
-          NEXT_PUBLIC_API_URL: https://api.ecent.online
-        run: npm run build:worker
+          npm ci --only=prod
       
       - name: Deploy to Cloudflare Workers
         working-directory: ./app/admin

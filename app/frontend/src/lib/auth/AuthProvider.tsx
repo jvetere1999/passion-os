@@ -17,6 +17,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const SESSION_INVALID_COOKIE = "session_invalid=1; Max-Age=120; Path=/; SameSite=Lax";
+const SESSION_INVALID_CLEAR = "session_invalid=; Max-Age=0; Path=/; SameSite=Lax";
+
 const PUBLIC_ROUTES = new Set([
   "/",
   "/about",
@@ -41,6 +44,16 @@ function isPublicRoute(pathname: string): boolean {
     }
   }
   return false;
+}
+
+function setSessionInvalidCookie(): void {
+  if (typeof document === "undefined") return;
+  document.cookie = SESSION_INVALID_COOKIE;
+}
+
+function clearSessionInvalidCookie(): void {
+  if (typeof document === "undefined") return;
+  document.cookie = SESSION_INVALID_CLEAR;
 }
 
 /**
@@ -108,8 +121,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [fetchSession]);
 
   useEffect(() => {
-    if (isLoading || user) return;
+    if (isLoading) return;
     if (typeof window === "undefined") return;
+
+    if (user) {
+      clearSessionInvalidCookie();
+      return;
+    }
+
+    setSessionInvalidCookie();
 
     const { pathname } = window.location;
     if (!isPublicRoute(pathname) && pathname !== "/") {

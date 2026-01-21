@@ -70,6 +70,12 @@ async function checkSession(request: NextRequest): Promise<{ authenticated: bool
   try {
     // Get session cookie directly from request
     const sessionCookie = request.cookies.get('session');
+    const sessionInvalid = request.cookies.get('session_invalid')?.value === '1';
+
+    if (sessionInvalid) {
+      console.log(`[middleware] checkSession: session_invalid cookie present`);
+      return { authenticated: false };
+    }
     
     console.log(`[middleware] checkSession: has session cookie: ${!!sessionCookie}, value length: ${sessionCookie?.value?.length || 0}`);
     
@@ -153,6 +159,14 @@ export async function middleware(req: NextRequest) {
 
   // Redirect unauthenticated users to sign in
   if (!authenticated) {
+    const sessionInvalid = req.cookies.get('session_invalid')?.value === '1';
+    if (sessionInvalid) {
+      console.log(`[middleware] REDIRECT: session invalid -> /`);
+      const response = NextResponse.redirect(new URL("/", req.url));
+      response.headers.set('X-Middleware-Auth', 'redirect-to-landing');
+      return response;
+    }
+
     console.log(`[middleware] REDIRECT: unauthenticated user -> /auth/signin?callbackUrl=${pathname}`);
     const signInUrl = new URL("/auth/signin", req.url);
     signInUrl.searchParams.set("callbackUrl", pathname);

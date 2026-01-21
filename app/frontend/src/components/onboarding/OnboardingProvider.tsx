@@ -13,7 +13,7 @@
 
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { getOnboardingState, skipOnboarding, type OnboardingResponse } from "@/lib/api/onboarding";
+import { getOnboardingState, skipOnboarding, startOnboarding, type OnboardingResponse } from "@/lib/api/onboarding";
 import { OnboardingModal } from "./OnboardingModal";
 
 interface OnboardingContextType {
@@ -57,10 +57,24 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
     const checkOnboarding = async () => {
       try {
-        const data = await getOnboardingState();
+        let data = await getOnboardingState();
+
+        // Ensure onboarding is initialized for first-time users
+        if (data.needs_onboarding && (!data.state || !data.current_step)) {
+          await startOnboarding();
+          data = await getOnboardingState();
+        }
+
         setOnboarding(data);
       } catch (error) {
         console.error("Failed to load onboarding:", error);
+        try {
+          await startOnboarding();
+          const data = await getOnboardingState();
+          setOnboarding(data);
+        } catch (startError) {
+          console.error("Failed to start onboarding:", startError);
+        }
       }
       setChecked(true);
     };

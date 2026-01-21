@@ -85,12 +85,29 @@ async fn lock_vault(
             AppError::Internal("Failed to lock vault".to_string())
         })?;
 
-    VaultRepo::lock_vault(&state.db, auth.user_id, reason)
-        .await
-        .map_err(|e| {
+    let lock_result = VaultRepo::lock_vault(&state.db, auth.user_id, reason.clone()).await;
+    match lock_result {
+        Ok(()) => {}
+        Err(sqlx::Error::RowNotFound) => {
+            // Race or missing vault row: re-ensure and retry once
+            let _ = VaultRepo::ensure_vault(&state.db, auth.user_id)
+                .await
+                .map_err(|e| {
+                    tracing::error!("Failed to ensure vault exists: {}", e);
+                    AppError::Internal("Failed to lock vault".to_string())
+                })?;
+            VaultRepo::lock_vault(&state.db, auth.user_id, reason)
+                .await
+                .map_err(|e| {
+                    tracing::error!("Failed to lock vault after retry: {}", e);
+                    AppError::Internal("Failed to lock vault".to_string())
+                })?;
+        }
+        Err(e) => {
             tracing::error!("Failed to lock vault: {}", e);
-            AppError::Internal("Failed to lock vault".to_string())
-        })?;
+            return Err(AppError::Internal("Failed to lock vault".to_string()));
+        }
+    }
 
     Ok((
         StatusCode::OK,

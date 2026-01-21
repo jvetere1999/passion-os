@@ -232,7 +232,7 @@ jobs:
           }
           echo "✓ Neon wiped"
       
-      - name: Apply migrations to Neon
+      - name: Apply migrations to Neon (schema + seeds)
         env:
           DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
         run: |
@@ -245,6 +245,23 @@ jobs:
             }
           done
           echo "✓ All migrations applied"
+
+      - name: Verify seed data
+        env:
+          DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+        run: |
+          echo "Verifying seed data..."
+          SKILLS=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM skill_definitions" | xargs)
+          ROLES=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM roles" | xargs)
+          ENTITLEMENTS=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM entitlements" | xargs)
+          echo "  skill_definitions: $SKILLS"
+          echo "  roles: $ROLES"
+          echo "  entitlements: $ENTITLEMENTS"
+          if [ "$SKILLS" -eq 0 ] || [ "$ROLES" -eq 0 ] || [ "$ENTITLEMENTS" -eq 0 ]; then
+            echo "✗ Seed data missing"
+            exit 1
+          fi
+          echo "✓ Seed data present"
       
       - name: Verify schema
         env:

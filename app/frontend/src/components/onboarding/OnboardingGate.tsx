@@ -44,13 +44,21 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
 
   // If authenticated and on any public page (including auth pages), push into onboarding
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user) {
-      // If user lands on a public page (including /auth/signin), push them into the app so onboarding can run
-      if (isPublic) {
-        router.replace("/onboarding");
-      }
+    if (isLoading || !isAuthenticated || !user) return;
+    if (isPublic) {
+      router.replace("/onboarding");
     }
-  }, [isLoading, isAuthenticated, user, pathname, router, isPublic]);
+  }, [isLoading, isAuthenticated, user, router, isPublic]);
+
+  // TOS should be handled as part of onboarding; if not accepted, push user into onboarding flow
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !user) return;
+    if (!user.tosAccepted && pathname !== "/onboarding") {
+      // Backend auto-accepts TOS on first authenticated request; refresh to get updated session
+      refresh?.();
+      router.replace("/onboarding");
+    }
+  }, [isLoading, isAuthenticated, user, pathname, router, refresh]);
 
   // For public routes, render immediately (don't wait for auth)
   if (isPublic) {
@@ -69,15 +77,6 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
     // The redirect will happen on next page load, for now show nothing
     return null;
   }
-
-  // TOS should be handled as part of onboarding; if not accepted, push user into onboarding flow
-  useEffect(() => {
-    if (isAuthenticated && user && !user.tosAccepted && pathname !== "/onboarding") {
-      // Backend auto-accepts TOS on first authenticated request; refresh to get updated session
-      refresh?.();
-      router.replace("/onboarding");
-    }
-  }, [isAuthenticated, user, pathname, router, refresh]);
 
   return <>{children}</>;
 }

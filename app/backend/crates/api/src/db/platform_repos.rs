@@ -1215,10 +1215,14 @@ impl OnboardingRepo {
         // Create or update state
         sqlx::query(
             r#"
-            INSERT INTO user_onboarding_state (id, user_id, flow_id, current_step_id, status, started_at, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, 'in_progress', $5, $5, $5)
+            INSERT INTO user_onboarding_state (id, user_id, flow_id, current_step_id, status, can_resume, started_at, created_at, updated_at)
+            VALUES ($1, $2, $3, $4, 'in_progress', true, $5, $5, $5)
             ON CONFLICT (user_id) DO UPDATE
-            SET status = 'in_progress', current_step_id = $4, started_at = COALESCE(user_onboarding_state.started_at, $5), updated_at = $5
+            SET status = 'in_progress',
+                can_resume = true,
+                current_step_id = $4,
+                started_at = COALESCE(user_onboarding_state.started_at, $5),
+                updated_at = $5
             "#
         )
         .bind(id)

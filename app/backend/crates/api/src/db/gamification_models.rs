@@ -133,6 +133,8 @@ impl SkillCategory {
 #[sqlx(type_name = "text")] // Store as TEXT in database
 #[serde(rename_all = "snake_case")]
 pub enum AchievementCategory {
+    /// Focus-related achievements
+    Focus,
     /// Milestone achievements (level milestones, etc.)
     Milestone,
     /// Challenge achievements (complete specific challenges)
@@ -155,6 +157,7 @@ impl AchievementCategory {
     /// Get human-readable display name
     pub fn display_name(&self) -> &str {
         match self {
+            Self::Focus => "Focus",
             Self::Milestone => "Milestone",
             Self::Challenge => "Challenge",
             Self::Secret => "Secret",

@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "master_version": "2.0.0",
+  "total_changes": 0,
+  "undo_depth": 3,
+  "last_updated": "2026-01-12T00:00:00Z",
+  "changes": [],
+  "undoable_changes": [],
+  "metadata": {
+    "next_migration_number": 3,
+    "last_migration_applied": "0002_seeds.sql",
+    "baseline_established_at": "2026-01-12T00:00:00Z"
+  }
+}

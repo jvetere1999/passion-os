@@ -13,7 +13,7 @@
 
 import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { getOnboardingState, type OnboardingResponse } from "@/lib/api/onboarding";
+import { getOnboardingState, skipOnboarding, type OnboardingResponse } from "@/lib/api/onboarding";
 import { OnboardingModal } from "./OnboardingModal";
 
 interface OnboardingContextType {
@@ -39,9 +39,21 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
   const [onboarding, setOnboarding] = useState<OnboardingResponse | null>(null);
   const [checked, setChecked] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
+  const [lastUserId, setLastUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const nextUserId = user?.id ?? null;
+    if (nextUserId !== lastUserId) {
+      setChecked(false);
+      setOnboarding(null);
+      setCurrentStepIndex(0);
+      setLastUserId(nextUserId);
+    }
+  }, [user?.id, lastUserId]);
 
   useEffect(() => {
     if (isLoading || !isAuthenticated || checked) return;
+    if (!user || !user.approved) return;
 
     const checkOnboarding = async () => {
       try {
@@ -54,7 +66,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     };
 
     checkOnboarding();
-  }, [isLoading, isAuthenticated, checked]);
+  }, [isLoading, isAuthenticated, checked, user]);
 
   const handleCompleteStep = useCallback(async () => {
     if (!onboarding?.flow) return;
@@ -69,7 +81,7 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
 
   const handleSkipOnboarding = useCallback(async () => {
     try {
-      await getOnboardingState(); // Mark as skipped via API call
+      await skipOnboarding();
       setOnboarding(null);
     } catch (error) {
       console.error("Failed to skip onboarding:", error);
@@ -114,11 +126,12 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     >
       {children}
       <OnboardingModal
-        initialState={onboarding.state as any || null}
-        flow={onboarding.flow as any || null}
-        userId={user.id}
+        state={onboarding.state ?? null}
+        flow={onboarding.flow ?? null}
+        currentStep={onboarding.current_step ?? null}
+        allSteps={onboarding.all_steps ?? []}
+        needsOnboarding={onboarding.needs_onboarding}
       />
     </OnboardingContext.Provider>
   );
 }
-

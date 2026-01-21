@@ -5,48 +5,58 @@
  * Data-driven, versioned, resumable onboarding flow
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { safeFetch, API_BASE_URL } from "@/lib/api";
+import {
+  startOnboarding,
+  completeStep as apiCompleteStep,
+  skipOnboarding as apiSkipOnboarding,
+} from "@/lib/api/onboarding";
 import { useRouter } from "next/navigation";
 import styles from "./OnboardingModal.module.css";
 
-// Step types from the database
-type StepType = "tour" | "choice" | "preference" | "action" | "explain";
-
 interface OnboardingStep {
   id: string;
-  step_type: StepType;
+  step_type: string;
   title: string;
   description: string | null;
   target_selector: string | null;
   target_route: string | null;
-  options_json: string | null;
-  step_order: number;
-  allows_multiple: number;
-  required: number;
+  fallback_content?: string | null;
+  options?: unknown | null;
+  allows_multiple?: boolean;
+  required?: boolean;
+  action_type?: string | null;
+  action_config?: unknown | null;
 }
 
 interface OnboardingState {
-  id: string;
-  flow_id: string;
-  current_step_id: string | null;
   status: string;
-  started_at: string | null;
-  completed_at: string | null;
-  responses_json: string | null;
+  can_resume?: boolean;
+  started_at?: string | null;
+  completed_at?: string | null;
+  skipped_at?: string | null;
 }
 
 interface OnboardingFlow {
   id: string;
   name: string;
-  version: string;
-  steps: OnboardingStep[];
+  total_steps: number;
+}
+
+interface OnboardingStepSummary {
+  id: string;
+  order: number;
+  step_type: string;
+  title: string;
 }
 
 interface OnboardingModalProps {
-  initialState: OnboardingState | null;
+  state: OnboardingState | null;
   flow: OnboardingFlow | null;
-  userId: string;
+  currentStep: OnboardingStep | null;
+  allSteps: OnboardingStepSummary[];
+  needsOnboarding: boolean;
 }
 
 // Interest options
@@ -93,12 +103,14 @@ const FOCUS_DURATIONS = [
   { minutes: 45, label: "45 min", description: "Deep work" },
 ];
 
-export function OnboardingModal({ initialState, flow, userId }: OnboardingModalProps) {
+export function OnboardingModal({ state, flow, currentStep, allSteps, needsOnboarding }: OnboardingModalProps) {
   const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [stepData, setStepData] = useState<Record<string, unknown>>({});
+  const [activeStep, setActiveStep] = useState<OnboardingStep | null>(currentStep);
+  const [stepCache, setStepCache] = useState<Record<string, OnboardingStep>>({});
 
   // Choice selections
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -113,74 +125,72 @@ export function OnboardingModal({ initialState, flow, userId }: OnboardingModalP
     success: false,
   });
 
-  const startOnboarding = useCallback(async () => {
+  const totalSteps = useMemo(() => {
+    if (flow?.total_steps) return flow.total_steps;
+    return allSteps.length;
+  }, [flow?.total_steps, allSteps.length]);
+
+  const startOnboardingFlow = useCallback(async () => {
     try {
-      await safeFetch(`${API_BASE_URL}/api/onboarding/start`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ flowId: flow?.id }),
-      });
+      const result = await startOnboarding();
+      if (result.current_step) {
+        setActiveStep(result.current_step as OnboardingStep);
+        setStepCache((prev) => ({ ...prev, [result.current_step!.id]: result.current_step as OnboardingStep }));
+        const stepIndex = allSteps.findIndex((s) => s.id === result.current_step!.id);
+        if (stepIndex >= 0) {
+          setCurrentStepIndex(stepIndex);
+        }
+      }
     } catch (error) {
       console.error("Failed to start onboarding:", error);
     }
-  }, [flow?.id]);
+  }, [allSteps]);
 
   // Determine if we should show onboarding
   useEffect(() => {
-    if (!flow || !flow.steps.length) {
+    if (!flow || totalSteps === 0 || !needsOnboarding) {
       setIsVisible(false);
       return;
     }
 
     // Show if no state exists (new user) or if not completed/skipped
-    if (!initialState) {
+    if (!state) {
       setIsVisible(true);
-      startOnboarding();
-    } else if (initialState.status !== "completed" && initialState.status !== "skipped") {
+      startOnboardingFlow();
+    } else if (state.status !== "completed" && state.status !== "skipped") {
       setIsVisible(true);
-      // Resume from current step
-      const stepIndex = flow.steps.findIndex(s => s.id === initialState.current_step_id);
-      if (stepIndex >= 0) {
-        setCurrentStepIndex(stepIndex);
-      }
-      // Load saved step data
-      if (initialState.responses_json) {
-        try {
-          setStepData(JSON.parse(initialState.responses_json));
-        } catch {
-          // Ignore parse errors
+      if (currentStep) {
+        setActiveStep(currentStep);
+        setStepCache((prev) => ({ ...prev, [currentStep.id]: currentStep }));
+        const stepIndex = allSteps.findIndex((s) => s.id === currentStep.id);
+        if (stepIndex >= 0) {
+          setCurrentStepIndex(stepIndex);
         }
+      } else {
+        startOnboardingFlow();
       }
     }
-  }, [flow, initialState, startOnboarding]);
+  }, [allSteps, currentStep, flow, needsOnboarding, startOnboardingFlow, state, totalSteps]);
 
-  const currentStep = flow?.steps[currentStepIndex];
-  const totalSteps = flow?.steps.length || 0;
+  const currentStepData = activeStep;
+  const currentStep = currentStepData;
   const progress = totalSteps > 0 ? ((currentStepIndex + 1) / totalSteps) * 100 : 0;
 
   const completeStep = useCallback(async (data?: Record<string, unknown>) => {
-    if (!currentStep) return;
+    if (!currentStepData) return;
 
     setIsLoading(true);
     try {
-      const response = await safeFetch(`${API_BASE_URL}/api/onboarding/step`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          stepId: currentStep.id,
-          response: data || stepData,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("[onboarding] Step API error:", errorData);
-        throw new Error("Failed to complete step");
-      }
+      const result = await apiCompleteStep(currentStepData.id, data || stepData);
 
       // Move to next step or complete
-      if (currentStepIndex < totalSteps - 1) {
-        setCurrentStepIndex(currentStepIndex + 1);
+      if (result.next_step) {
+        setStepCache((prev) => ({ ...prev, [result.next_step!.id]: result.next_step as OnboardingStep }));
+        const nextIndex = allSteps.findIndex((s) => s.id === result.next_step!.id);
+        if (nextIndex >= 0) {
+          setCurrentStepIndex(nextIndex);
+        }
+        setActiveStep(result.next_step as OnboardingStep);
         setStepData({});
       } else {
         // Onboarding complete
@@ -192,16 +202,12 @@ export function OnboardingModal({ initialState, flow, userId }: OnboardingModalP
     } finally {
       setIsLoading(false);
     }
-  }, [currentStep, currentStepIndex, totalSteps, stepData, router]);
+  }, [allSteps, currentStepData, router, stepData]);
 
   const skipOnboarding = useCallback(async () => {
     setIsLoading(true);
     try {
-      await safeFetch(`${API_BASE_URL}/api/onboarding/skip`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ softLandingHours: 24 }),
-      });
+      await apiSkipOnboarding();
       setIsVisible(false);
       router.refresh();
     } catch (error) {
@@ -213,9 +219,15 @@ export function OnboardingModal({ initialState, flow, userId }: OnboardingModalP
 
   const goBack = useCallback(() => {
     if (currentStepIndex > 0) {
-      setCurrentStepIndex(currentStepIndex - 1);
+      const previousIndex = currentStepIndex - 1;
+      const previousStepId = allSteps[previousIndex]?.id;
+      const previousStep = previousStepId ? stepCache[previousStepId] : null;
+      if (previousStep) {
+        setCurrentStepIndex(previousIndex);
+        setActiveStep(previousStep);
+      }
     }
-  }, [currentStepIndex]);
+  }, [allSteps, currentStepIndex, stepCache]);
 
   // Handle WebAuthn passkey registration
   const registerPasskey = useCallback(async () => {

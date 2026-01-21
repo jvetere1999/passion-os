@@ -13,16 +13,29 @@ export default function SignInPage() {
   return (
     <main className={styles.main}>
       <div className={styles.container}>
-        <div className={styles.header}>
-          <Link href="/" className={styles.logo}>
-            Ignition
-          </Link>
-        </div>
+        <section className={styles.hero}>
+          <div className={styles.heroContent}>
+            <Link href="/" className={styles.logo}>
+              Ignition
+            </Link>
+            <span className={styles.tag}>Passkey-first · Zero friction</span>
+            <h1 className={styles.title}>Step in. Your vault, your focus, no passwords.</h1>
+            <p className={styles.subtitle}>
+              Biometric sign-in, instant onboarding, recovery codes as a last resort. Built for speed and security.
+            </p>
+            <div className={styles.pillList}>
+              <span className={styles.pill}>WebAuthn</span>
+              <span className={styles.pill}>Device-bound keys</span>
+              <span className={styles.pill}>Session hardening</span>
+              <span className={styles.pill}>Zero password reuse</span>
+            </div>
+          </div>
+        </section>
 
         <div className={styles.card}>
-          <h1 className={styles.title}>Sign In to Ignition</h1>
+          <h2 className={styles.title}>Sign in with your passkey</h2>
           <p className={styles.subtitle}>
-            Use your passkey to sign in securely. No passwords, just biometrics or PIN.
+            Touch or Face ID on supported devices. If you’re resuming after setup, use recovery only if absolutely needed.
           </p>
 
           <PasskeySignIn />
@@ -44,13 +57,12 @@ export default function SignInPage() {
           </p>
 
           <div className={styles.requirements}>
-            <h3>About Passkeys</h3>
+            <h3>Passkey highlights</h3>
             <ul>
-              <li>Faster than passwords - use biometric or PIN</li>
-              <li>More secure - no passwords to steal</li>
-              <li>Works across your devices</li>
-              <li>Set up your passkey during account creation</li>
-              <li>Keep recovery codes somewhere safe, just in case</li>
+              <li>Biometric or PIN — no password database to leak</li>
+              <li>Syncs via your OS keychain (iCloud Keychain / Windows Hello)</li>
+              <li>Recovery codes remain offline; rotate after use</li>
+              <li>We never see your private key — only public credentials</li>
             </ul>
           </div>
 

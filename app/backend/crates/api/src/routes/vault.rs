@@ -132,8 +132,7 @@ async fn unlock_vault(
         .map_err(|e| {
             tracing::error!("Failed to fetch vault: {}", e);
             AppError::Internal("Failed to fetch vault".to_string())
-        })?
-        .ok_or(AppError::Unauthorized("Vault not found".to_string()))?;
+        })?;
 
     // Verify passphrase using bcrypt (CLEANUP-1: security-critical)
     // The vault stores passphrase_hash created with bcrypt cost 12

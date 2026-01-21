@@ -232,15 +232,14 @@ async fn change_passphrase_authenticated(
         .map_err(|e| {
             tracing::error!("Failed to fetch vault: {:?}", e);
             AppError::NotFound("Vault not found".to_string())
-        })?
-        .ok_or_else(|| AppError::NotFound("Vault not found".to_string()))?;
+        })?;
 
     // Verify current passphrase unless this is the first-time placeholder vault
     let is_placeholder = vault
         .key_derivation_params
         .as_object()
-        .and_then(|o| o.get("placeholder"))
-        .and_then(|v| v.as_bool())
+        .and_then(|o: &serde_json::Map<String, serde_json::Value>| o.get("placeholder"))
+        .and_then(|v: &serde_json::Value| v.as_bool())
         .unwrap_or(false);
 
     if !is_placeholder {

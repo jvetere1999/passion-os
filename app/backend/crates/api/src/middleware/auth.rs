@@ -165,6 +165,7 @@ pub async fn require_auth(
     .await
     .ok()
     .flatten()
+    .flatten()
     .map(|s| s == "completed")
     .unwrap_or(false);
 

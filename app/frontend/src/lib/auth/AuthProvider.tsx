@@ -17,6 +17,32 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+const PUBLIC_ROUTES = new Set([
+  "/",
+  "/about",
+  "/privacy",
+  "/terms",
+  "/contact",
+  "/help",
+  "/auth/signin",
+  "/auth/signup",
+  "/auth/callback",
+  "/auth/error",
+  "/pending-approval",
+]);
+
+function isPublicRoute(pathname: string): boolean {
+  if (PUBLIC_ROUTES.has(pathname)) {
+    return true;
+  }
+  for (const route of PUBLIC_ROUTES) {
+    if (pathname.startsWith(`${route}/`)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 /**
  * Auth Provider - manages session state via backend API
  *
@@ -80,6 +106,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.removeEventListener('storage', handleStorageChange);
       };
     }, [fetchSession]);
+
+  useEffect(() => {
+    if (isLoading || user) return;
+    if (typeof window === "undefined") return;
+
+    const { pathname } = window.location;
+    if (!isPublicRoute(pathname) && pathname !== "/") {
+      window.location.href = "/";
+    }
+  }, [isLoading, user]);
 
   // Sign in - redirect to backend OAuth endpoint
   const signIn = useCallback((provider: 'google' | 'azure' = 'google') => {

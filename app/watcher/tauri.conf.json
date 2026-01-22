@@ -50,7 +50,7 @@
     },
     "bundle": {
       "active": true,
-      "targets": "all",
+      "targets": ["app"],
       "identifier": "com.ecent.daw-watcher",
       "icon": [
         "icons/32x32.png",

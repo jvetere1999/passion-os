@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { themeScript } from "@/lib/theme/script";
 import { RootLayoutClient } from "./RootLayoutClient";
+import "@/styles/design-tokens.css";
 import "@/styles/tokens.css";
 import "./globals.css";
 import "./zen-browser.css";

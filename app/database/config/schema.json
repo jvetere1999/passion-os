@@ -4194,7 +4194,7 @@
           "foreign_key": false
         },
         "reps": {
-          "type": "INTEGER",
+          "type": "TEXT",
           "nullable": true,
           "primary": false,
           "unique": false,

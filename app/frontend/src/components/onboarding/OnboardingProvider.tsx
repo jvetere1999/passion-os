@@ -1,47 +1,24 @@
 /**
  * OnboardingProvider - ENABLED (2026-01-13)
  *
- * Onboarding modal feature is enabled and provides guided setup for new users.
- * Displays onboarding flow when conditions are met (new user, active onboarding state).
- *
- * Backend API: GET /api/onboarding/state, POST /api/onboarding/step
- * Context provides: isVisible, currentStep, completeStep, skipOnboarding
- * Modal renders within context when all validation passes.
+ * Ensures onboarding is initialized for new users and redirects to /onboarding
+ * when required. The onboarding UI is rendered on the /onboarding route.
  */
 
 "use client";
 
-import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { ReactNode, useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
-import { getOnboardingState, skipOnboarding, startOnboarding, type OnboardingResponse } from "@/lib/api/onboarding";
-import { OnboardingModal } from "./OnboardingModal";
-
-interface OnboardingContextType {
-  isVisible: boolean;
-  currentStep: unknown; // OnboardingStep or null
-  currentStepIndex: number;
-  completeStep: () => Promise<void>;
-  skipOnboarding: () => Promise<void>;
-}
-
-const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
-
-export function useOnboarding() {
-  const context = useContext(OnboardingContext);
-  if (!context) {
-    throw new Error("useOnboarding must be used within OnboardingProvider");
-  }
-  return context;
-}
+import { getOnboardingState, startOnboarding, type OnboardingResponse } from "@/lib/api/onboarding";
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isOnboardingRoute = pathname === "/onboarding";
   const { user, isAuthenticated, isLoading } = useAuth();
   const [onboarding, setOnboarding] = useState<OnboardingResponse | null>(null);
   const [checked, setChecked] = useState(false);
-  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [lastUserId, setLastUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,7 +26,6 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     if (nextUserId !== lastUserId) {
       setChecked(false);
       setOnboarding(null);
-      setCurrentStepIndex(0);
       setLastUserId(nextUserId);
     }
   }, [user?.id, lastUserId]);
@@ -86,25 +62,19 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     checkOnboarding();
   }, [isLoading, isAuthenticated, checked, user, isOnboardingRoute]);
 
-  const handleCompleteStep = useCallback(async () => {
-    if (!onboarding?.flow) return;
-    const nextIndex = currentStepIndex + 1;
-    if (nextIndex < onboarding.flow.total_steps) {
-      setCurrentStepIndex(nextIndex);
-    } else {
-      // All steps completed
-      await handleSkipOnboarding();
-    }
-  }, [onboarding, currentStepIndex]);
+  const needsRedirect =
+    !isOnboardingRoute &&
+    checked &&
+    !!onboarding &&
+    onboarding.needs_onboarding &&
+    onboarding.state?.status !== "completed" &&
+    !!onboarding.flow;
 
-  const handleSkipOnboarding = useCallback(async () => {
-    try {
-      await skipOnboarding();
-      setOnboarding(null);
-    } catch (error) {
-      console.error("Failed to skip onboarding:", error);
+  useEffect(() => {
+    if (needsRedirect) {
+      router.replace("/onboarding");
     }
-  }, []);
+  }, [needsRedirect, router]);
 
   // Don't render if not authenticated or still loading
   if (!isAuthenticated || !user) {
@@ -115,45 +85,5 @@ export function OnboardingProvider({ children }: { children: ReactNode }) {
     return children;
   }
 
-  // Don't render if we haven't checked yet
-  if (!checked || !onboarding) {
-    return children;
-  }
-
-  // Don't render if onboarding not needed
-  if (!onboarding.needs_onboarding) {
-    return children;
-  }
-
-  // Don't render if already completed or skipped
-  if (onboarding.state?.status === "completed" || onboarding.state?.status === "skipped") {
-    return children;
-  }
-
-  // Don't render if no flow
-  if (!onboarding.flow) {
-    return children;
-  }
-
-  // Provide context to children - modal will render based on context state
-  return (
-    <OnboardingContext.Provider
-      value={{
-        isVisible: true,
-        currentStep: onboarding.current_step || null,
-        currentStepIndex,
-        completeStep: handleCompleteStep,
-        skipOnboarding: handleSkipOnboarding,
-      }}
-    >
-      {children}
-      <OnboardingModal
-        state={onboarding.state ?? null}
-        flow={onboarding.flow ?? null}
-        currentStep={onboarding.current_step ?? null}
-        allSteps={onboarding.all_steps ?? []}
-        needsOnboarding={onboarding.needs_onboarding}
-      />
-    </OnboardingContext.Provider>
-  );
+  return children;
 }

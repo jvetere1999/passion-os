@@ -470,14 +470,6 @@ pub struct CompleteStepResponse {
     pub next_step: Option<OnboardingStepResponse>,
 }
 
-/// Skip onboarding response
-#[derive(Debug, Clone, Serialize)]
-pub struct SkipOnboardingResponse {
-    pub success: bool,
-    pub message: String,
-    pub soft_landing_until: Option<DateTime<Utc>>,
-}
-
 // ============================================================================
 // USER SETTINGS
 // ============================================================================

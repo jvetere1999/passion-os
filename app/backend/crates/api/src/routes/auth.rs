@@ -20,6 +20,7 @@ use crate::db::models::CreateSessionInput;
 use crate::db::oauth_repos::OAuthStateRepo;
 use crate::db::recovery_codes_repos::RecoveryCodesRepo;
 use crate::db::repos::{generate_session_token, SessionRepo, UserRepo};
+use crate::db::vault_repos::VaultRepo;
 use crate::error::{AppError, AppResult};
 use crate::middleware::auth::{create_logout_cookie, create_session_cookie, AuthContext};
 use crate::services::{AuthService, OAuthService, RecoveryValidator, WebAuthnService};
@@ -114,6 +115,7 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/webauthn/signin-options", get(webauthn_signin_options))
         .route("/webauthn/signin-verify", post(webauthn_signin_verify))
         .route("/recovery/signin", post(recovery_signin))
+        .route("/recovery/codes", post(generate_recovery_codes))
         // Session endpoints
         .route("/session", get(get_session))
         .route("/signout", post(signout))
@@ -785,6 +787,16 @@ pub struct RecoverySigninRequest {
     pub code: String,
 }
 
+#[derive(Deserialize)]
+pub struct GenerateRecoveryCodesRequest {
+    pub count: Option<usize>,
+}
+
+#[derive(Serialize)]
+pub struct GenerateRecoveryCodesResponse {
+    pub codes: Vec<String>,
+}
+
 fn normalize_recovery_code(code: &str) -> String {
     let raw: String = code
         .chars()
@@ -854,6 +866,48 @@ async fn recovery_signin(
             serde_json::to_string(&response).map_err(|e| AppError::Internal(e.to_string()))?,
         ))
         .map_err(|e| AppError::Internal(e.to_string()))?)
+}
+
+async fn generate_recovery_codes(
+    State(state): State<Arc<AppState>>,
+    auth: Option<Extension<AuthContext>>,
+    Json(payload): Json<GenerateRecoveryCodesRequest>,
+) -> AppResult<Json<GenerateRecoveryCodesResponse>> {
+    let auth_context = auth
+        .ok_or(AppError::Unauthorized(
+            "Authentication required".to_string(),
+        ))?
+        .0;
+
+    let count = payload.count.unwrap_or(8).clamp(1, 12);
+
+    let vault = VaultRepo::ensure_vault(&state.db, auth_context.user_id)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to ensure vault exists: {}", e);
+            AppError::Internal("Failed to generate recovery codes".to_string())
+        })?;
+
+    RecoveryCodesRepo::revoke_all_codes(&state.db, vault.id)
+        .await
+        .map_err(|e| {
+            tracing::error!("Failed to revoke recovery codes: {}", e);
+            AppError::Internal("Failed to generate recovery codes".to_string())
+        })?;
+
+    let codes = RecoveryCodesRepo::generate_codes(
+        &state.db,
+        vault.id,
+        auth_context.user_id,
+        count,
+    )
+    .await
+    .map_err(|e| {
+        tracing::error!("Failed to generate recovery codes: {}", e);
+        AppError::Internal("Failed to generate recovery codes".to_string())
+    })?;
+
+    Ok(Json(GenerateRecoveryCodesResponse { codes }))
 }
 
 // ============================================================================

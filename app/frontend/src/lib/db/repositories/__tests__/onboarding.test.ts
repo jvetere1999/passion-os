@@ -95,16 +95,6 @@ describe("Onboarding Repository", () => {
     });
   });
 
-  describe("skipOnboarding", () => {
-    it("should set status to skipped", async () => {
-      mockDb.run.mockResolvedValue({ success: true });
-
-      // Expected behavior
-      const status = "skipped";
-      expect(status).toBe("skipped");
-    });
-  });
-
   describe("saveOnboardingChoices", () => {
     it("should save interests to user_interests", async () => {
       const interests = ["focus", "learning", "music"];
@@ -158,16 +148,16 @@ describe("Onboarding Flow Integration", () => {
     const state = {
       status: "completed",
     };
-    const shouldShowModal = state.status !== "completed" && state.status !== "skipped";
+    const shouldShowModal = state.status !== "completed";
     expect(shouldShowModal).toBe(false);
   });
 
-  it("should not show modal if skipped", () => {
+  it("should show modal if skipped", () => {
     const state = {
       status: "skipped",
     };
-    const shouldShowModal = state.status !== "completed" && state.status !== "skipped";
-    expect(shouldShowModal).toBe(false);
+    const shouldShowModal = state.status !== "completed";
+    expect(shouldShowModal).toBe(true);
   });
 
   it("should persist choices to D1 for cross-device sync", () => {
@@ -179,4 +169,3 @@ describe("Onboarding Flow Integration", () => {
     expect(true).toBe(true);
   });
 });
-

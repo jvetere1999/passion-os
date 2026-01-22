@@ -78,12 +78,6 @@ export interface CompleteStepResponse {
   next_step: OnboardingStep | null;
 }
 
-export interface SkipOnboardingResponse {
-  success: boolean;
-  message: string;
-  soft_landing_until: string | null;
-}
-
 interface OnboardingWrapper {
   data: OnboardingResponse;
 }
@@ -94,10 +88,6 @@ interface StartWrapper {
 
 interface CompleteStepWrapper {
   data: CompleteStepResponse;
-}
-
-interface SkipWrapper {
-  data: SkipOnboardingResponse;
 }
 
 interface ResetWrapper {
@@ -145,14 +135,6 @@ export async function completeStep(
     response,
   });
   return result.data;
-}
-
-/**
- * Skip onboarding (can resume later)
- */
-export async function skipOnboarding(): Promise<SkipOnboardingResponse> {
-  const response = await apiPost<SkipWrapper>('/api/onboarding/skip');
-  return response.data;
 }
 
 /**

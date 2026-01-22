@@ -21,7 +21,7 @@ export default function SignInPage() {
             <span className={styles.tag}>Passkey-first · Zero friction</span>
             <h1 className={styles.title}>Step in. Your vault, your focus, no passwords.</h1>
             <p className={styles.subtitle}>
-              Biometric sign-in, instant onboarding, recovery codes as a last resort. Built for speed and security.
+              Biometric sign-in and instant onboarding. Recovery codes are a backup if your passkey isn’t available.
             </p>
             <div className={styles.pillList}>
               <span className={styles.pill}>WebAuthn</span>
@@ -35,7 +35,7 @@ export default function SignInPage() {
         <div className={styles.card}>
           <h2 className={styles.title}>Sign in with your passkey</h2>
           <p className={styles.subtitle}>
-            Touch or Face ID on supported devices. If you’re resuming after setup, use recovery only if absolutely needed.
+            Touch or Face ID on supported devices. Use recovery only if you’ve lost access to your passkey.
           </p>
 
           <PasskeySignIn />
@@ -61,7 +61,7 @@ export default function SignInPage() {
             <ul>
               <li>Biometric or PIN — no password database to leak</li>
               <li>Syncs via your OS keychain (iCloud Keychain / Windows Hello)</li>
-              <li>Recovery codes remain offline; rotate after use</li>
+              <li>Recovery codes unlock access if a passkey is lost</li>
               <li>We never see your private key — only public credentials</li>
             </ul>
           </div>

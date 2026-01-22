@@ -1334,45 +1334,6 @@ impl OnboardingRepo {
         })
     }
 
-    /// Skip onboarding
-    pub async fn skip(pool: &PgPool, user_id: Uuid) -> Result<SkipOnboardingResponse, AppError> {
-        let now = Utc::now();
-        let soft_landing_until = now + chrono::Duration::hours(1);
-
-        sqlx::query(
-            r#"
-            UPDATE user_onboarding_state
-            SET status = 'skipped', skipped_at = $1, updated_at = $1
-            WHERE user_id = $2
-            "#,
-        )
-        .bind(now)
-        .bind(user_id)
-        .execute(pool)
-        .await?;
-
-        // Update user settings with soft landing
-        sqlx::query(
-            r#"
-            INSERT INTO user_settings (id, user_id, soft_landing_until, created_at, updated_at)
-            VALUES ($1, $2, $3, $4, $4)
-            ON CONFLICT (user_id) DO UPDATE SET soft_landing_until = $3, updated_at = $4
-            "#,
-        )
-        .bind(Uuid::new_v4())
-        .bind(user_id)
-        .bind(soft_landing_until)
-        .bind(now)
-        .execute(pool)
-        .await?;
-
-        Ok(SkipOnboardingResponse {
-            success: true,
-            message: "Onboarding skipped. You can resume from Settings anytime.".to_string(),
-            soft_landing_until: Some(soft_landing_until),
-        })
-    }
-
     /// Reset onboarding
     pub async fn reset(pool: &PgPool, user_id: Uuid) -> Result<(), AppError> {
         let now = Utc::now();

@@ -10,6 +10,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/config/environment";
+import { getOnboardingState } from "@/lib/api/onboarding";
 
 const API_BASE_URL = getApiBaseUrl();
 
@@ -37,13 +38,18 @@ export default function CallbackPage() {
             }
           );
 
-          const data = (await sessionResponse.json()) as any;
+          const data = (await sessionResponse.json().catch(() => ({}))) as any;
           
           if (data.user) {
-            // Session established - redirect to next step
-            setStatus("Session established, redirecting...");
-            // Check if user has completed onboarding
-            router.push(data.user.onboarding_completed ? "/today" : "/onboarding");
+            // Session established - check onboarding state
+            setStatus("Session established, checking onboarding...");
+            try {
+              const onboarding = await getOnboardingState();
+              router.push(onboarding.needs_onboarding ? "/onboarding" : "/today");
+            } catch (onboardingError) {
+              console.error("Failed to check onboarding state:", onboardingError);
+              router.push("/onboarding");
+            }
             return;
           }
           

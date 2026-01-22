@@ -113,7 +113,7 @@ export function PasskeySignIn() {
         </div>
       )}
 
-      <label className={styles.recoveryLabel} htmlFor="passkey-email">
+      <label className={styles.fieldLabel} htmlFor="passkey-email">
         Email
       </label>
       <input
@@ -126,7 +126,7 @@ export function PasskeySignIn() {
           setEmail(event.target.value);
           if (error) setError(null);
         }}
-        className={styles.recoveryInput}
+        className={styles.fieldInput}
       />
 
       <button

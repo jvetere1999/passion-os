@@ -10,7 +10,6 @@ import { safeFetch, API_BASE_URL } from "@/lib/api";
 import {
   startOnboarding,
   completeStep as apiCompleteStep,
-  skipOnboarding as apiSkipOnboarding,
 } from "@/lib/api/onboarding";
 import { useRouter } from "next/navigation";
 import {
@@ -129,11 +128,44 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
     error: null,
     success: false,
   });
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
+  const [isGeneratingCodes, setIsGeneratingCodes] = useState(false);
 
   const totalSteps = useMemo(() => {
     if (flow?.total_steps) return flow.total_steps;
     return allSteps.length;
   }, [flow?.total_steps, allSteps.length]);
+
+  useEffect(() => {
+    setRecoveryCodes(null);
+    setRecoveryError(null);
+    setIsGeneratingCodes(false);
+  }, [activeStep?.id]);
+
+  const generateRecoveryCodes = useCallback(async () => {
+    if (isGeneratingCodes) return;
+    setIsGeneratingCodes(true);
+    setRecoveryError(null);
+    try {
+      const response = await safeFetch(`${API_BASE_URL}/auth/recovery/codes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: 8 }),
+      });
+      if (!response.ok) {
+        const error = (await response.json().catch(() => ({}))) as { message?: string };
+        throw new Error(error.message || "Failed to generate recovery codes");
+      }
+      const data = (await response.json()) as { codes: string[] };
+      setRecoveryCodes(data.codes);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to generate recovery codes";
+      setRecoveryError(message);
+    } finally {
+      setIsGeneratingCodes(false);
+    }
+  }, [isGeneratingCodes]);
 
   const startOnboardingFlow = useCallback(async () => {
     try {
@@ -158,11 +190,11 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
       return;
     }
 
-    // Show if no state exists (new user) or if not completed/skipped
+    // Show if no state exists (new user) or if not completed
     if (!state) {
       setIsVisible(true);
       startOnboardingFlow();
-    } else if (state.status !== "completed" && state.status !== "skipped") {
+    } else if (state.status !== "completed") {
       setIsVisible(true);
       if (initialStep) {
         setActiveStep(initialStep);
@@ -208,19 +240,6 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
       setIsLoading(false);
     }
   }, [allSteps, currentStepData, router, stepData]);
-
-  const skipOnboarding = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      await apiSkipOnboarding();
-      setIsVisible(false);
-      router.refresh();
-    } catch (error) {
-      console.error("Failed to skip onboarding:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [router]);
 
   const goBack = useCallback(() => {
     if (currentStepIndex > 0) {
@@ -287,11 +306,7 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
         success: true,
         error: null,
       }));
-
-      // Complete the step after successful registration
-      setTimeout(() => {
-        completeStep({ passkey_registered: true });
-      }, 1500);
+      await generateRecoveryCodes();
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to register passkey";
       console.error("[WebAuthn] Registration error:", error);
@@ -302,7 +317,7 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
         success: false,
       }));
     }
-  }, [webauthnStatus.isSupported, completeStep]);
+  }, [webauthnStatus.isSupported, generateRecoveryCodes]);
 
   // Handle interest selection
   const toggleInterest = (key: string) => {
@@ -503,21 +518,67 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
                   ✓ Passkey registered successfully!
                 </div>
               )}
+              {webauthnStatus.success && (
+                <div className={styles.recoveryCodesPanel}>
+                  <p className={styles.recoveryCodesTitle}>Save your recovery codes</p>
+                  {recoveryCodes ? (
+                    <div className={styles.recoveryCodesList}>
+                      {recoveryCodes.map((code) => (
+                        <span key={code} className={styles.recoveryCode}>
+                          {code}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className={styles.recoveryCodesStatus}>
+                      {isGeneratingCodes
+                        ? "Generating recovery codes..."
+                        : "Recovery codes are unavailable right now."}
+                    </p>
+                  )}
+                  {recoveryError && (
+                    <div className={styles.errorMessage}>{recoveryError}</div>
+                  )}
+                  <p className={styles.recoveryCodesHint}>
+                    Each code is single-use. Store them somewhere safe.
+                  </p>
+                </div>
+              )}
               <div className={styles.actionButtons}>
-                <button
-                  className={styles.actionPrimary}
-                  onClick={registerPasskey}
-                  disabled={webauthnStatus.isRegistering || !webauthnStatus.isSupported || webauthnStatus.success}
-                >
-                  {webauthnStatus.isRegistering ? "Setting up..." : "Create Passkey"}
-                </button>
-                <button
-                  className={styles.actionSecondary}
-                  onClick={() => completeStep({ passkey_skipped: true })}
-                  disabled={webauthnStatus.isRegistering}
-                >
-                  Skip for now
-                </button>
+                {webauthnStatus.success ? (
+                  <>
+                    <button
+                      className={styles.actionPrimary}
+                      onClick={() =>
+                        completeStep({
+                          passkey_registered: true,
+                          recovery_codes_generated: !!recoveryCodes,
+                        })
+                      }
+                    >
+                      Continue
+                    </button>
+                    {!recoveryCodes && (
+                      <button
+                        className={styles.actionSecondary}
+                        onClick={generateRecoveryCodes}
+                        disabled={isGeneratingCodes}
+                      >
+                        {isGeneratingCodes ? "Generating..." : "Retry recovery codes"}
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className={styles.actionPrimary}
+                      onClick={registerPasskey}
+                      disabled={webauthnStatus.isRegistering || !webauthnStatus.isSupported}
+                    >
+                      {webauthnStatus.isRegistering ? "Setting up..." : "Create Passkey"}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           );
@@ -537,12 +598,6 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
                 }}
               >
                 Let&apos;s Go
-              </button>
-              <button
-                className={styles.actionSecondary}
-                onClick={() => completeStep({ action_skipped: true })}
-              >
-                Skip for now
               </button>
             </div>
           </div>
@@ -617,7 +672,7 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
     completeStep(data);
   };
 
-  // Modal visibility controlled by OnboardingProvider context
+  // Modal visibility controlled by onboarding state props
   // Will only render when user is in active onboarding flow
   if (!isVisible) {
     return null;
@@ -652,13 +707,6 @@ export function OnboardingModal({ state, flow, currentStep: initialStep, allStep
           <span className={styles.stepCounter}>
             {currentStepIndex + 1} of {totalSteps}
           </span>
-          <button
-            className={styles.skipButton}
-            onClick={skipOnboarding}
-            disabled={isLoading}
-          >
-            Skip
-          </button>
         </div>
 
         {/* Content */}

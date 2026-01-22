@@ -23,7 +23,6 @@ pub fn router() -> Router<Arc<AppState>> {
         .route("/", get(get_onboarding))
         .route("/start", post(start_onboarding))
         .route("/step", post(complete_step))
-        .route("/skip", post(skip_onboarding))
         .route("/reset", post(reset_onboarding))
 }
 
@@ -44,11 +43,6 @@ struct StartWrapper {
 #[derive(Serialize)]
 struct CompleteStepWrapper {
     data: CompleteStepResponse,
-}
-
-#[derive(Serialize)]
-struct SkipWrapper {
-    data: SkipOnboardingResponse,
 }
 
 #[derive(Serialize)]
@@ -91,16 +85,6 @@ async fn complete_step(
     let result =
         OnboardingRepo::complete_step(&state.db, user.id, req.step_id, req.response).await?;
     Ok(Json(CompleteStepWrapper { data: result }))
-}
-
-/// POST /onboarding/skip
-/// Skip onboarding
-async fn skip_onboarding(
-    State(state): State<Arc<AppState>>,
-    Extension(user): Extension<User>,
-) -> Result<Json<SkipWrapper>, AppError> {
-    let result = OnboardingRepo::skip(&state.db, user.id).await?;
-    Ok(Json(SkipWrapper { data: result }))
 }
 
 /// POST /onboarding/reset

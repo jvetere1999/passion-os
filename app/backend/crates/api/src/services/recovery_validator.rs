@@ -52,7 +52,6 @@ impl RecoveryValidator {
 
         Ok(())
     }
-
 }
 
 #[cfg(test)]
@@ -73,5 +72,4 @@ mod tests {
     fn test_invalid_recovery_code_lowercase() {
         assert!(RecoveryValidator::validate_code_format("abcd-1234-wxyz").is_err());
     }
-
 }

@@ -29,6 +29,10 @@ export function SettingsClient({ user: propUser }: SettingsClientProps = {}) {
   const [isExporting, setIsExporting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const [isGeneratingRecoveryCodes, setIsGeneratingRecoveryCodes] = useState(false);
+  const [recoveryError, setRecoveryError] = useState<string | null>(null);
+  const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
 
   const handleExportData = async () => {
     setIsExporting(true);
@@ -78,6 +82,39 @@ export function SettingsClient({ user: propUser }: SettingsClientProps = {}) {
       alert("Failed to delete account. Please try again.");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleGenerateRecoveryCodes = async () => {
+    if (isGeneratingRecoveryCodes) return;
+    setIsGeneratingRecoveryCodes(true);
+    setRecoveryError(null);
+    setRecoveryMessage(null);
+
+    try {
+      const response = await safeFetch(`${API_BASE_URL}/auth/recovery/codes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ count: 8 }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as { message?: string };
+        throw new Error(data.message || "Failed to generate recovery codes.");
+      }
+
+      const data = (await response.json()) as { codes?: string[] };
+      if (!data.codes || data.codes.length === 0) {
+        throw new Error("No recovery codes returned.");
+      }
+
+      setRecoveryCodes(data.codes);
+      setRecoveryMessage("New recovery codes generated. Store them somewhere safe.");
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to generate recovery codes.";
+      setRecoveryError(message);
+    } finally {
+      setIsGeneratingRecoveryCodes(false);
     }
   };
 
@@ -201,6 +238,43 @@ export function SettingsClient({ user: propUser }: SettingsClientProps = {}) {
               {isExporting ? "Exporting..." : "Export"}
             </button>
           </div>
+        </div>
+      </section>
+
+      {/* Recovery Codes */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Recovery Codes</h2>
+        <div className={styles.sectionContent}>
+          <div className={styles.recoveryRow}>
+            <div>
+              <span className={styles.fieldLabel}>Backup access</span>
+              <p className={styles.fieldDescription}>
+                Generate recovery codes to sign in if your passkey is unavailable. Generating new codes revokes old ones.
+              </p>
+            </div>
+            <button
+              className={styles.secondaryButton}
+              onClick={handleGenerateRecoveryCodes}
+              disabled={isGeneratingRecoveryCodes}
+            >
+              {isGeneratingRecoveryCodes
+                ? "Generating..."
+                : recoveryCodes
+                ? "Regenerate"
+                : "Generate"}
+            </button>
+          </div>
+          {recoveryError && <p className={styles.recoveryError}>{recoveryError}</p>}
+          {recoveryMessage && <p className={styles.recoveryMessage}>{recoveryMessage}</p>}
+          {recoveryCodes && (
+            <div className={styles.recoveryCodesList}>
+              {recoveryCodes.map((code) => (
+                <span key={code} className={styles.recoveryCode}>
+                  {code}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
+import { getOnboardingState } from "@/lib/api/onboarding";
 
 /**
  * Public routes that don't require authentication
@@ -41,6 +42,13 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const isPublic = isPublicRoute(pathname);
+  const [needsOnboarding, setNeedsOnboarding] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setNeedsOnboarding(null);
+    }
+  }, [isAuthenticated, user?.id]);
 
   // TOS should be handled as part of onboarding; if not accepted, push user into onboarding flow
   useEffect(() => {
@@ -51,6 +59,48 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
       router.replace("/onboarding");
     }
   }, [isLoading, isAuthenticated, user, pathname, router, refresh]);
+
+  useEffect(() => {
+    if (isLoading || !isAuthenticated || !user) return;
+    if (pathname === "/onboarding") return;
+    let isActive = true;
+
+    const checkOnboarding = async () => {
+      try {
+        const data = await getOnboardingState();
+        if (!isActive) return;
+        const requiresOnboarding =
+          data.state?.status !== "completed" || data.needs_onboarding;
+        setNeedsOnboarding(requiresOnboarding);
+      } catch (error) {
+        console.error("Failed to load onboarding state:", error);
+        if (isActive) {
+          setNeedsOnboarding(true);
+        }
+      }
+    };
+
+    checkOnboarding();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isLoading, isAuthenticated, user, pathname]);
+
+  useEffect(() => {
+    if (needsOnboarding && pathname !== "/onboarding") {
+      router.replace("/onboarding");
+    }
+  }, [needsOnboarding, pathname, router]);
+
+  if (
+    isAuthenticated &&
+    !isLoading &&
+    pathname !== "/onboarding" &&
+    (needsOnboarding === null || needsOnboarding)
+  ) {
+    return null;
+  }
 
   // For public routes, render immediately (don't wait for auth)
   if (isPublic) {

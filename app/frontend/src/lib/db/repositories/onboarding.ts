@@ -249,36 +249,6 @@ export async function completeStep(
 }
 
 /**
- * Skip onboarding
- */
-export async function skipOnboarding(
-  db: D1Database,
-  userId: string
-): Promise<void> {
-  const now = new Date().toISOString();
-
-  await db
-    .prepare(`
-      UPDATE user_onboarding_state 
-      SET status = 'skipped',
-          skipped_at = ?,
-          updated_at = ?
-      WHERE user_id = ?
-    `)
-    .bind(now, now, userId)
-    .run();
-
-  // Log activity event
-  await db
-    .prepare(`
-      INSERT INTO activity_events (id, user_id, event_type, created_at)
-      VALUES (?, ?, 'onboarding_skipped', ?)
-    `)
-    .bind(crypto.randomUUID(), userId, now)
-    .run();
-}
-
-/**
  * Resume onboarding (after skip or reload)
  */
 export async function resumeOnboarding(
@@ -380,4 +350,3 @@ export async function getOnboardingProgress(
     percentage: Math.round((completedCount / flow.total_steps) * 100),
   };
 }
-

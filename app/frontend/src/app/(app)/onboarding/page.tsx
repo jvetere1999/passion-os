@@ -25,7 +25,12 @@ export default function OnboardingPage() {
         if (!isActive) return;
         setOnboarding(data);
 
-        if (!data.needs_onboarding || data.state?.status === "completed" || data.state?.status === "skipped") {
+        if (data.state?.status === "completed") {
+          router.replace("/today");
+          return;
+        }
+
+        if (!data.needs_onboarding && data.state?.status !== "skipped") {
           router.replace("/today");
         }
       } catch (err) {

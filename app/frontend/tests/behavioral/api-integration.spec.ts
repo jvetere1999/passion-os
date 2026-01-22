@@ -142,21 +142,6 @@ test.describe("Onboarding API", () => {
     expect([200, 401]).toContain(response.status());
   });
 
-  test("POST /api/onboarding/skip triggers soft landing", async ({ request }) => {
-    const response = await request.post("/api/onboarding/skip", {
-      data: { softLandingHours: 24 },
-    });
-    
-    // Should return 200 for authenticated, 401 for unauthenticated
-    expect([200, 401]).toContain(response.status());
-    
-    if (response.status() === 200) {
-      const data = await response.json();
-      
-      // Should confirm soft landing was activated
-      expect(data).toHaveProperty("softLandingUntil");
-    }
-  });
 });
 
 // ============================================

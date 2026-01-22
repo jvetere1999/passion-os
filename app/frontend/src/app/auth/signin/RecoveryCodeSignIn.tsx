@@ -78,7 +78,7 @@ export function RecoveryCodeSignIn() {
         {isLoading ? "Verifying..." : "Sign in with Recovery Code"}
       </button>
       <p className={styles.recoveryHint}>
-        Recovery codes are single-use. You can generate new ones after signing in.
+        Recovery codes are single-use. Generate a new set after signing in.
       </p>
     </div>
   );

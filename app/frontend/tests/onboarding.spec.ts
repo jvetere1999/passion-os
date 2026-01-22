@@ -60,12 +60,4 @@ test.describe("Onboarding API", () => {
     expect([200, 401]).toContain(response.status());
   });
 
-  test("POST /api/onboarding/skip works", async ({ request }) => {
-    const response = await request.post("/api/onboarding/skip", {
-      data: { softLandingHours: 24 },
-    });
-    // May return 401 for unauthenticated
-    expect([200, 401]).toContain(response.status());
-  });
 });
-

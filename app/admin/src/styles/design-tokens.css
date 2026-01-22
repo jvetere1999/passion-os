@@ -1,3 +1,8 @@
+/* 
+ * Ignition Design Tokens
+ * Unified design system for consistent branding across all pages
+ */
+
 :root {
   /* ====================================
    * Gradients (Primary Design System)
@@ -18,11 +23,6 @@
     rgba(45, 80, 160, 0.4) 40%,
     rgba(20, 30, 60, 0.3) 100%
   );
-
-  /* Legacy onboarding gradient */
-  --gradient-onboarding-bg: radial-gradient(120% 80% at 10% 10%, rgba(13, 202, 240, 0.12), transparent 60%),
-    radial-gradient(120% 80% at 90% 10%, rgba(25, 135, 84, 0.12), transparent 60%),
-    #0b0f14;
 
   /* ====================================
    * Color Palette (Token-based)
@@ -166,3 +166,26 @@
   --glass-border: rgba(255, 255, 255, 0.08);
 }
 
+/* ====================================
+ * Utility Classes
+ * ==================================== */
+
+.gradient-bg-main {
+  background: var(--gradient-main);
+}
+
+.gradient-bg-hero {
+  background: var(--gradient-hero);
+}
+
+.glass-effect {
+  background: var(--glass-background);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: var(--backdrop-blur);
+}
+
+.glass-effect-subtle {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  backdrop-filter: var(--backdrop-blur);
+}

@@ -745,6 +745,55 @@ CREATE TABLE crypto_policies (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE daw_audit_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    project_id UUID,
+    action TEXT NOT NULL,
+    project_name TEXT,
+    file_size BIGINT,
+    details JSONB,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE daw_project_chunks (
+    hash TEXT PRIMARY KEY,
+    compression TEXT NOT NULL,
+    encryption TEXT NOT NULL DEFAULT 'none',
+    size_bytes BIGINT NOT NULL,
+    storage_key TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE daw_project_files (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    project_name TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    file_size BIGINT NOT NULL,
+    file_hash TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    storage_key TEXT NOT NULL,
+    encrypted BOOLEAN NOT NULL DEFAULT true,
+    current_version_id UUID NOT NULL,
+    version_count INTEGER NOT NULL DEFAULT 1,
+    last_modified_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE daw_project_versions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL,
+    user_id UUID NOT NULL,
+    version_number INTEGER NOT NULL,
+    file_size BIGINT NOT NULL,
+    file_hash TEXT NOT NULL,
+    storage_key TEXT NOT NULL,
+    change_description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE exercise_sets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     session_id UUID NOT NULL,
@@ -1076,6 +1125,21 @@ CREATE TABLE training_programs (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE upload_sessions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    project_name TEXT NOT NULL,
+    content_type TEXT NOT NULL,
+    total_size BIGINT NOT NULL,
+    chunks_received INTEGER NOT NULL DEFAULT 0,
+    total_chunks INTEGER NOT NULL,
+    status TEXT NOT NULL DEFAULT 'uploading',
+    storage_key TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE user_drill_stats (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
@@ -1195,6 +1259,15 @@ CREATE TABLE user_streaks (
     last_activity_date DATE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE vault_lock_events (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    vault_id UUID NOT NULL,
+    locked_at TIMESTAMPTZ,
+    lock_reason TEXT,
+    device_id TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE vaults (

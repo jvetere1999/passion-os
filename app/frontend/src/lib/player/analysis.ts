@@ -166,9 +166,9 @@ export async function analyzeFrequencySpectrum(
     onProgress?.(1);
 
     const bands: FrequencyBand[] = [
-      { name: "lows", color: "#ef4444", ...lows },
-      { name: "mids", color: "#f59e0b", ...mids },
-      { name: "highs", color: "#10b981", ...highs },
+      { name: "lows", color: "var(--color-error)", ...lows },
+      { name: "mids", color: "var(--color-warning)", ...mids },
+      { name: "highs", color: "var(--color-success)", ...highs },
     ];
 
     return {

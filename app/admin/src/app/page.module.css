@@ -76,7 +76,7 @@
   font-size: 0.625rem;
   font-weight: 700;
   color: #fff;
-  background: #ff5252;
+  background: var(--color-error);
   border-radius: 10px;
 }
 
@@ -226,7 +226,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #fff;
-  background: #10b981;
+  background: var(--color-success);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -237,7 +237,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #fff;
-  background: #ff5252;
+  background: var(--color-error);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -248,7 +248,7 @@
   font-size: 0.75rem;
   font-weight: 600;
   color: #fff;
-  background: #dc2626;
+  background: var(--color-error);
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -256,7 +256,8 @@
 }
 
 .deleteUserButton:hover {
-  background: #b91c1c;
+  background: var(--color-error);
+  opacity: 0.85;
 }
 
 .roleBadge {
@@ -268,8 +269,8 @@
 }
 
 .roleBadge.admin {
-  color: #ffd700;
-  background: #ffd70020;
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
 }
 
 .roleBadge.user {

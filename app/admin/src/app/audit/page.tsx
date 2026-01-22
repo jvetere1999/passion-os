@@ -133,13 +133,13 @@ export default function AuditLogPage() {
       </div>
 
       {/* Stats */}
-      <p style={{ color: "#6b7280", marginBottom: "1rem" }}>
+      <p style={{ color: "var(--color-slate-500)", marginBottom: "1rem" }}>
         Showing {entries.length} of {total} entries
       </p>
 
       {/* Error */}
       {error && (
-        <div style={{ color: "#ef4444", padding: "1rem", marginBottom: "1rem" }}>
+        <div style={{ color: "var(--color-error)", padding: "1rem", marginBottom: "1rem" }}>
           {error}
         </div>
       )}
@@ -183,7 +183,7 @@ export default function AuditLogPage() {
                       <>
                         {entry.resource_type}
                         {entry.resource_id && (
-                          <span style={{ color: "#6b7280" }}>:{entry.resource_id.slice(0, 8)}</span>
+                          <span style={{ color: "var(--color-slate-500)" }}>:{entry.resource_id.slice(0, 8)}</span>
                         )}
                       </>
                     ) : (
@@ -209,7 +209,7 @@ export default function AuditLogPage() {
 
       {/* Empty state */}
       {!loading && entries.length === 0 && (
-        <p style={{ color: "#6b7280" }}>No audit entries found</p>
+        <p style={{ color: "var(--color-slate-500)" }}>No audit entries found</p>
       )}
 
       {/* Pagination */}

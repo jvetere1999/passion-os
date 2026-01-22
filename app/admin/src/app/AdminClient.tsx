@@ -118,7 +118,7 @@ export function AdminClient({ userEmail }: AdminClientProps = {}) {
     id: "",
     name: "",
     description: "",
-    color: "#8b5cf6",
+    color: "var(--color-accent)",
     maxLevel: 10,
     xpScalingBase: 100,
     xpScalingMultiplier: 1.5,
@@ -288,7 +288,7 @@ export function AdminClient({ userEmail }: AdminClientProps = {}) {
           id: "",
           name: "",
           description: "",
-          color: "#8b5cf6",
+          color: "var(--color-accent)",
           maxLevel: 10,
           xpScalingBase: 100,
           xpScalingMultiplier: 1.5,
@@ -1337,7 +1337,7 @@ function DatabaseTab() {
             {/* Backup Card */}
             <div className={styles.dbActionCard}>
               <div className={styles.dbActionHeader}>
-                <div className={styles.dbActionIcon} style={{ background: "rgba(34, 197, 94, 0.1)", color: "#22c55e" }}>
+                <div className={styles.dbActionIcon} style={{ background: "var(--color-success-bg)", color: "var(--color-success)" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="7,10 12,15 17,10" />
@@ -1361,7 +1361,7 @@ function DatabaseTab() {
             {/* Restore Card */}
             <div className={styles.dbActionCard}>
               <div className={styles.dbActionHeader}>
-                <div className={styles.dbActionIcon} style={{ background: "rgba(249, 115, 22, 0.1)", color: "#f97316" }}>
+                <div className={styles.dbActionIcon} style={{ background: "rgba(249, 115, 22, 0.1)", color: "var(--color-warning)" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
                     <polyline points="17,8 12,3 7,8" />
@@ -1403,7 +1403,7 @@ function DatabaseTab() {
             {/* Documentation Card */}
             <div className={styles.dbActionCard}>
               <div className={styles.dbActionHeader}>
-                <div className={styles.dbActionIcon} style={{ background: "rgba(99, 102, 241, 0.1)", color: "#6366f1" }}>
+                <div className={styles.dbActionIcon} style={{ background: "var(--color-info-bg)", color: "var(--color-info)" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
                     <polyline points="14,2 14,8 20,8" />

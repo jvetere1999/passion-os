@@ -214,8 +214,12 @@ def validate_schema(schema: dict) -> list[str]:
             errors.append(f"Seed '{seed_table}': table not found in schema")
             continue
         table_fields = schema['tables'][seed_table]['fields']
+        reference_fields = set(seed_def.get('references', {}).keys())
         for record in seed_def.get('records', []):
             for col in record.keys():
+                # Skip validation for reference fields - they resolve to actual columns
+                if col in reference_fields:
+                    continue
                 if col not in table_fields:
                     errors.append(f"Seed '{seed_table}': column '{col}' not in table schema")
                     break
@@ -246,6 +250,16 @@ class SchemaGenerator:
         # Sort tables within each domain
         for domain_key in self.tables_by_domain:
             self.tables_by_domain[domain_key].sort(key=lambda x: x[0])
+    
+    # -------------------------------------------------------------------------
+    # HELPERS
+    # -------------------------------------------------------------------------
+    
+    def _generate_deterministic_uuid(self, namespace: str, name: str) -> str:
+        """Generate deterministic UUID for seed data"""
+        import uuid
+        seed_namespace = uuid.UUID('11111111-1111-1111-1111-111111111111')
+        return str(uuid.uuid5(seed_namespace, f"{namespace}:{name}"))
     
     # -------------------------------------------------------------------------
     # RUST GENERATION
@@ -601,6 +615,32 @@ class SchemaGenerator:
         if not self.seeds:
             return f"-- No seeds defined in schema.json v{self.version}\n"
         
+        # First pass: Build ID lookups for reference resolution
+        lookup_tables = {}
+        for table_name, seed_def in self.seeds.items():
+            records = seed_def.get('records', [])
+            unique_key = seed_def.get('unique_key')
+            
+            lookup_tables[table_name] = {}
+            for i, record in enumerate(records):
+                # Generate or use existing ID
+                record_id = record.get('id') or self._generate_deterministic_uuid(table_name, str(i))
+                
+                # Build lookup entry based on unique key
+                if isinstance(unique_key, list):
+                    # Multiple column unique key
+                    for key_col in unique_key:
+                        key_value = record.get(key_col)
+                        if key_value:
+                            lookup_key = f"{key_col}={key_value}"
+                            lookup_tables[table_name][lookup_key] = record_id
+                elif isinstance(unique_key, str):
+                    # Single column unique key
+                    key_value = record.get(unique_key)
+                    if key_value:
+                        lookup_key = f"{unique_key}={key_value}"
+                        lookup_tables[table_name][lookup_key] = record_id
+        
         lines = [
             f"-- GENERATED SEEDS FROM schema.json v{self.version}",
             f"-- Generated: {self.generated_at}",
@@ -609,7 +649,20 @@ class SchemaGenerator:
             ""
         ]
         
-        for table_name, seed_def in self.seeds.items():
+        # Process seeds in order to handle references
+        table_order = ['workouts', 'exercise_definitions', 'workout_sections', 'workout_exercises']
+        ordered_seeds = {}
+        
+        for table in table_order:
+            if table in self.seeds:
+                ordered_seeds[table] = self.seeds[table]
+        
+        # Add remaining seeds
+        for table, seed_def in self.seeds.items():
+            if table not in ordered_seeds:
+                ordered_seeds[table] = seed_def
+        
+        for table_name, seed_def in ordered_seeds.items():
             if table_name not in self.tables:
                 continue
             
@@ -617,6 +670,7 @@ class SchemaGenerator:
             table_fields = table_schema['fields']
             unique_key = seed_def.get('unique_key')
             records = seed_def.get('records', [])
+            references = seed_def.get('references', {})
             
             if not records:
                 continue
@@ -627,14 +681,21 @@ class SchemaGenerator:
                 f"-- {'=' * 60}"
             ])
             
-            # Build column list
+            # Build column list - exclude reference fields
             sample = records[0]
             insert_cols = []
             for auto_col in ['id', 'created_at', 'updated_at']:
                 if auto_col in table_fields:
                     insert_cols.append(auto_col)
+            
             for col in sample.keys():
-                if col not in insert_cols and col in table_fields:
+                # Skip reference fields - we'll use target columns instead
+                if col in references:
+                    ref_def = references[col]
+                    target_col = ref_def['target_column']
+                    if target_col in table_fields and target_col not in insert_cols:
+                        insert_cols.append(target_col)
+                elif col not in insert_cols and col in table_fields:
                     insert_cols.append(col)
             
             lines.append(f"INSERT INTO {table_name} ({', '.join(insert_cols)})")
@@ -644,17 +705,47 @@ class SchemaGenerator:
             for record in records:
                 values = []
                 for col in insert_cols:
+                    value = None
+                    
                     if col == 'id':
-                        if record.get('id') is not None:
-                            field_type = table_fields.get(col, {}).get('type', 'TEXT')
-                            values.append(format_sql_value(record.get('id'), field_type))
+                        # Use existing ID or generate one
+                        value = record.get('id')
+                        if value is None:
+                            value = 'gen_random_uuid()'
+                            field_type = 'UUID'
                         else:
-                            values.append('gen_random_uuid()')
+                            field_type = table_fields.get(col, {}).get('type', 'TEXT')
+                        values.append(format_sql_value(value, field_type) if value != 'gen_random_uuid()' else value)
                     elif col in ('created_at', 'updated_at'):
                         values.append('NOW()')
                     else:
-                        field_type = table_fields.get(col, {}).get('type', 'TEXT')
-                        values.append(format_sql_value(record.get(col), field_type))
+                        # Check if this is a target column for a reference
+                        is_ref_target = False
+                        for ref_field, ref_def in references.items():
+                            if ref_def['target_column'] == col:
+                                is_ref_target = True
+                                # Look up the referenced ID
+                                ref_value = record.get(ref_field)
+                                ref_table = ref_def['ref_table']
+                                ref_column = ref_def['ref_column']
+                                
+                                if ref_value and ref_table in lookup_tables:
+                                    lookup_key = f"{ref_column}={ref_value}"
+                                    if lookup_key in lookup_tables[ref_table]:
+                                        value = lookup_tables[ref_table][lookup_key]
+                                        field_type = table_fields.get(col, {}).get('type', 'TEXT')
+                                        values.append(format_sql_value(value, field_type))
+                                    else:
+                                        values.append('NULL')
+                                else:
+                                    values.append('NULL')
+                                break
+                        
+                        if not is_ref_target:
+                            field_type = table_fields.get(col, {}).get('type', 'TEXT')
+                            value = record.get(col)
+                            values.append(format_sql_value(value, field_type))
+                
                 value_rows.append(f"    ({', '.join(values)})")
             
             lines.append(',\n'.join(value_rows))

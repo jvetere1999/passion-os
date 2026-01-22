@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
 import { AuthProvider } from "@/lib/auth/AuthProvider";
+import "@/styles/design-tokens.css";
 import "./globals.css";
 
 export const metadata: Metadata = {

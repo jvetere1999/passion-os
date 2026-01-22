@@ -15,8 +15,7 @@ VALUES
     (gen_random_uuid(), NOW(), NOW(), 'Strength: Lower', 'Lower body routine seeded from your table.', '00000000-0000-0000-0000-000000000000', 60, true),
     (gen_random_uuid(), NOW(), NOW(), 'Strength: Push', 'Push routine seeded from your table.', '00000000-0000-0000-0000-000000000000', 60, true),
     (gen_random_uuid(), NOW(), NOW(), 'Strength: Pull', 'Pull routine seeded from your table.', '00000000-0000-0000-0000-000000000000', 60, true),
-    (gen_random_uuid(), NOW(), NOW(), 'Strength: Legs', 'Legs routine seeded from your table.', '00000000-0000-0000-0000-000000000000', 60, true)
-ON CONFLICT (name) DO NOTHING;
+    (gen_random_uuid(), NOW(), NOW(), 'Strength: Legs', 'Legs routine seeded from your table.', '00000000-0000-0000-0000-000000000000', 60, true);
 
 -- ============================================================
 -- WORKOUT_SECTIONS (25 records)
@@ -47,8 +46,7 @@ VALUES
     (gen_random_uuid(), 'adb82dc0-9749-5a9c-bc67-7d1b1a2f3b70', 'Main', 1),
     (gen_random_uuid(), 'bab1bb00-1efa-518d-a143-49e16e549d5a', 'Main', 1),
     (gen_random_uuid(), '721970e3-10b7-5ca3-a616-bcc9e45c4bf5', 'Main', 1),
-    (gen_random_uuid(), 'eb26b639-0b6d-5fec-97dd-a38d2ab88e86', 'Main', 1)
-ON CONFLICT (['workout_name', 'name']) DO NOTHING;
+    (gen_random_uuid(), 'eb26b639-0b6d-5fec-97dd-a38d2ab88e86', 'Main', 1);
 
 -- ============================================================
 -- WORKOUT_EXERCISES (54 records)
@@ -108,8 +106,7 @@ VALUES
     (gen_random_uuid(), 'eb26b639-0b6d-5fec-97dd-a38d2ab88e86', 'aef9d5c0-7ebb-5e36-aa7d-123975c0a90f', '397afbb3-0921-5ca6-9d4b-26e4cdcdddb1', 3, '8-12', NULL, NULL, 'Equipment=Bodyweight/Machine', 2),
     (gen_random_uuid(), 'eb26b639-0b6d-5fec-97dd-a38d2ab88e86', 'aef9d5c0-7ebb-5e36-aa7d-123975c0a90f', '021cfde0-e613-5982-a0b8-278657da0a0e', 3, '10-15', NULL, NULL, 'Equipment=Dumbbell; Per side.', 3),
     (gen_random_uuid(), 'eb26b639-0b6d-5fec-97dd-a38d2ab88e86', 'aef9d5c0-7ebb-5e36-aa7d-123975c0a90f', '80dc4cf1-1d96-5d58-9f66-c8cd723e6f28', 3, '12-15', NULL, NULL, 'Equipment=Machine', 4),
-    (gen_random_uuid(), 'eb26b639-0b6d-5fec-97dd-a38d2ab88e86', 'aef9d5c0-7ebb-5e36-aa7d-123975c0a90f', '651f090f-0d3f-52fd-8929-cd6e014377c9', 3, '8-12', NULL, NULL, 'Equipment=Smith Machine', 5)
-ON CONFLICT (['workout_name', 'section_name', 'exercise_name', 'sort_order']) DO NOTHING;
+    (gen_random_uuid(), 'eb26b639-0b6d-5fec-97dd-a38d2ab88e86', 'aef9d5c0-7ebb-5e36-aa7d-123975c0a90f', '651f090f-0d3f-52fd-8929-cd6e014377c9', 3, '8-12', NULL, NULL, 'Equipment=Smith Machine', 5);
 
 -- ============================================================
 -- SKILL_DEFINITIONS (6 records)
@@ -203,8 +200,7 @@ VALUES
     (gen_random_uuid(), NOW(), NOW(), 'Workout Week', 'Complete 3 workouts this week', 'weekly', 175, 40, 3, 'workouts_completed', NULL, 'strength', true, 12),
     (gen_random_uuid(), NOW(), NOW(), 'Bookworm', 'Read for 60 minutes this week', 'weekly', 100, 25, 60, 'reading_minutes', NULL, 'knowledge', true, 13),
     (gen_random_uuid(), NOW(), NOW(), 'Marathon Focus', 'Complete 20 hours of focused work this month', 'monthly', 500, 150, 1200, 'focus_minutes', NULL, 'focus', true, 20),
-    (gen_random_uuid(), NOW(), NOW(), 'Perfect Month', 'Maintain a 30-day streak', 'monthly', 750, 200, 30, 'streak_days', NULL, 'discipline', true, 21)
-ON CONFLICT DO NOTHING;
+    (gen_random_uuid(), NOW(), NOW(), 'Perfect Month', 'Maintain a 30-day streak', 'monthly', 750, 200, 30, 'streak_days', NULL, 'discipline', true, 21);
 
 -- ============================================================
 -- LEARN_TOPICS (5 records)
@@ -495,8 +491,7 @@ Notes: Or more; train close to failure.', 'strength_upper', '['chest', 'triceps'
 
 Notes: Per side.', 'strength_legs', '['quads', 'glutes', 'hamstrings']', '['dumbbell']', true, false, NULL),
     (gen_random_uuid(), NOW(), 'Lying Leg Curl', 'Guide: (none)', 'strength_legs', '['hamstrings']', '['machine']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Standing Calf Raise', 'Guide: (none)', 'strength_legs', '['calves']', '['smith_machine']', true, false, NULL)
-ON CONFLICT (name) DO NOTHING;
+    (gen_random_uuid(), NOW(), 'Standing Calf Raise', 'Guide: (none)', 'strength_legs', '['calves']', '['smith_machine']', true, false, NULL);
 
 -- Summary
 DO $$

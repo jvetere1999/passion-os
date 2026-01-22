@@ -175,16 +175,22 @@ pub async fn trigger_sync(state: State<'_, WatcherState>) -> Result<(), String> 
         updated_projects.push(updated);
     }
 
-    stats.successful_syncs += successful;
-    stats.failed_syncs += failed;
-    stats.total_files_synced += successful;
-    stats.total_bytes_synced += bytes_synced;
-    stats.last_sync_time = Some(Utc::now());
+    {
+        let mut stats = state.stats.lock()
+            .map_err(|e| format!("Failed to acquire lock: {}", e))?;
+        stats.successful_syncs += successful;
+        stats.failed_syncs += failed;
+        stats.total_files_synced += successful;
+        stats.total_bytes_synced += bytes_synced;
+        stats.last_sync_time = Some(Utc::now());
+    }
 
     let state_manager = state.state_manager.lock()
         .map_err(|e| format!("Failed to acquire lock: {}", e))?;
 
-    state_manager.save_stats(&stats)?;
+    let stats = state.stats.lock()
+        .map_err(|e| format!("Failed to acquire lock: {}", e))?;
+    state_manager.save_stats(&*stats)?;
     state_manager.save_projects(&updated_projects)?;
 
     let mut projects_guard = state.projects.lock()

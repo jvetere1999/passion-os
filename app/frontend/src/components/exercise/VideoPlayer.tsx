@@ -5,7 +5,7 @@ import styles from "./VideoPlayer.module.css";
 
 interface VideoPlayerProps {
   videoUrl: string | null | undefined;
-  title: string;
+  title?: string;
   fallback?: React.ReactNode;
 }
 

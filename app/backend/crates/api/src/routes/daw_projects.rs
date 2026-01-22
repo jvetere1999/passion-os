@@ -380,8 +380,8 @@ async fn complete_upload(
         .await
         .map_err(|e| AppError::Database(e.to_string()))?;
 
-    let (project_id, version_number) = match project {
-        Some(existing_project) => (existing_project.id, existing_project.version_count + 1),
+    let (project_id, version_number) = match &project {
+        Some(ref existing_project) => (existing_project.id, existing_project.version_count + 1),
         None => (Uuid::new_v4(), 1),
     };
 
@@ -399,7 +399,7 @@ async fn complete_upload(
     let change_description = req.change_description.as_deref();
     let file_hash = req.file_hash.as_str();
 
-    let (project_id, version_number) = if let Some(existing_project) = project {
+    let _project_version = if let Some(existing_project) = project {
         let version = DawProjectsRepo::create_version(
             &state.db,
             existing_project.id,

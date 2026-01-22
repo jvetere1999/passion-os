@@ -130,13 +130,15 @@ pub async fn trigger_sync(state: State<'_, WatcherState>) -> Result<(), String> 
         .map_err(|e| format!("Failed to acquire lock: {}", e))?
         .clone();
 
+    // Increment total_syncs before releasing the lock
+    {
+        let mut stats = state.stats.lock()
+            .map_err(|e| format!("Failed to acquire lock: {}", e))?;
+        stats.total_syncs += 1;
+    }
+
     let client = ApiClient::new(&settings);
     let mut updated_projects = Vec::new();
-
-    let mut stats = state.stats.lock()
-        .map_err(|e| format!("Failed to acquire lock: {}", e))?;
-
-    stats.total_syncs += 1;
     let mut successful = 0u64;
     let mut failed = 0u64;
     let mut bytes_synced = 0u64;

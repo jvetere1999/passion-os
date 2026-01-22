@@ -220,12 +220,12 @@ impl ApiClient {
                 .multipart(form)
                 .send()
                 .await
-                .map_err(|e| format!("Failed to upload chunk {}: {}", chunk_num, e))?;
+                .map_err(|e| format!("Failed to upload chunk {}: {}", chunk.index, e))?;
 
             if !response.status().is_success() {
                 return Err(format!(
                     "Failed to upload chunk {}: {}",
-                    chunk_num,
+                    chunk.index,
                     response.status()
                 ));
             }

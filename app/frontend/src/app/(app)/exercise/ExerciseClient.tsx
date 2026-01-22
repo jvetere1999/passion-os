@@ -1073,7 +1073,7 @@ function ExerciseCard({ exercise, onAddToWorkout, showAddButton }: {
       {expanded && (
         <div className={styles.exerciseDetails}>
           {exercise.video_url && (
-            <VideoPlayer videoUrl={exercise.video_url} exerciseName={exercise.name} />
+            <VideoPlayer videoUrl={exercise.video_url} title={exercise.name} />
           )}
           {muscles.length > 0 && (
             <p><strong>Muscles:</strong> {muscles.join(", ")}</p>

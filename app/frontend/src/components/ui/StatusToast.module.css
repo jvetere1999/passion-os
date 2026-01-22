@@ -1,0 +1,108 @@
+.toast {
+  position: fixed;
+  top: var(--space-4);
+  right: var(--space-4);
+  z-index: var(--z-toast);
+  max-width: min(420px, 92vw);
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-primary);
+}
+
+.toast[data-tone="info"] {
+  border-left: 4px solid var(--color-info);
+}
+
+.toast[data-tone="success"] {
+  border-left: 4px solid var(--color-success);
+}
+
+.toast[data-tone="warning"] {
+  border-left: 4px solid var(--color-warning);
+}
+
+.toast[data-tone="error"] {
+  border-left: 4px solid var(--color-error);
+}
+
+.indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  margin-top: 6px;
+  background: var(--color-info);
+  opacity: 0.9;
+  flex-shrink: 0;
+}
+
+.toast[data-tone="success"] .indicator {
+  background: var(--color-success);
+}
+
+.toast[data-tone="warning"] .indicator {
+  background: var(--color-warning);
+}
+
+.toast[data-tone="error"] .indicator {
+  background: var(--color-error);
+}
+
+.indicatorLoading {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+}
+
+.message {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.action {
+  align-self: flex-start;
+  margin-top: var(--space-1);
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.action:hover {
+  color: var(--color-text-secondary);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+}

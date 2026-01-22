@@ -11,12 +11,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/config/environment";
 import { getOnboardingState } from "@/lib/api/onboarding";
+import { StatusToast } from "@/components/ui/StatusToast";
+import styles from "./page.module.css";
 
 const API_BASE_URL = getApiBaseUrl();
 
 export default function CallbackPage() {
   const router = useRouter();
-  const [status, setStatus] = useState("Processing...");
+  const [status, setStatus] = useState("Processing sign-in...");
+  const [tone, setTone] = useState<"info" | "warning" | "error">("info");
+  const [isWorking, setIsWorking] = useState(true);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -61,11 +65,15 @@ export default function CallbackPage() {
         }
         
         // After retries, still no session
-        setStatus("No session found, redirecting to signin...");
+        setTone("warning");
+        setIsWorking(false);
+        setStatus("No session found, redirecting to sign in...");
         setTimeout(() => router.push("/auth/signin"), 2000);
       } catch (error) {
         console.error("Callback error:", error);
-        setStatus("Error processing callback");
+        setTone("error");
+        setIsWorking(false);
+        setStatus("Error processing callback.");
         setTimeout(() => router.push("/auth/signin"), 3000);
       }
     };
@@ -74,16 +82,14 @@ export default function CallbackPage() {
   }, [router]);
 
   return (
-    <div style={{ 
-      display: "flex", 
-      alignItems: "center", 
-      justifyContent: "center", 
-      height: "100vh",
-      flexDirection: "column",
-      gap: "1rem"
-    }}>
-      <h1>Completing Sign In</h1>
-      <p>{status}</p>
+    <div className={styles.page}>
+      <div className={styles.brand}>Ignition Auth</div>
+      <StatusToast
+        title="Completing sign-in"
+        message={status}
+        tone={tone}
+        isLoading={isWorking}
+      />
     </div>
   );
 }

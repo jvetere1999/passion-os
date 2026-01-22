@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
 import { useRouter, usePathname } from "next/navigation";
 import { getOnboardingState } from "@/lib/api/onboarding";
+import { StatusToast } from "@/components/ui/StatusToast";
 
 /**
  * Public routes that don't require authentication
@@ -61,6 +62,14 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
   }, [isLoading, isAuthenticated, user, pathname, router, refresh]);
 
   useEffect(() => {
+    if (pathname !== "/onboarding") return;
+    if (isLoading) return;
+    if (isAuthenticated) return;
+    const callbackUrl = encodeURIComponent("/onboarding");
+    router.replace(`/auth/signin?callbackUrl=${callbackUrl}`);
+  }, [isAuthenticated, isLoading, pathname, router]);
+
+  useEffect(() => {
     if (isLoading || !isAuthenticated || !user) return;
     if (pathname === "/onboarding") return;
     let isActive = true;
@@ -109,8 +118,16 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
 
   // For protected routes, require authentication
   if (isLoading) {
+    if (pathname === "/onboarding") {
+      return <>{children}</>;
+    }
     return (
-      <div style={{ textAlign: "center", marginTop: "2rem" }}>Loading...</div>
+      <StatusToast
+        title="Checking session"
+        message="Authenticating your account."
+        tone="info"
+        isLoading
+      />
     );
   }
 

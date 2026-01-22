@@ -77,7 +77,7 @@ export async function fetchUserPersonalization(
       focusDuration: settings?.focus_default_duration || 25,
       gamificationVisible: settings?.gamification_visible !== 0,
       onboardingActive,
-      onboardingRoute: onboardingActive ? "/today" : undefined, // Onboarding renders as modal on Today
+      onboardingRoute: onboardingActive ? "/onboarding" : undefined, // Onboarding runs in its own flow
     };
   } catch (error) {
     console.error("Failed to fetch user personalization:", error);
@@ -103,4 +103,3 @@ export function getDefaultPersonalization(): UserPersonalization {
     onboardingActive: false,
   };
 }
-

@@ -1,0 +1,18 @@
+.page {
+  min-height: 100vh;
+  position: relative;
+  background: radial-gradient(120% 80% at 10% 10%, rgba(13, 202, 240, 0.12), transparent 60%),
+    radial-gradient(120% 80% at 90% 10%, rgba(25, 135, 84, 0.12), transparent 60%),
+    var(--color-bg-primary);
+  color: var(--color-text-primary);
+}
+
+.brand {
+  position: absolute;
+  top: var(--space-6);
+  left: var(--space-6);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}

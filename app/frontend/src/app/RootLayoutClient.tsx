@@ -9,6 +9,7 @@ import { ErrorNotificationInitializer } from "@/components/ui/ErrorNotificationI
 import { OfflineStatusBanner } from "@/components/ui/OfflineStatusBanner";
 import { ZenBrowserInitializer } from "@/components/browser/ZenBrowserInitializer";
 import { OnboardingGate } from "@/components/onboarding/OnboardingGate";
+import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 
 const OfflineQueueWorker = dynamic(
@@ -22,15 +23,18 @@ const ServiceWorkerRegistrar = dynamic(
 );
 
 export function RootLayoutClient({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const hideShellChrome = pathname.startsWith("/onboarding") || pathname.startsWith("/auth");
+
   return (
     <AuthProvider>
       <VaultLockProvider>
           <ThemeProvider>
             <ZenBrowserInitializer />
             <OnboardingGate>
-              <OfflineStatusBanner />
+              {!hideShellChrome && <OfflineStatusBanner />}
               <div id="app-root">{children}</div>
-              <SiteFooter />
+              {!hideShellChrome && <SiteFooter />}
               <ErrorNotifications />
               <ErrorNotificationInitializer />
               <ServiceWorkerRegistrar />

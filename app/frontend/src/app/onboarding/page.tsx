@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { getOnboardingState, type OnboardingResponse } from "@/lib/api/onboarding";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { StatusToast } from "@/components/ui/StatusToast";
+import styles from "./page.module.css";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -52,28 +54,29 @@ export default function OnboardingPage() {
 
   const hasFlowSteps = !!onboarding?.flow && onboarding.flow.total_steps > 0;
   const showStatus = isAuthLoading || isLoading || !!error || !hasFlowSteps;
-  const statusTitle = error ? "Onboarding unavailable" : "Preparing your onboarding";
+  const statusTitle = error ? "Onboarding unavailable" : "Preparing onboarding";
   const statusBody = error
     ? "Please refresh to try again."
     : "Setting up your passkey and personalization steps.";
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+    <div className={styles.page}>
+      <div className={styles.brand}>Ignition Onboarding</div>
       {showStatus && (
-        <div className="text-center space-y-3 px-6">
-          <div className="text-[11px] uppercase tracking-[0.24em] text-slate-400">Onboarding</div>
-          <h1 className="text-2xl font-semibold">{statusTitle}</h1>
-          <p className="text-slate-400 text-sm">{statusBody}</p>
-          {error && (
-            <button
-              className="inline-flex items-center justify-center rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-200 hover:border-slate-500"
-              onClick={() => router.refresh()}
-              type="button"
-            >
-              Refresh
-            </button>
-          )}
-        </div>
+        <StatusToast
+          title={statusTitle}
+          message={statusBody}
+          tone={error ? "error" : "info"}
+          isLoading={!error}
+          action={
+            error
+              ? {
+                  label: "Refresh",
+                  onClick: () => router.refresh(),
+                }
+              : undefined
+          }
+        />
       )}
       <OnboardingModal
         state={onboarding?.state ?? null}

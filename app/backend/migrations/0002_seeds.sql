@@ -353,149 +353,149 @@ VALUES
     (gen_random_uuid(), NOW(), 'Cat–cow on hands and knees', 'General warm-up for spine.
 
 Key cues: Start neutral; gently round then extend; move with slow breathing.
-Guide: https://www.youtube.com/watch?v=RKN24fpS-as', 'mobility_posture', '['spine', 'thoracic']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=RKN24fpS-as', 'mobility_posture', ARRAY['spine', 'thoracic'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Half-kneeling hip-flexor stretch', 'Primary hip-flexor stretch to reduce anterior tilt.
 
 Key cues: Posteriorly tilt pelvis; squeeze glute on back leg; do not arch low back.
-Guide: https://youtu.be/_xU-wIiMxpI?si=3gzdQi19tQCYRrIB', 'mobility_posture', '['hips', 'hip_flexors', 'glutes']', '[]', true, false, NULL),
+Guide: https://youtu.be/_xU-wIiMxpI?si=3gzdQi19tQCYRrIB', 'mobility_posture', ARRAY['hips', 'hip_flexors', 'glutes'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Standing or side-lying quad stretch', 'Targets rectus femoris which is often tight in anterior tilt.
 
 Key cues: Keep pelvis lightly tucked; bring heel toward glute; avoid pulling low back into arch.
-Guide: https://youtu.be/_xU-wIiMxpI?si=aUz39djZMQNdG9DX', 'mobility_posture', '['quads', 'hips']', '[]', true, false, NULL),
+Guide: https://youtu.be/_xU-wIiMxpI?si=aUz39djZMQNdG9DX', 'mobility_posture', ARRAY['quads', 'hips'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Supine hamstring stretch', 'Improves hamstring flexibility if they feel tight.
 
 Key cues: Lie on back; keep opposite leg straight on floor; raise leg until stretch not pain.
-Guide: https://www.youtube.com/watch?v=Il1L75v6gq0a', 'mobility_posture', '['hamstrings']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=Il1L75v6gq0a', 'mobility_posture', ARRAY['hamstrings'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Child''s pose with posterior pelvic tilt focus', 'Encourages lumbar flexion to counter constant extension.
 
 Key cues: Sit hips toward heels; gently round low back; relax shoulders.
-Guide: https://www.youtube.com/watch?v=_ZX_zTOBgp8', 'mobility_posture', '['spine', 'low_back', 'lats']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=_ZX_zTOBgp8', 'mobility_posture', ARRAY['spine', 'low_back', 'lats'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Thread the needle from hands and knees', 'Improves thoracic rotation and general upper back mobility.
 
 Key cues: From quadruped slide arm under; rotate upper back; keep movement smooth and pain free.
-Guide: https://www.youtube.com/watch?v=7C8-zj3nRro', 'mobility_posture', '['thoracic', 'shoulders']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=7C8-zj3nRro', 'mobility_posture', ARRAY['thoracic', 'shoulders'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Foam-roller thoracic extension', 'Improves thoracic extension and reduces stiffness.
 
 Key cues: Roller across upper back; support head; gently extend over roller then return.
-Guide: https://www.youtube.com/watch?v=W_6_swxc-cI', 'mobility_posture', '['thoracic']', '['foam_roller']', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=W_6_swxc-cI', 'mobility_posture', ARRAY['thoracic'], ARRAY['foam_roller'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Doorway pec stretch', 'Opens tight chest and front shoulders that pull posture forward.
 
 Key cues: Elbows at about shoulder height; step through door until chest stretch; do not push into shoulder pain.
-Guide: https://www.youtube.com/watch?v=M850sCj9LHQ', 'mobility_posture', '['chest', 'front_delts']', '['doorway']', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=M850sCj9LHQ', 'mobility_posture', ARRAY['chest', 'front_delts'], ARRAY['doorway'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Supine pelvic tilt to neutral', 'Trains control of pelvic position and awareness of neutral.
 
 Key cues: Lie on back with knees bent; gently tilt pelvis to flatten low back then arch slightly; find middle neutral.
-Guide: https://www.youtube.com/watch?v=U0dfnyfhpwk', 'mobility_posture', '['core', 'pelvis', 'low_back']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=U0dfnyfhpwk', 'mobility_posture', ARRAY['core', 'pelvis', 'low_back'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Wall alignment drill', 'Reinforces stacked neutral posture for daily standing.
 
 Key cues: Heels a short distance from wall; butt and mid back on wall; gently draw ribs down and lightly tuck pelvis.
-Guide: https://www.youtube.com/watch?v=hQLU6m7GNwU', 'mobility_posture', '['posture', 'core', 'thoracic']', '['wall']', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=hQLU6m7GNwU', 'mobility_posture', ARRAY['posture', 'core', 'thoracic'], ARRAY['wall'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Joint circles (neck/shoulders/hips/ankles)', 'General joint prep; reduces baseline bracing.
 
 Key cues: Slow circles; stay pain-free; breathe normally.
-Guide: https://www.youtube.com/watch?v=6v7p7s6Kk4Y', 'mobility_generic', '['neck', 'shoulders', 'hips', 'ankles']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=6v7p7s6Kk4Y', 'mobility_generic', ARRAY['neck', 'shoulders', 'hips', 'ankles'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'World''s greatest stretch (lunge + T-spine reach)', 'Full-body opener; high carryover.
 
 Key cues: Long exhale in the bottom; reach rotates from upper back.
-Guide: https://www.youtube.com/watch?v=Fsa3n5g8fYI', 'mobility_generic', '['hips', 'thoracic', 'hamstrings', 'hip_flexors']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=Fsa3n5g8fYI', 'mobility_generic', ARRAY['hips', 'thoracic', 'hamstrings', 'hip_flexors'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), '90/90 hip switches (controlled)', 'Builds hip IR/ER control, not just stretch.
 
 Key cues: Move slowly; stay tall; don''t force knee down.
-Guide: https://www.youtube.com/watch?v=H9m3qTt7n3E', 'mobility_generic', '['hips']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=H9m3qTt7n3E', 'mobility_generic', ARRAY['hips'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Pigeon pose (or figure-4 on back)', 'Glute/hip external rotators.
 
 Key cues: Hips square; ease off if knee pain.
-Guide: https://www.youtube.com/watch?v=2vPqM7q3QXo', 'mobility_generic', '['glutes', 'hips']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=2vPqM7q3QXo', 'mobility_generic', ARRAY['glutes', 'hips'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Supine hamstring floss (band/towel)', 'Flossing often transfers better than long static.
 
 Key cues: Alternate gentle extend/bend; no nerve pain.
-Guide: https://www.youtube.com/watch?v=G3Zp6jPp3xM', 'mobility_generic', '['hamstrings']', '['band_or_towel']', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=G3Zp6jPp3xM', 'mobility_generic', ARRAY['hamstrings'], ARRAY['band_or_towel'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Wall calf stretch (gastroc/soleus)', 'Supports ankle range for squats/dance.
 
 Key cues: Heel down; don''t collapse arch.
-Guide: https://www.youtube.com/watch?v=Yj3bQn9pVxg', 'mobility_generic', '['calves', 'ankles']', '['wall']', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=Yj3bQn9pVxg', 'mobility_generic', ARRAY['calves', 'ankles'], ARRAY['wall'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Open book thoracic rotation', 'Reduces upper back stiffness.
 
 Key cues: Exhale as you open; keep knees stacked.
-Guide: https://www.youtube.com/watch?v=0uK4pYq1m1A', 'mobility_generic', '['thoracic']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=0uK4pYq1m1A', 'mobility_generic', ARRAY['thoracic'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Wall slides (scap control)', 'Shoulder mobility + control (less bracing).
 
 Key cues: Ribs down; forearms stay on wall; slow.
-Guide: https://www.youtube.com/watch?v=Z6Lw9xQw8lI', 'mobility_generic', '['shoulders', 'upper_back']', '['wall']', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=Z6Lw9xQw8lI', 'mobility_generic', ARRAY['shoulders', 'upper_back'], ARRAY['wall'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Doorway pec stretch (low + mid angle)', 'Two angles improves transfer.
 
 Key cues: No shoulder pain; gentle step-through.
-Guide: https://www.youtube.com/watch?v=SV7l1sfEmO0', 'mobility_generic', '['chest', 'front_delts']', '['doorway']', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=SV7l1sfEmO0', 'mobility_generic', ARRAY['chest', 'front_delts'], ARRAY['doorway'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Child''s pose with side reach', 'Good downshift finisher.
 
 Key cues: Reach long; breathe into side ribs.
-Guide: https://www.youtube.com/watch?v=I8m3l9kV3Wg', 'mobility_generic', '['spine', 'lats']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=I8m3l9kV3Wg', 'mobility_generic', ARRAY['spine', 'lats'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Constructive rest breathing (knees bent)', 'Locks in tension reduction / state change.
 
 Key cues: Long exhale; jaw unclenched; shoulders heavy.
-Guide: https://www.youtube.com/watch?v=4pLUleLdwY4', 'mobility_generic', '['breathing', 'recovery']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=4pLUleLdwY4', 'mobility_generic', ARRAY['breathing', 'recovery'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Nasal breathing + jaw unclench check', 'Downshifts bracing; sets baseline.
 
 Key cues: Lips gently closed; tongue rests on palate; jaw hangs.
-Guide: https://www.youtube.com/watch?v=RzVvThhjAKw', 'face_mobility', '['jaw', 'breathing']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=RzVvThhjAKw', 'face_mobility', ARRAY['jaw', 'breathing'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Masseter release (gentle self-massage)', 'Targets jaw clenching tension.
 
 Key cues: Light pressure; slow circles; stop if sharp pain.
-Guide: https://www.youtube.com/watch?v=EM18snVgV_c', 'face_mobility', '['jaw']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=EM18snVgV_c', 'face_mobility', ARRAY['jaw'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Controlled jaw open/close (midline)', 'Motor control for jaw tracking.
 
 Key cues: Open slowly; keep jaw tracking straight; no clicking.
-Guide: https://www.youtube.com/watch?v=7b73yE0U2t0', 'face_mobility', '['jaw']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=7b73yE0U2t0', 'face_mobility', ARRAY['jaw'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Chin tucks (deep neck flexors)', 'Reduces forward-head tension that feeds face bracing.
 
 Key cues: Glide head back; keep throat relaxed; breathe.
-Guide: https://www.youtube.com/watch?v=2jvB6K3pGxA', 'face_mobility', '['neck', 'posture']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=2jvB6K3pGxA', 'face_mobility', ARRAY['neck', 'posture'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Smile–neutral control reps', 'Trains expressiveness without over-control.
 
 Key cues: Slow smile to ~70%; relax fully back to neutral.
-Guide: https://www.youtube.com/watch?v=0TjGQw4h9iI', 'face_mobility', '['face', 'cheeks', 'lips']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=0TjGQw4h9iI', 'face_mobility', ARRAY['face', 'cheeks', 'lips'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Brow raise + gentle squint combo', 'Improves expressive range (upper face).
 
 Key cues: Raise brows then add slight squint; relax fully.
-Guide: https://www.youtube.com/watch?v=6y2ZQp7a5iQ', 'face_mobility', '['face', 'brow', 'eyes']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=6y2ZQp7a5iQ', 'face_mobility', ARRAY['face', 'brow', 'eyes'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Tongue posture drill (light)', 'Supports jaw relaxation; do not force.
 
 Key cues: Tongue on palate; jaw relaxed; nasal breathe.
-Guide: https://www.youtube.com/watch?v=3Z_Fp9lGrGY', 'face_mobility', '['tongue', 'jaw', 'breathing']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=3Z_Fp9lGrGY', 'face_mobility', ARRAY['tongue', 'jaw', 'breathing'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Speak one sentence with 3 expressions', 'Transfers to real social expression control.
 
 Key cues: Same sentence; change expression only; keep jaw loose.
-Guide: https://www.youtube.com/watch?v=2Hc9Yw6h2u0', 'face_mobility', '['face', 'expression']', '[]', true, false, NULL),
+Guide: https://www.youtube.com/watch?v=2Hc9Yw6h2u0', 'face_mobility', ARRAY['face', 'expression'], ARRAY[], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Lat pulldown', 'Guide: (none)
 
-Notes: Or more if you can.', 'strength_upper', '['lats', 'upper_back', 'biceps']', '['cable']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Incline Bench Press', 'Guide: (none)', 'strength_upper', '['chest_upper', 'triceps', 'front_delts']', '['dumbbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Straight Arm Lat Pulldown', 'Guide: (none)', 'strength_upper', '['lats', 'shoulders', 'upper_back']', '['cable']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Seated Shoulder Press', 'Guide: (none)', 'strength_upper', '['shoulders', 'triceps']', '['machine']', true, false, NULL),
+Notes: Or more if you can.', 'strength_upper', ARRAY['lats', 'upper_back', 'biceps'], ARRAY['cable'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Incline Bench Press', 'Guide: (none)', 'strength_upper', ARRAY['chest_upper', 'triceps', 'front_delts'], ARRAY['dumbbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Straight Arm Lat Pulldown', 'Guide: (none)', 'strength_upper', ARRAY['lats', 'shoulders', 'upper_back'], ARRAY['cable'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Seated Shoulder Press', 'Guide: (none)', 'strength_upper', ARRAY['shoulders', 'triceps'], ARRAY['machine'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Bench', 'Guide: (none)
 
-Notes: Or more; train close to failure.', 'strength_upper', '['chest', 'triceps', 'front_delts']', '['free_weights']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Leg Press', 'Guide: (none)', 'strength_lower', '['quads', 'glutes']', '['machine']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Romanian Deadlift', 'Guide: (none)', 'strength_lower', '['hamstrings', 'glutes', 'low_back']', '['barbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Leg Extension', 'Guide: (none)', 'strength_lower', '['quads']', '['machine']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Seated Calf Raise', 'Guide: (none)', 'strength_lower', '['calves']', '['machine']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Cable Crunch', 'Guide: (none)', 'strength_lower', '['abs', 'core']', '['cable']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Bench Press', 'Guide: (none)', 'strength_push', '['chest', 'triceps', 'front_delts']', '['barbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Shoulder Press', 'Guide: (none)', 'strength_push', '['shoulders', 'triceps']', '['dumbbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Low Cable Fly Crossovers', 'Guide: (none)', 'strength_push', '['chest', 'front_delts']', '['cable']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Triceps Extension', 'Guide: (none)', 'strength_push', '['triceps']', '['dumbbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Triceps Rope Pushdown', 'Guide: (none)', 'strength_push', '['triceps']', '['cable']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Bent Over Row', 'Guide: (none)', 'strength_pull', '['upper_back', 'lats', 'biceps']', '['barbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Bicep Curl', 'Guide: (none)', 'strength_pull', '['biceps']', '['dumbbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Hammer Curl', 'Guide: (none)', 'strength_pull', '['biceps', 'forearms']', '['dumbbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Face Pull', 'Guide: (none)', 'strength_pull', '['rear_delts', 'upper_back', 'rotator_cuff']', '['cable']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Squat', 'Guide: (none)', 'strength_legs', '['quads', 'glutes', 'core']', '['barbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Glute Ham Raise', 'Guide: (none)', 'strength_legs', '['hamstrings', 'glutes']', '['bodyweight_or_machine']', true, false, NULL),
+Notes: Or more; train close to failure.', 'strength_upper', ARRAY['chest', 'triceps', 'front_delts'], ARRAY['free_weights'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Leg Press', 'Guide: (none)', 'strength_lower', ARRAY['quads', 'glutes'], ARRAY['machine'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Romanian Deadlift', 'Guide: (none)', 'strength_lower', ARRAY['hamstrings', 'glutes', 'low_back'], ARRAY['barbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Leg Extension', 'Guide: (none)', 'strength_lower', ARRAY['quads'], ARRAY['machine'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Seated Calf Raise', 'Guide: (none)', 'strength_lower', ARRAY['calves'], ARRAY['machine'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Cable Crunch', 'Guide: (none)', 'strength_lower', ARRAY['abs', 'core'], ARRAY['cable'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Bench Press', 'Guide: (none)', 'strength_push', ARRAY['chest', 'triceps', 'front_delts'], ARRAY['barbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Shoulder Press', 'Guide: (none)', 'strength_push', ARRAY['shoulders', 'triceps'], ARRAY['dumbbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Low Cable Fly Crossovers', 'Guide: (none)', 'strength_push', ARRAY['chest', 'front_delts'], ARRAY['cable'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Triceps Extension', 'Guide: (none)', 'strength_push', ARRAY['triceps'], ARRAY['dumbbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Triceps Rope Pushdown', 'Guide: (none)', 'strength_push', ARRAY['triceps'], ARRAY['cable'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Bent Over Row', 'Guide: (none)', 'strength_pull', ARRAY['upper_back', 'lats', 'biceps'], ARRAY['barbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Bicep Curl', 'Guide: (none)', 'strength_pull', ARRAY['biceps'], ARRAY['dumbbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Hammer Curl', 'Guide: (none)', 'strength_pull', ARRAY['biceps', 'forearms'], ARRAY['dumbbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Face Pull', 'Guide: (none)', 'strength_pull', ARRAY['rear_delts', 'upper_back', 'rotator_cuff'], ARRAY['cable'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Squat', 'Guide: (none)', 'strength_legs', ARRAY['quads', 'glutes', 'core'], ARRAY['barbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Glute Ham Raise', 'Guide: (none)', 'strength_legs', ARRAY['hamstrings', 'glutes'], ARRAY['bodyweight_or_machine'], true, false, NULL),
     (gen_random_uuid(), NOW(), 'Lunge', 'Guide: (none)
 
-Notes: Per side.', 'strength_legs', '['quads', 'glutes', 'hamstrings']', '['dumbbell']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Lying Leg Curl', 'Guide: (none)', 'strength_legs', '['hamstrings']', '['machine']', true, false, NULL),
-    (gen_random_uuid(), NOW(), 'Standing Calf Raise', 'Guide: (none)', 'strength_legs', '['calves']', '['smith_machine']', true, false, NULL)
+Notes: Per side.', 'strength_legs', ARRAY['quads', 'glutes', 'hamstrings'], ARRAY['dumbbell'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Lying Leg Curl', 'Guide: (none)', 'strength_legs', ARRAY['hamstrings'], ARRAY['machine'], true, false, NULL),
+    (gen_random_uuid(), NOW(), 'Standing Calf Raise', 'Guide: (none)', 'strength_legs', ARRAY['calves'], ARRAY['smith_machine'], true, false, NULL)
 ON CONFLICT (name) DO NOTHING;
 
 -- Summary

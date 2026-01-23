@@ -170,6 +170,22 @@ def format_sql_value(val: Any, field_type: str) -> str:
         return str(val)
     if isinstance(val, dict):
         return f"'{json.dumps(val)}'"
+    if isinstance(val, list):
+        # Handle arrays: convert to PostgreSQL ARRAY syntax
+        # ARRAY['item1', 'item2'] or ARRAY[1, 2] depending on field type
+        if not val:
+            # Empty array
+            return "ARRAY[]"
+        # Quote string items, don't quote numeric items
+        formatted_items = []
+        for item in val:
+            if isinstance(item, (int, float)):
+                formatted_items.append(str(item))
+            else:
+                # Escape single quotes in string items
+                escaped = str(item).replace(chr(39), chr(39)+chr(39))
+                formatted_items.append(f"'{escaped}'")
+        return f"ARRAY[{', '.join(formatted_items)}]"
     if isinstance(val, str):
         return f"'{val.replace(chr(39), chr(39)+chr(39))}'"
     return f"'{val}'"

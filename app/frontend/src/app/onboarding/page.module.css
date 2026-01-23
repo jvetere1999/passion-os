@@ -96,10 +96,22 @@
   align-items: flex-start;
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: var(--space-2);
+  margin: calc(var(--space-2) * -1);
+  border-radius: var(--radius-md);
+  transition: background 0.15s ease;
+  user-select: none;
+}
+
+.tosCheck:hover {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .tosCheck input {
   margin-top: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .tosActionRow {

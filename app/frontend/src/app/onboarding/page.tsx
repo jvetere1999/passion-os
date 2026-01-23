@@ -210,36 +210,30 @@ export default function OnboardingPage() {
           </div>
 
           <div className={styles.tosChecks}>
-            <div className={styles.tosCheck} onClick={() => {
-              setIsOldEnough(!isOldEnough);
-              if (tosError) setTosError(null);
-            }} role="button" tabIndex={0}>
+            <label className={styles.tosCheck}>
               <input
                 type="checkbox"
                 checked={isOldEnough}
                 onChange={(event) => {
-                  event.stopPropagation();
+                  console.log('[onboarding/page] Age checkbox changed:', event.target.checked);
                   setIsOldEnough(event.target.checked);
                   if (tosError) setTosError(null);
                 }}
               />
               <span>I confirm that I am at least 16 years old.</span>
-            </div>
-            <div className={styles.tosCheck} onClick={() => {
-              setHasRead(!hasRead);
-              if (tosError) setTosError(null);
-            }} role="button" tabIndex={0}>
+            </label>
+            <label className={styles.tosCheck}>
               <input
                 type="checkbox"
                 checked={hasRead}
                 onChange={(event) => {
-                  event.stopPropagation();
+                  console.log('[onboarding/page] TOS checkbox changed:', event.target.checked);
                   setHasRead(event.target.checked);
                   if (tosError) setTosError(null);
                 }}
               />
               <span>I have read and agree to the Terms of Service and Privacy Policy.</span>
-            </div>
+            </label>
           </div>
 
           <div className={styles.tosActionRow}>

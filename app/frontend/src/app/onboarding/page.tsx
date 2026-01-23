@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { safeFetch, API_BASE_URL } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { getOnboardingState, type OnboardingResponse } from "@/lib/api/onboarding";
+import { getOnboardingState, startOnboarding, type OnboardingResponse } from "@/lib/api/onboarding";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { StatusToast } from "@/components/ui/StatusToast";
 import styles from "./page.module.css";
@@ -32,8 +32,23 @@ export default function OnboardingPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const data = await getOnboardingState();
+        let data = await getOnboardingState();
         if (!isActive) return;
+        
+        // If we have a flow but no current step, initialize the onboarding
+        if (data.flow && data.flow.total_steps > 0 && !data.current_step) {
+          try {
+            const startResult = await startOnboarding();
+            if (!isActive) return;
+            // Reload the state after starting
+            data = await getOnboardingState();
+            if (!isActive) return;
+          } catch (startErr) {
+            console.error('Failed to start onboarding:', startErr);
+            // Continue anyway, let the user see the onboarding state
+          }
+        }
+        
         setOnboarding(data);
 
         if (data.state?.status === "completed") {

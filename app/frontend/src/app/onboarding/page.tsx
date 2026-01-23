@@ -25,7 +25,15 @@ export default function OnboardingPage() {
   const needsTos = !!user && !user.tosAccepted;
 
   useEffect(() => {
-    if (isAuthLoading || !isAuthenticated || !user || !user.tosAccepted) return;
+    // Always wait for auth loading to complete before proceeding
+    if (isAuthLoading) return;
+    
+    // Redirect unauthenticated users to signin
+    if (!isAuthenticated || !user) return;
+    
+    // If TOS not accepted, don't load onboarding yet - TOS modal will show
+    if (!user.tosAccepted) return;
+
     let isActive = true;
 
     const loadOnboarding = async () => {
@@ -38,13 +46,13 @@ export default function OnboardingPage() {
         // If we have a flow but no current step, initialize the onboarding
         if (data.flow && data.flow.total_steps > 0 && !data.current_step) {
           try {
-            const startResult = await startOnboarding();
+            await startOnboarding();
             if (!isActive) return;
             // Reload the state after starting
             data = await getOnboardingState();
             if (!isActive) return;
           } catch (startErr) {
-            console.error('Failed to start onboarding:', startErr);
+            console.error('[onboarding/page] Failed to start onboarding:', startErr);
             // Continue anyway, let the user see the onboarding state
           }
         }
@@ -61,6 +69,7 @@ export default function OnboardingPage() {
         }
       } catch (err) {
         if (!isActive) return;
+        console.error('[onboarding/page] Failed to load onboarding:', err);
         setError("Unable to load onboarding. Please refresh.");
       } finally {
         if (isActive) {
@@ -74,7 +83,7 @@ export default function OnboardingPage() {
     return () => {
       isActive = false;
     };
-  }, [isAuthLoading, isAuthenticated, router, user?.tosAccepted, user?.id]);
+  }, [isAuthLoading, isAuthenticated, user?.tosAccepted, user?.id, router]);
 
   useEffect(() => {
     if (!hasRead || !isOldEnough) {
@@ -93,6 +102,7 @@ export default function OnboardingPage() {
     setIsAccepting(true);
     setTosError(null);
     try {
+      console.log('[onboarding/page] Accepting TOS...');
       const response = await safeFetch(`${API_BASE_URL}/auth/accept-tos`, {
         method: "POST",
         headers: {
@@ -107,9 +117,12 @@ export default function OnboardingPage() {
         const data = (await response.json().catch(() => ({}))) as { message?: string };
         throw new Error(data.message || "Failed to accept Terms of Service.");
       }
+      console.log('[onboarding/page] TOS accepted, refreshing session...');
       await refresh();
+      console.log('[onboarding/page] Session refreshed, tosAccepted should be true');
     } catch (acceptError) {
       const message = acceptError instanceof Error ? acceptError.message : "Failed to accept Terms of Service.";
+      console.error('[onboarding/page] TOS acceptance error:', message);
       setTosError(message);
     } finally {
       setIsAccepting(false);

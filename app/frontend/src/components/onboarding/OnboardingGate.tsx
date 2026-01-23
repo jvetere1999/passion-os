@@ -52,12 +52,14 @@ export function OnboardingGate({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, user?.id]);
 
   // TOS should be handled as part of onboarding; if not accepted, redirect to onboarding
+  // And refresh session to ensure we have latest user data
   useEffect(() => {
     if (isLoading || !isAuthenticated || !user) return;
     if (!user.tosAccepted && pathname !== "/onboarding") {
+      refresh?.();
       router.replace("/onboarding");
     }
-  }, [isLoading, isAuthenticated, user?.tosAccepted, pathname, router]);
+  }, [isLoading, isAuthenticated, user?.tosAccepted, pathname, router, refresh]);
 
   useEffect(() => {
     if (pathname !== "/onboarding") return;

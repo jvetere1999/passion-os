@@ -251,7 +251,7 @@ VALUES
     ('a0000000-0000-0000-0000-000000000001', NOW(), NOW(), '00000000-0000-0000-0000-000000000000', 'Social Confidence Through Reps (No Shrinking)', 'Build social confidence by repeating approach behaviors while anxious and dropping "make myself small" safety behaviors. Success = I stayed present and took normal space, not "I felt confident."', 'Social / Confidence', 5, 'active', 0, 1),
     ('a0000000-0000-0000-0000-000000000002', NOW(), NOW(), '00000000-0000-0000-0000-000000000000', 'Sober Rave Freedom (Disinhibition Without Substances)', 'Retrain my nervous system to move freely at raves while sober by interrupting stiffening, redirecting attention outward, and doing controlled "embarrassment exposures."', 'Movement / Social / Embodiment', 5, 'active', 0, 2),
     ('a0000000-0000-0000-0000-000000000003', NOW(), NOW(), '00000000-0000-0000-0000-000000000000', 'Dating Presence (Connection Over Performance)', 'Improve dating confidence by staying present, showing preferences, escalating gently, and tolerating awkwardness without self-correction or checking for approval.', 'Dating / Confidence', 4, 'active', 0, 3)
-ON CONFLICT (id) DO NOTHING;
+;
 
 -- ============================================================
 -- USER_QUESTS (6 records)
@@ -288,7 +288,7 @@ VALUES
 **Linked Goal:** Dating Presence (Connection Over Performance)
 **Duration:** 2-4 weeks
 **Success Criteria:** 3 invites sent + 2 dates completed', 'Dating / Exposure', 'epic', 1000, 200, 'not_started', 0, 5, true, false)
-ON CONFLICT (id) DO NOTHING;
+;
 
 -- ============================================================
 -- HABITS (12 records)
@@ -343,7 +343,7 @@ VALUES
 
 **Linked Goal:** Dating Presence (Connection Over Performance)
 **Target:** 2x per week', 'weekly', 2, '💭', '#A855F7', 12, true)
-ON CONFLICT (id) DO NOTHING;
+;
 
 -- ============================================================
 -- EXERCISES (53 records)

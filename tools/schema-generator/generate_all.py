@@ -563,6 +563,8 @@ class SchemaGenerator:
             "ALTER TABLE learn_topics ADD CONSTRAINT learn_topics_key_unique UNIQUE (key);",
             "ALTER TABLE onboarding_flows ADD CONSTRAINT onboarding_flows_name_unique UNIQUE (name);",
             "ALTER TABLE market_items ADD CONSTRAINT market_items_key_unique UNIQUE (key);",
+            "ALTER TABLE workouts ADD CONSTRAINT workouts_name_unique UNIQUE (name);",
+            "ALTER TABLE exercises ADD CONSTRAINT exercises_name_unique UNIQUE (name);",
             "",
             "-- Composite unique constraints for ON CONFLICT operations",
             "ALTER TABLE accounts ADD CONSTRAINT accounts_provider_account_unique UNIQUE (provider, provider_account_id);",

@@ -3947,7 +3947,7 @@
           "type": "TEXT",
           "nullable": false,
           "primary": false,
-          "unique": false,
+          "unique": true,
           "foreign_key": false
         },
         "description": {
@@ -4046,7 +4046,7 @@
           "type": "TEXT",
           "nullable": false,
           "primary": false,
-          "unique": false,
+          "unique": true,
           "foreign_key": false
         },
         "description": {
@@ -8376,7 +8376,7 @@
       ]
     },
     "goals": {
-      "unique_key": "id",
+      "unique_key": null,
       "records": [
         {
           "id": "a0000000-0000-0000-0000-000000000001",
@@ -8414,7 +8414,7 @@
       ]
     },
     "user_quests": {
-      "unique_key": "id",
+      "unique_key": null,
       "records": [
         {
           "id": "b0000000-0000-0000-0000-000000000001",
@@ -8509,7 +8509,7 @@
       ]
     },
     "habits": {
-      "unique_key": "id",
+      "unique_key": null,
       "records": [
         {
           "id": "c0000000-0000-0000-0000-000000000001",
